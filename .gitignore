@@ -1,0 +1,30 @@
+.DS_Store
+Thumbs.db
+
+/vendor
+/node_modules
+composer.lock
+package-lock.json
+yarn.lock
+
+.env
+.env.*
+!.env.example
+
+.phpunit.result.cache
+/.phpunit.cache
+/build
+/coverage
+.phpstan.cache
+/.php-cs-fixer.cache
+
+/.idea
+/.vscode
+/.fleet
+*.sublime-project
+*.sublime-workspace
+
+# Note: do NOT ignore resources/dist. Filament plugins ship compiled assets
+# so consumers install without running a build step.
+
+CLAUDE.local.md

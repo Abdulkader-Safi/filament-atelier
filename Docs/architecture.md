@@ -1,6 +1,8 @@
 # Architecture spec
 
-> **Partly superseded, 2026-08-14.** Read `prd.md` (v2) first. Three things here are out of date: the editing canvas is now a three-pane live-preview editor in v1 (not the Builder field, not deferred), content is stored per locale for English + Arabic, and slugs move to their own `page_slugs` table. A `custom_blocks` table is also new. Everything else here still stands: the JSON block tree, the registry and `Block` interface, design tokens and `supports`, the CSS strategy, drafts and publishing, GSAP, and the SEO layer.
+> **Partly superseded, 2026-08-14.** Read `prd.md` (v2) first. Three things here are out of date: the editing canvas is now a three-pane live-preview editor in v1 (not the Builder field, not deferred to v3), content is stored per locale for English + Arabic, and slugs move to their own `page_slugs` table. Everything else here still stands, and section 3 of this doc ("The block registry") is now the centre of v1 rather than a supporting piece: the JSON block tree, the registry and `Block` interface, the three layers of who-can-do-what, design tokens and `supports`, the CSS strategy, drafts and publishing, GSAP, and the SEO layer.
+>
+> Note on the three extensibility layers below: v1 ships layers 1 and 3 (editor arranges registered blocks, developer registers new ones in code) plus the raw-HTML escape hatch at layer 2. Creating whole new _block types_ from the panel is v2.
 
 > The recommended technical design for the Filament page-builder plugin, built from the four research briefs in `research/`. This is a proposal for sign-off, not a final build. Nothing here is wired to LaralCN-UI; that stays a possible future block-library source, noted at the end.
 
@@ -18,7 +20,7 @@ You asked me to recommend between "Blade-rendered server-side" and "live visual 
 
 **Front end: always Blade server-side render.** Non-negotiable for SEO and performance. The public route loads the page's published JSON tree, walks it, and renders one Blade component per block type. No client-side block injection, ever.
 
-**Editing: start with Filament's Builder field, add a visual canvas later.** The Builder field is a stack of typed blocks with reordering, collapsing, cloning, per-block schemas. It's the native, batteries-included block editor and gets you 80% of the Gutenberg feel for a fraction of the effort. A true live visual canvas (edit on a rendered preview, Elementor-style) is a custom Filament field built as an async Alpine component. It's the hard, expensive part and the right place to phase it: ship the Builder-field version first, prove the block library and rendering, then build the canvas as v2.
+**Editing: start with Filament's Builder field, add a visual canvas later.** _(Reversed on 14 Aug. The canvas is v1. See `prd.md`.)_ The Builder field is a stack of typed blocks with reordering, collapsing, cloning, per-block schemas. It's the native, batteries-included block editor and gets you 80% of the Gutenberg feel for a fraction of the effort. A true live visual canvas (edit on a rendered preview, Elementor-style) is a custom Filament field built as an async Alpine component. It's the hard, expensive part and the right place to phase it: ship the Builder-field version first, prove the block library and rendering, then build the canvas as v2.
 
 This phasing matters. The genuinely hard engineering in both Gutenberg and Elementor is the editor UI, not the data model. Don't pay for the canvas before the rest works.
 
@@ -149,6 +151,8 @@ License note for the PRD: GSAP is free for commercial use (Webflow, since April 
 Strong recommendation: fork or build on `Z3d0X/filament-fabricator` for the skeleton (PageResource, slug/URL resolution, front-end routing, the Layouts + Page Blocks abstraction). It's MIT, tested, tracks Filament v5 within weeks. Spend your effort on the block library, the optional canvas, the design-token system, and the SEO/preview/animation layers, the parts that differentiate you. Bolt on `pboivin/filament-peek` for live preview rather than building it. Build fully from scratch only if you commit to a nested component-tree canvas from day one (the harder, more Elementor-like path).
 
 ## Phasing
+
+> **Superseded 2026-08-14.** The phasing below was written when the visual canvas was v3. It isn't. Use the plan in `prd.md`: the three-pane live editor is v1, and the thing pushed to v2 is authoring block types from the panel. Kept for the reasoning only.
 
 1. **v1, block-stack builder.** Fabricator skeleton + BlockRegistry + a starter block library (hero, text, image, columns, CTA, FAQ, raw-HTML). Builder field editing. Blade SSR. Draft/publish two-column. Signed-URL preview. Per-page SEO + sitemap. GSAP presets. This is a complete, shippable, SEO-ready builder.
 2. **v2, design system + reuse.** Central design tokens + `supports`, synced blocks, block patterns/templates, revisions UI.
