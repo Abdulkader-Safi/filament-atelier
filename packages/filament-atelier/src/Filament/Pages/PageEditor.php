@@ -374,6 +374,11 @@ class PageEditor extends FilamentPage
         // reading it out of the Livewire component itself.
         $state = ['data' => $this->data ?? []];
 
+        // FileUpload moves the temporary upload onto the disk in this hook.
+        // Skip it and an uploaded image dehydrates to nothing: the field says
+        // "upload complete", the tree stores [], and the page shows no image.
+        $this->form->callBeforeStateDehydrated($state);
+
         $this->form->dehydrateState($state);
         $this->form->mutateDehydratedState($state);
 

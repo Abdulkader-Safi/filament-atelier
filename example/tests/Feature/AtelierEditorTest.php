@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Safi\Atelier\Blocks\HeroBlock;
 use Safi\Atelier\Blocks\RichTextBlock;
@@ -181,4 +183,38 @@ it('accepts a relative signature regardless of host', function () {
     // Same signature, different host. Absolute signing would 403 here, which
     // is exactly what broke when browsing 127.0.0.1 with APP_URL on localhost.
     get('http://127.0.0.1'.$url)->assertOk();
+});
+
+it('saves an uploaded image to the disk and stores its path', function () {
+    Storage::fake('public');
+
+    $component = editor($this->page)
+        ->call('addBlock', 'image')
+        ->set('data.image', [UploadedFile::fake()->image('photo.jpg', 800, 600)]);
+
+    $stored = $this->page->fresh()->draft()[1]['attributes']['image'];
+
+    // FileUpload only moves the temp file onto the disk in its
+    // beforeStateDehydrated hook. Skipping that hook left the field showing
+    // "upload complete" while the tree stored [] and the page showed nothing.
+    expect($stored)->toBeString()->not->toBeEmpty()
+        ->and(Storage::disk('public')->exists($stored))->toBeTrue();
+
+    $component->assertDispatched('atelier-refresh');
+});
+
+it('renders an uploaded image on the published page', function () {
+    Storage::fake('public');
+
+    editor($this->page)
+        ->call('addBlock', 'image')
+        ->set('data.image', [UploadedFile::fake()->image('photo.jpg', 800, 600)]);
+
+    $page = $this->page->fresh();
+    $page->setSlugs(['en' => 'with-image', 'ar' => 'with-image']);
+    $page->publish();
+
+    $path = $page->draft()[1]['attributes']['image'];
+
+    get('/with-image')->assertOk()->assertSee(basename($path));
 });
