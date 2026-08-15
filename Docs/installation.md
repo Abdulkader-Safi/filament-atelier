@@ -7,13 +7,7 @@ Atelier needs Laravel 12 or 13, PHP 8.3+, Filament 5, and Tailwind 4 on the fron
 
 ## 1. Install the package
 
-While it's private, add the repository first:
-
-```json
-"repositories": [
-    { "type": "vcs", "url": "https://github.com/Abdulkader-Safi/filament-atelier" }
-]
-```
+On Packagist as [safi/filament-atelier](https://packagist.org/packages/safi/filament-atelier).
 
 ```bash
 composer require safi/filament-atelier

@@ -20,6 +20,9 @@ The editor puts the section list on the left, a live iframe in the middle, and t
 
 ## Install
 
+[![Packagist](https://img.shields.io/packagist/v/safi/filament-atelier.svg)](https://packagist.org/packages/safi/filament-atelier)
+[![License](https://img.shields.io/packagist/l/safi/filament-atelier.svg)](LICENSE.md)
+
 ```bash
 composer require safi/filament-atelier
 php artisan vendor:publish --tag=filament-atelier-migrations
