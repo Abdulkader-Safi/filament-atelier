@@ -6,6 +6,7 @@ namespace Safi\Atelier;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Safi\Atelier\Filament\Pages\PageEditor;
 
 class AtelierPlugin implements Plugin
 {
@@ -29,7 +30,9 @@ class AtelierPlugin implements Plugin
 
     public function register(Panel $panel): void
     {
-        //
+        $panel->pages([
+            PageEditor::class,
+        ]);
     }
 
     public function boot(Panel $panel): void

@@ -3,6 +3,7 @@
     "name": "safi/filament-atelier",
     "description": "A visual page builder for Laravel, built as a Filament plugin. Code-defined blocks, live preview, server-rendered output.",
     "type": "library",
+    "license": "MIT",
     "keywords": [
         "laravel",
         "filament",

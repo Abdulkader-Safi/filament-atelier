@@ -9,6 +9,8 @@ use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Safi\Atelier\AtelierPlugin;
+use Safi\Atelier\Blocks\HeroBlock;
+use Safi\Atelier\Blocks\RichTextBlock;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
@@ -54,7 +56,11 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                AtelierPlugin::make(),
+                AtelierPlugin::make()
+                    ->blocks([
+                        HeroBlock::class,
+                        RichTextBlock::class,
+                    ]),
             ])
             ->authMiddleware([
                 Authenticate::class,

@@ -207,7 +207,7 @@ Three constraints found on 14 Aug 2026, all still true whenever this gets built:
 
 1. **Who owns it?** It's built for dsrpt client work. Is this Safi's package that dsrpt uses, or dsrpt's IP? Worth settling before the first commit, not after.
 2. **Which Filament version is the floor?** Building against v4 and supporting v5 costs compatibility work. If every dsrpt client app is on v5, drop v4 and save the effort.
-3. **Distribution:** private package on a dsrpt repo, or eventually public? This only changes docs and polish, so it can wait, but it affects how much time goes into the block library.
+3. **Distribution:** private package on a dsrpt repo, or eventually public? Licensed MIT as of 15 Aug 2026, so nothing blocks going public, but whether it actually ships publicly is still open and affects how much time goes into the block library.
 4. **Contact form block:** does it submit to something real (a `submissions` table, an email, a CRM), or is it a presentational block pointing at a route the developer wires up? Cheapest is the second.
 
 ## What I'd push back on

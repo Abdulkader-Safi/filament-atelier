@@ -14,7 +14,9 @@ class AtelierServiceProvider extends PackageServiceProvider
         $package
             ->name('filament-atelier')
             ->hasConfigFile('atelier')
-            ->hasViews('atelier');
+            ->hasViews('atelier')
+            ->hasRoute('web')
+            ->hasMigration('create_atelier_tables');
     }
 
     public function packageRegistered(): void

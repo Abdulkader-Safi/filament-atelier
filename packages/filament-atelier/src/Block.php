@@ -24,6 +24,12 @@ interface Block
     /** Shared features this block opts into: background, padding, animation. */
     public static function supports(): array;
 
+    /**
+     * Attribute keys stored as a per-locale map, e.g.
+     * "heading": { "en": "Welcome", "ar": "أهلا بك" }.
+     */
+    public static function translatable(): array;
+
     /** Blade view rendering this block. */
     public static function view(): string;
 }
