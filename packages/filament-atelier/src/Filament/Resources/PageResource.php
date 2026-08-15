@@ -6,19 +6,24 @@ namespace Safi\Atelier\Filament\Resources;
 
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Safi\Atelier\Filament\Pages\PageEditor;
+use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\ListPages;
 use Safi\Atelier\Models\Page;
 
 /**
- * List, create and delete, plus the page's own settings. Building the page
- * happens in the builder, which is a full-screen page outside the panel
- * chrome, opened from here.
+ * The page's settings: title, per-locale slugs and SEO. Content is edited in
+ * the builder, a full-screen page opened from here.
  */
 class PageResource extends Resource
 {
@@ -32,20 +37,62 @@ class PageResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
+        $locales = config('atelier.locales');
+        $default = array_key_first($locales);
+
         return $schema->components([
-            TextInput::make('title')
-                ->required()
-                ->maxLength(255),
+            Section::make()->schema([
+                TextInput::make('title')
+                    ->required()
+                    ->maxLength(255)
+                    ->helperText('Internal name, and the fallback for the meta title.'),
+            ]),
+
+            Tabs::make('Locales')
+                ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
+                    TextInput::make("slugs.{$code}")
+                        ->label('Slug')
+                        ->prefix($code === $default ? '/' : "/{$code}/")
+                        ->helperText('Leave empty to generate one from the title.')
+                        ->maxLength(255),
+
+                    TextInput::make("seo.{$code}.meta_title")
+                        ->label('Meta title')
+                        ->maxLength(70)
+                        ->helperText('Around 60 characters. Falls back to the page title.'),
+
+                    Textarea::make("seo.{$code}.meta_description")
+                        ->label('Meta description')
+                        ->rows(3)
+                        ->maxLength(180)
+                        ->helperText('Around 155 characters.'),
+
+                    FileUpload::make("seo.{$code}.og_image")
+                        ->label('Social share image')
+                        ->image()
+                        ->disk(config('atelier.media.disk'))
+                        ->directory(config('atelier.media.directory').'/og')
+                        ->helperText('1200 by 630 is the safe size.'),
+
+                    TextInput::make("seo.{$code}.canonical")
+                        ->label('Canonical URL')
+                        ->url()
+                        ->helperText("Leave empty to use this page's own URL."),
+                ]))->all())
+                ->columnSpanFull(),
         ]);
     }
 
     public static function table(Table $table): Table
     {
+        $default = array_key_first(config('atelier.locales'));
+
         return $table
             ->columns([
                 TextColumn::make('title')
                     ->searchable()
-                    ->weight('medium'),
+                    ->weight('medium')
+                    ->description(fn (Page $record) => ($slug = $record->slug($default)) ? "/{$slug}" : null),
 
                 TextColumn::make('status')
                     ->badge()
@@ -54,7 +101,7 @@ class PageResource extends Resource
                         : ucfirst($record->status))
                     ->color(fn (Page $record) => match (true) {
                         $record->hasUnpublishedChanges() => 'warning',
-                        $record->status === 'published' => 'success',
+                        $record->isPublished() => 'success',
                         default => 'gray',
                     }),
 
@@ -73,15 +120,15 @@ class PageResource extends Resource
 
                 DeleteAction::make(),
             ])
-            ->recordUrl(fn (Page $record) => PageEditor::getUrl(['record' => $record->getKey()]))
             ->emptyStateHeading('No pages yet')
-            ->emptyStateDescription('Create one, then build it from sections.');
+            ->emptyStateDescription('Create one, fill in its settings, then build it from sections.');
     }
 
     public static function getPages(): array
     {
         return [
             'index' => ListPages::route('/'),
+            'edit' => EditPageSettings::route('/{record}/edit'),
         ];
     }
 }

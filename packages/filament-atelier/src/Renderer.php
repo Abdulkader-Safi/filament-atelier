@@ -17,24 +17,27 @@ class Renderer
     public function __construct(protected BlockRegistry $registry) {}
 
     /**
-     * A translatable value must reach the view as a string.
+     * Whatever a view is handed, it must be safe to use.
      *
-     * Filament's RichEditor keeps a TipTap document while editing, and a bug
-     * once wrote that structure straight into the tree. The editor no longer
-     * does, but a public page must not fatal on data written by an older
-     * version, so convert rather than trust.
+     * Repeater values are lists and pass straight through. Filament's
+     * RichEditor keeps a TipTap document while editing, and a bug once wrote
+     * that structure into the tree; the editor no longer does, but a public
+     * page must not fatal on data an older version wrote, so convert rather
+     * than trust.
      */
-    protected function toText(mixed $value): string
+    protected function normalise(mixed $value): mixed
     {
-        if (is_string($value)) {
+        if (is_string($value) || $value === null) {
             return $value;
         }
 
-        if (is_array($value) && isset($value['type'])) {
-            return RichContentRenderer::make($value)->toHtml();
+        if (is_array($value)) {
+            return isset($value['type'], $value['content'])
+                ? RichContentRenderer::make($value)->toHtml()
+                : $value;
         }
 
-        return is_scalar($value) ? (string) $value : '';
+        return is_scalar($value) ? (string) $value : null;
     }
 
     /** @param array<int, array> $tree */
@@ -89,14 +92,24 @@ class Renderer
      */
     protected function localise(array $attributes, array $translatable, string $locale): array
     {
-        foreach ($translatable as $key) {
-            $value = $attributes[$key] ?? null;
+        $fallback = array_key_first(config('atelier.locales', []) ?: [$locale => null]);
 
-            if (is_array($value)) {
-                $value = $value[$locale] ?? '';
+        foreach ($translatable as $key) {
+            if (! array_key_exists($key, $attributes)) {
+                continue;
             }
 
-            $attributes[$key] = $this->toText($value);
+            $value = $attributes[$key];
+
+            // A locale map is keyed by locale code. A repeater's value for one
+            // locale is a list, so only unwrap when the keys look like locales.
+            if (is_array($value) && ! array_is_list($value) && ! isset($value['type'])) {
+                // Fall back to the default locale rather than rendering a hole.
+                // A half-translated page should read as untranslated, not broken.
+                $value = $value[$locale] ?? $value[$fallback] ?? null;
+            }
+
+            $attributes[$key] = $this->normalise($value);
         }
 
         return $attributes;

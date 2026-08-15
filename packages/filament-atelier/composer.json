@@ -31,7 +31,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Safi\\Atelier\\": "src/"
+            "Safi\\Atelier\\": "src/",
+            "Safi\\Atelier\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {

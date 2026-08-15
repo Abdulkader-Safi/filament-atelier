@@ -7,6 +7,7 @@ namespace Safi\Atelier\Blocks;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Safi\Atelier\Media;
 
 class HeroBlock extends BaseBlock
 {
@@ -27,7 +28,7 @@ class HeroBlock extends BaseBlock
 
     public static function translatable(): array
     {
-        return ['heading', 'subheading', 'cta_label'];
+        return ['eyebrow', 'heading', 'subheading', 'cta_label'];
     }
 
     public static function defaults(): array
@@ -44,23 +45,12 @@ class HeroBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('heading')
-                ->label('Heading')
-                ->live(debounce: 400),
-
-            Textarea::make('subheading')
-                ->label('Subheading')
-                ->rows(3)
-                ->live(debounce: 400),
-
-            TextInput::make('cta_label')
-                ->label('Button label')
-                ->live(debounce: 400),
-
-            TextInput::make('cta_url')
-                ->label('Button link')
-                ->live(debounce: 400),
-
+            TextInput::make('eyebrow')->label('Eyebrow')->live(debounce: 400),
+            TextInput::make('heading')->label('Heading')->live(debounce: 400),
+            Textarea::make('subheading')->label('Subheading')->rows(3)->live(debounce: 400),
+            TextInput::make('cta_label')->label('Button label')->live(debounce: 400),
+            TextInput::make('cta_url')->label('Button link')->live(debounce: 400),
+            Media::upload('image', 'Background image')->live(),
             Select::make('align')
                 ->label('Alignment')
                 ->options(['left' => 'Left', 'center' => 'Centre'])
