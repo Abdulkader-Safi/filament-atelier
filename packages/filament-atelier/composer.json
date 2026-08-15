@@ -1,0 +1,61 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "safi/filament-atelier",
+    "description": "A visual page builder for Laravel, built as a Filament plugin. Code-defined blocks, live preview, server-rendered output.",
+    "type": "library",
+    "keywords": [
+        "laravel",
+        "filament",
+        "page-builder",
+        "cms"
+    ],
+    "authors": [
+        {
+            "name": "Abdulkader Safi",
+            "email": "safi.abdulkader@gmail.com"
+        }
+    ],
+    "require": {
+        "php": "^8.3",
+        "filament/filament": "^5.0",
+        "illuminate/contracts": "^13.0",
+        "spatie/laravel-package-tools": "^1.16"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.27",
+        "orchestra/testbench": "^11.0",
+        "pestphp/pest": "^5.1",
+        "pestphp/pest-plugin-laravel": "^5.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Safi\\Atelier\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Safi\\Atelier\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "pest",
+        "lint": "pint",
+        "analyse": "phpstan analyse"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Safi\\Atelier\\AtelierServiceProvider"
+            ]
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
