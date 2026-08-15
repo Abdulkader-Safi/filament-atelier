@@ -148,6 +148,8 @@ License note for the PRD: GSAP is free for commercial use (Webflow, since April 
 
 ## Build vs fork
 
+> **Reversed 2026-08-15.** We are not building on Fabricator. The two claims made against it (no Filament 5 support, unmaintained) were both false, and the correction is recorded in `prd.md` under "Why not Fabricator". The reason we dropped it anyway is that our spec replaces four of the five things it provides, so we'd inherit its constraints without using the parts that justify them. The original recommendation is kept below because its reasoning about *where to spend effort* still holds.
+
 Strong recommendation: fork or build on `Z3d0X/filament-fabricator` for the skeleton (PageResource, slug/URL resolution, front-end routing, the Layouts + Page Blocks abstraction). It's MIT, tested, tracks Filament v5 within weeks. Spend your effort on the block library, the optional canvas, the design-token system, and the SEO/preview/animation layers, the parts that differentiate you. Bolt on `pboivin/filament-peek` for live preview rather than building it. Build fully from scratch only if you commit to a nested component-tree canvas from day one (the harder, more Elementor-like path).
 
 ## Phasing

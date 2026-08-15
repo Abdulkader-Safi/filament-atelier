@@ -2,15 +2,29 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## What this repository is right now
+## Repository layout
 
-Specification only. There is no application code, no `composer.json`, no `package.json`, no test suite. One commit, and everything in it is Markdown under `Docs/`.
+```
+Docs/                        the spec, the authority for what to build
+packages/filament-atelier/   the plugin itself
+example/                     a Laravel 13 app for testing the plugin
+```
 
-The PRD is awaiting sign-off and no build has started. Don't scaffold the package, add dependencies, or write PHP unless asked. When code does land, this file needs a real commands section, because none of the commands below exist yet.
+`example/` is a throwaway host app, not a deliverable. It exists so the plugin can be installed and exercised for real. It's wired to `packages/filament-atelier` through a composer path repository with a symlink, so an edit in the package is live in the example app with no reinstall.
 
-## Planned stack
+Work happens in `packages/filament-atelier`. Only touch `example/` to set up a test scenario or to reproduce something.
 
-Laravel 12/13, Filament v4 with a `^4.0|^5.0` constraint, Livewire 4, Alpine 3, Tailwind 4, GSAP 3.15. Built as a composer package `safi/filament-atelier` that installs into a client's Laravel app. Built on top of `Z3d0X/filament-fabricator` for the page model, slug resolution and front-end routing.
+## Status
+
+The build is starting. `Docs/` is complete and `example/` is a fresh Laravel 13 app with no Filament yet. Follow the build order in `Docs/tasks/`, starting with feature 01, the preview spike.
+
+## Stack
+
+PHP 8.3+, Laravel 13, Filament, Livewire 4, Alpine 3, Tailwind 4, GSAP 3.15. Shipped as a composer package `safi/filament-atelier` that installs into a client's Laravel app.
+
+No page-builder dependency. Atelier owns the page model, slug resolution, front-end routing and layout resolution. Fabricator was dropped on 15 Aug 2026, and the reasoning (plus a correction of two false claims made against it) is in `prd.md` under "Why not Fabricator". Leaf libraries that solve one problem without shaping the architecture, like `ralphjsmit/laravel-seo` and `spatie/laravel-sitemap`, are still welcome.
+
+Because there's no upstream skeleton, Filament version tracking is ours. Keep the surface touching Filament internals small and concentrated.
 
 ## Document precedence
 
@@ -21,7 +35,7 @@ Read in this order. Later documents override earlier ones and say so in a banner
 3. `Docs/architecture.md` — technical design from 22 June. **Partly superseded.** Its banner lists what's dead: the Builder-field editor, single-locale storage, the slug column. Its Phasing section and its Builder-field recommendation are explicitly marked reversed. Everything else in it still holds.
 4. `Docs/research/` — four background briefs (Gutenberg block model, Elementor architecture, Filament plugin development, preview/drafts/GSAP/SEO). Source material, not decisions.
 
-`Docs/quick-win-options.md` is about shipping a client on stock Fabricator, not about this build, and is marked partly stale. Its value here is section 1, on why Fabricator is the foundation.
+`Docs/quick-win-options.md` is about shipping a client on stock Fabricator while this gets built. It is not about this build and its recommendation was reversed for Atelier on 15 Aug 2026.
 
 ## The architecture in one pass
 

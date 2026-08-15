@@ -35,7 +35,7 @@ Block types are defined in code in v1. Creating new block types from the panel i
 
 Laravel 12/13, Filament v4, Livewire 4, Alpine 3, Tailwind 4, GSAP 3.15.
 
-Page model, slug resolution and front-end routing come from [`Z3d0X/filament-fabricator`](https://github.com/z3d0x/filament-fabricator) rather than being rewritten.
+No page-builder dependency. Atelier owns the page model, slug resolution, routing and rendering, so there's no third-party page abstraction to work around or wait on. The reasoning is in `Docs/prd.md` under "Why not Fabricator".
 
 ## Documentation
 

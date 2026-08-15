@@ -4,15 +4,15 @@
 > GitHub: `Abdulkader-Safi/filament-atelier`.
 > Name checked 2026-08-14. `safi/filament-atelier` is free. One near-collision: `blackpig-creatif/atelier`, "artisanal content blocks for FilamentPHP v5", 40 downloads total, 0 stars, last release April 2026. Small enough to ignore, worth knowing if this goes public.
 
-A Laravel + Filament plugin that turns a client's Laravel app into a visual CMS. A dsrpt developer defines the block types in code, Fabricator-style. The client then builds pages from those blocks in a three-pane editor, adding, reordering and editing sections while watching the real page render update as they type. The public site is server-rendered, bilingual (English + Arabic), and SEO-ready.
+A Laravel + Filament plugin that turns a client's Laravel app into a visual CMS. A dsrpt developer defines the block types in code, one PHP class and one Blade view each. The client then builds pages from those blocks in a three-pane editor, adding, reordering and editing sections while watching the real page render update as they type. The public site is server-rendered, bilingual (English + Arabic), and SEO-ready.
 
 Built to be dsrpt's own tool for client websites. One install per site.
 
 ## Status
 
-PRD rewritten 2026-08-14 (v2) after the editor decision changed, then re-scoped the same day: block types are code-defined in v1, authoring block types from the panel moves to v2. Awaiting sign-off. Nothing built.
+PRD rewritten 2026-08-14 (v2) after the editor decision changed, then re-scoped the same day: block types are code-defined in v1, authoring block types from the panel moves to v2. Fabricator dropped 2026-08-15, so Atelier is built from scratch.
 
-Safi is building this in a separate session and directory. These files are the handoff.
+The build is starting. `example/` is a fresh Laravel 13 app for testing, the plugin goes in `packages/filament-atelier`.
 
 ## Files
 
@@ -23,13 +23,13 @@ Safi is building this in a separate session and directory. These files are the h
 - `research/gutenberg-block-model.md` — how Gutenberg blocks work, what to copy and what to avoid.
 - `research/elementor-architecture.md` — how Elementor is built and what to borrow.
 - `research/preview-drafts-gsap-seo.md` — preview patterns, draft/publish/revisions, GSAP in Livewire, SEO and Core Web Vitals.
-- `quick-win-options.md` — from 28 June, which off-the-shelf option to ship a client on while this is being built. Partly stale, it predates FilamentCraft. Section 1, on why Fabricator wins, is the part that still matters here.
+- `quick-win-options.md` — from 28 June, which off-the-shelf option to ship a client on while this is being built. Stale for this build: it recommends Fabricator, which we dropped on 15 Aug. Still useful if a client needs shipping on something off-the-shelf.
 
 ## The core idea in one line
 
 Store the page as a JSON tree of typed blocks, render each block with a Blade view at request time, and show that same render live in an iframe while the client edits.
 
-## Decisions taken (14 Aug 2026)
+## Decisions taken (14 to 15 Aug 2026)
 
 - Three-pane editor in v1: section list left, live iframe centre, settings right. Not the Builder field, and not deferred to v3.
 - Block types are code-defined in v1: a PHP class plus a Blade view, registered at boot. Authoring block types from the panel, Gutenberg-style, is v2.
@@ -37,10 +37,11 @@ Store the page as a JSON tree of typed blocks, render each block with a Blade vi
 - Single site per install. No multi-tenancy.
 - Bilingual from day one, English + Arabic with RTL.
 - First target is the next new dsrpt client site, so the block library is a generic marketing set.
+- Built from scratch, no Fabricator. Not because Fabricator lacks Filament 5 support (it has it) but because our spec replaces four of the five things it provides. 15 Aug.
 
 ## What v1 is and isn't
 
-**Is:** Fabricator's developer model with a visual editor on top. Developer writes the blocks, client arranges and fills them, and sees the result as they work.
+**Is:** code-defined sections with a visual editor on top. Developer writes the blocks, client arranges and fills them, and sees the result as they work.
 
 **Isn't:** a tool for creating new block types from the browser. That's the phase after, and the research for it sits at the bottom of `prd.md`.
 

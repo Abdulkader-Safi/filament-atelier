@@ -1,5 +1,7 @@
 # Filament content options: the quick win
 
+> **Scope note, 2026-08-15.** This document is about shipping a client fast on an off-the-shelf package. For that purpose its recommendation still stands, and its Filament 5 compatibility note on Fabricator was verified correct on 15 Aug 2026 (Fabricator 4.x supports Filament ^5, actively maintained). What no longer holds is the last section's claim that Fabricator is the foundation under Atelier. Atelier is built from scratch. See `prd.md` under "Why not Fabricator".
+
 > Research for the client we need live this week, while the custom page builder is still being built.
 > Verified against filamentphp.com plugin pages and package docs, June 2026. Where the plugin-page "supported version" badge disagrees with the package's own docs, I trust the docs and flag it.
 

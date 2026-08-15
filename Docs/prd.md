@@ -15,13 +15,13 @@ Five decisions taken on 14 Aug 2026:
 2. **Single site per install.** It's a plugin you composer-install into a client's Laravel app and it works. No multi-tenancy.
 3. **Bilingual from day one.** English + Arabic with RTL, because dsrpt's GCC clients need it and retrofitting locales into a stored block tree is a migration over every page.
 4. **First target is the next new dsrpt client site**, not KIF. So the v1 block library is a generic marketing set, not an events set.
-5. **Blocks are code-defined in v1. Creating block types from the panel moves to v2.** v1 is Fabricator's model (a developer writes a PHP class and a Blade view, it appears in the section picker) with a visual editor on top. The client edits content and structure, never block types. Authoring new block types from the panel, Gutenberg-style, is a later phase and carries its own research, kept at the bottom of this doc.
+5. **Blocks are code-defined in v1. Creating block types from the panel moves to v2.** A developer writes a PHP class and a Blade view, and it appears in the section picker, with a visual editor on top. The client edits content and structure, never block types. Authoring new block types from the panel, Gutenberg-style, is a later phase and carries its own research, kept at the bottom of this doc.
 
 One more decision was forced by the research: FilamentCraft already does all of the above and sells for a one-time fee from about $74. Safi's reason for building anyway is that it becomes dsrpt's own tool for client websites, owned and extendable. That's the stated rationale and this PRD assumes it.
 
 ## What v1 actually is, in one paragraph
 
-Fabricator's developer model with a real visual editor. A dsrpt developer defines the block types in code. The client opens a page in the panel, sees the site rendered in the middle pane with the site's own CSS at the site's own width, clicks a section, edits its fields on the right, and watches the render update. They add sections from a picker of the code-defined blocks, drag to reorder, duplicate, hide, delete. The point of the render is judgement the form can't give: whether a headline wraps badly, whether two cards sit unevenly, whether the section reads right in Arabic. Nothing about block *types* is editable from the panel in v1.
+Code-defined sections with a real visual editor on top. A dsrpt developer defines the block types in code. The client opens a page in the panel, sees the site rendered in the middle pane with the site's own CSS at the site's own width, clicks a section, edits its fields on the right, and watches the render update. They add sections from a picker of the code-defined blocks, drag to reorder, duplicate, hide, delete. The point of the render is judgement the form can't give: whether a headline wraps badly, whether two cards sit unevenly, whether the section reads right in Arabic. Nothing about block *types* is editable from the panel in v1.
 
 ## Problem
 
@@ -90,7 +90,32 @@ The goal: a Filament plugin that turns a Laravel app into a CMS where a non-tech
 - **SEO is a first-class requirement.** SSR is mandatory. The canvas is an editing tool, the public render is always Blade SSR. Never inject blocks client-side.
 - **The preview and the public page render through the same code path.** Same Blade views, same layout, same stylesheet, different data source. Any second rendering path for the editor is a bug waiting to happen and defeats the point of the preview.
 - **Performance:** lean DOM, conditional per-block assets, cached output. Don't repeat Elementor's bloat.
-- **Reuse before custom:** `Z3d0X/filament-fabricator` still earns its place for the page model, routing and layout resolution. `pboivin/filament-peek` does not, because its Builder Preview is the modal we're replacing. Read its refresh strategy before writing ours.
+- **No page-builder dependency.** Atelier owns the page model, slug resolution, front-end routing and layout resolution. See "Why not Fabricator" below. `pboivin/filament-peek` is also out, because its Builder Preview is the modal we're replacing. Read its refresh strategy before writing ours.
+- **Reuse still applies to leaf libraries.** `ralphjsmit/laravel-seo`, `spatie/laravel-sitemap` and anything else that solves one problem and doesn't shape our architecture stays in. The rule is about not inheriting someone else's page model, not about writing everything ourselves.
+
+## Why not Fabricator
+
+> Decision taken 15 Aug 2026. It reverses the "build on Fabricator" recommendation in `architecture.md` and in the first version of this PRD.
+
+Both earlier documents said to build on `Z3d0X/filament-fabricator`. We're not.
+
+**First, correct the record on two claims that were made against it.** Fabricator officially supports Filament 5 on its 4.x branch (PHP 8.3+), with a v4-to-v5 upgrade guide in the repo, and it is actively maintained: last push 30 June 2026, three open issues, not archived, 385 stars. Checked 15 Aug 2026. Nobody bailed. If we ever revisit this, revisit it on the real argument below, not on those two.
+
+**The real argument is that we override almost all of it.** Of the five things Fabricator provides, our own spec already replaces four:
+
+| Fabricator provides | Our spec |
+|---|---|
+| A `PageResource` edit screen | Replaced by the three-pane editor |
+| A single `content` column | Replaced by `draft_content` + `published_content` |
+| A slug on the page record | Replaced by the `page_slugs` table, per locale |
+| Layouts + Page Blocks abstraction | Replaced by `BlockRegistry` and our `Block` contract |
+| Front-end routing and layout resolution | Kept |
+
+What's left is a route, a controller and a slug lookup. Taking a dependency that shapes the page model, then overriding the page model, is the worst of both: we'd carry its constraints and its upgrade path without using the parts that justify them. For something dsrpt ships to clients and needs to extend for years, owning that layer outright is worth the few days it costs.
+
+**What this costs, stated plainly.** Feature 02 grows: the `Page` model, slug resolution, front-end routing and layout resolution become ours to write and test. And Filament version tracking is now permanently our job. When Filament 6 lands, nobody upstream does that work for us. That's the trade and it's accepted.
+
+**What this does not change.** Fabricator's developer model is still the right model, and the `Block` contract below is deliberately close to it: a block type is a PHP class plus a Blade view, registered at boot. We're rejecting the dependency, not the design.
 
 ## Data model changes from architecture.md
 
@@ -123,7 +148,7 @@ No `custom_blocks` table in v1. Block types live in code and in the registry, no
 
 ## How a developer defines a block
 
-The whole v1 contract, borrowed from Fabricator and kept deliberately small:
+The whole v1 contract, deliberately small and close to Fabricator's shape because that shape is right:
 
 ```php
 interface Block
@@ -154,7 +179,7 @@ This is the highest-risk part of the build and the first thing to prototype. If 
 ## Plan
 
 1. **Spike the preview loop first.** One page, two hardcoded blocks, three-pane layout, debounced iframe refresh against the real front-end stylesheet. Prove it feels live and looks like the site before building anything else. Kill or redesign here if it doesn't.
-2. **Foundation.** Fabricator skeleton, plugin packaging, `pages` + `page_slugs` + `page_revisions` tables, `BlockRegistry`, design tokens.
+2. **Foundation.** Plugin packaging, the page model, slug resolution and front-end routing, `pages` + `page_slugs` + `page_revisions` tables, `BlockRegistry`, design tokens.
 3. **Block library + rendering.** The `Block` interface, the marketing block set, the raw-HTML block, Blade SSR.
 4. **Editor.** Drag to reorder, add from the picker, duplicate, delete, hide, the settings panel, the width switcher, the language switcher.
 5. **Bilingual.** Per-locale attributes, `/ar/{slug}` routing, RTL layout, hreflang.

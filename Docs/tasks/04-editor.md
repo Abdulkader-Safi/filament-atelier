@@ -12,7 +12,7 @@ Plus a toolbar carrying the width switcher, the language switcher, and Save and 
 
 ## Why we're building it
 
-Fabricator's editing screen is a vertical stack of collapsible forms. On a twelve-section page you're scrolling through accordions trying to remember which "Hero" is the one near the pricing table. The three-pane layout separates structure (left) from detail (right) from result (middle), which is how every editor that non-technical people actually enjoy is built.
+The default Filament approach, and Fabricator's, is a vertical stack of collapsible forms. On a twelve-section page you're scrolling through accordions trying to remember which "Hero" is the one near the pricing table. The three-pane layout separates structure (left) from detail (right) from result (middle), which is how every editor that non-technical people actually enjoy is built.
 
 ## How it should feel
 
@@ -38,7 +38,7 @@ Pages → open a page. The three-pane editor is the edit screen.
 
 ### Layout
 
-- [ ] Custom Filament page registered as the page edit screen, replacing Fabricator's default.
+- [ ] Custom Filament page registered as the page edit screen on our own `PageResource`.
 - [ ] Three-pane responsive layout. Decide and document what happens under about 1024px: the honest answer is that this editor is a desktop tool.
 - [ ] Toolbar: width switcher, language switcher, Save, Publish, a link to view the live page.
 

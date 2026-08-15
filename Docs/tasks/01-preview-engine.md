@@ -10,7 +10,7 @@ Two things make it a preview rather than a screenshot: it refreshes without savi
 
 ## Why we're building it
 
-Without it this is Fabricator, which already exists and is free. A form full of collapsed block panels tells a client nothing about whether their headline wraps onto three lines, whether two cards sit unevenly, or whether the Arabic version reads right. They save, open the site in another tab, look, come back, fix, save again. The preview removes that loop, and it's the whole reason for building the plugin at all.
+Without it this is a stack of collapsible forms, which Fabricator already does for free. A form full of collapsed block panels tells a client nothing about whether their headline wraps onto three lines, whether two cards sit unevenly, or whether the Arabic version reads right. They save, open the site in another tab, look, come back, fix, save again. The preview removes that loop, and it's the whole reason for building the plugin at all.
 
 ## How it should feel
 

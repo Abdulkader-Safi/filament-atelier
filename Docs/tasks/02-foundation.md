@@ -2,9 +2,9 @@
 
 ## What it is
 
-The plumbing everything else sits on: the composer package, the panel plugin registration, the database tables, the `Page` model, the block registry, and the design tokens shared by the editor and the front end.
+The plumbing everything else sits on: the composer package, the panel plugin registration, the database tables, the `Page` model, slug resolution, front-end routing, layout resolution, the block registry, and the design tokens shared by the editor and the front end.
 
-Built on `Z3d0X/filament-fabricator` for the page model, slug resolution and front-end routing. We don't rewrite page routing.
+No page-builder dependency. This feature grew on 15 Aug when Fabricator was dropped, and the page model, routing and layout resolution became ours. The reasoning is in `prd.md` under "Why not Fabricator".
 
 ## Why we're building it
 
@@ -18,7 +18,7 @@ Invisible to the client. For a dsrpt developer, installing this on a fresh Larav
 
 ## In the dashboard
 
-A "Pages" resource appears in the panel nav after install. Nothing else. The three-pane editor replaces its edit screen in feature 04, so at this stage the resource can stay Fabricator's default.
+A "Pages" resource appears in the panel nav after install: list, create, delete, and a plain edit form. Nothing else. The three-pane editor replaces the edit screen in feature 04, so at this stage a stock Filament resource is enough.
 
 ## Tasks
 
@@ -38,7 +38,19 @@ A "Pages" resource appears in the panel nav after install. Nothing else. The thr
 - [ ] `page_slugs`: `page_id`, locale, slug, unique on (locale, slug).
 - [ ] `page_revisions`: `page_id`, content json, `created_by`, label, `created_at`.
 - [ ] `Page` model with the slug relationship and casts.
-- [ ] Route resolution for `/{slug}` reading `published_content` only.
+
+### Routing and page resolution
+
+Previously Fabricator's job. Ours now.
+
+- [ ] Catch-all front-end route for `/{slug}` and `/{locale}/{slug}`, registered last so it never shadows app routes.
+- [ ] Slug resolution against `page_slugs`, returning 404 on a miss.
+- [ ] Nested slugs (`/services/web-design`) decided one way or the other now, not retrofitted.
+- [ ] Public controller reads `published_content` only, never the draft.
+- [ ] Layout resolution: the page's `layout` value picks the Blade layout wrapping the blocks.
+- [ ] Layouts are registerable by the host app, the same way blocks are, so a client site defines its own shell.
+- [ ] A stock `PageResource` for list, create and delete. The edit screen is replaced in feature 04.
+- [ ] Route caching works. Test with `route:cache`, since a catch-all plus a database lookup is where this usually breaks.
 
 ### Registry
 
@@ -55,10 +67,13 @@ A "Pages" resource appears in the panel nav after install. Nothing else. The thr
 
 ## Done when
 
-- `composer require` plus one artisan command on a clean Laravel app gives a working Pages resource and a page rendering at its slug.
+- `composer require` plus one artisan command on the `example/` app gives a working Pages resource and a page rendering at its slug in both locales.
+- The catch-all route resolves published pages, 404s on unknown slugs, and doesn't shadow the app's own routes or the Filament panel.
 - A block type registered in a test service provider is retrievable from the registry.
 - Changing a token value changes both the public page and the preview.
 
 ## Notes
 
-Fabricator gives us the page resource, layout resolution and routing. Where our needs diverge (the `page_slugs` table, the two content columns), extend rather than fork if possible, so upstream Filament version bumps stay cheap.
+Everything here is ours, so Filament version tracking is ours too. Keep the surface that touches Filament internals small and in as few files as possible, because that surface is what breaks on a major version bump.
+
+Read `Docs/research/filament-plugin-development.md` before starting. The service provider conventions changed in Filament v4 and the plugin contract has a specific shape.
