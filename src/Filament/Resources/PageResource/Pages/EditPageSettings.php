@@ -9,6 +9,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 use Safi\Atelier\Filament\Pages\PageEditor;
 use Safi\Atelier\Filament\Resources\PageResource;
+use Safi\Atelier\Filament\Resources\PageResource\Concerns\HandlesPageSlugs;
 use Safi\Atelier\Models\Page;
 
 /**
@@ -17,6 +18,8 @@ use Safi\Atelier\Models\Page;
  */
 class EditPageSettings extends EditRecord
 {
+    use HandlesPageSlugs;
+
     protected static string $resource = PageResource::class;
 
     public function getTitle(): string
@@ -55,35 +58,21 @@ class EditPageSettings extends EditRecord
         ];
     }
 
-    /** Slugs and SEO are separate storage, so load them into the form by hand. */
+    /** Slugs are a separate table, so load them into the form by hand. */
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        /** @var Page $record */
-        $record = $this->record;
-
-        foreach (array_keys(config('atelier.locales')) as $locale) {
-            $data['slugs'][$locale] = $record->slug($locale);
-        }
+        $data['slugs'] = $this->slugsForForm($this->record);
 
         return $data;
     }
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $this->slugsToSave = $data['slugs'] ?? [];
-        unset($data['slugs']);
-
-        return $data;
+        return $this->pullSlugs($data);
     }
-
-    /** @var array<string, string|null> */
-    protected array $slugsToSave = [];
 
     protected function afterSave(): void
     {
-        /** @var Page $record */
-        $record = $this->record;
-
-        $record->setSlugs($this->slugsToSave);
+        $this->applySlugs($this->record);
     }
 }
