@@ -1,0 +1,16 @@
+/*
+ * The plugin's own stylesheet, compiled to resources/dist and registered with
+ * FilamentAsset so a consumer installs with no build step.
+ *
+ * Deliberately no preflight. Filament already ships its own reset, and a
+ * second one loaded into the panel fights it.
+ */
+@layer theme, base, components, utilities;
+
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/utilities.css' layer(utilities);
+
+/* Filament toggles a class on <html>, it does not use prefers-color-scheme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source './../views/filament/**/*.blade.php';

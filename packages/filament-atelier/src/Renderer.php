@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Safi\Atelier;
 
+use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
 
@@ -14,6 +15,27 @@ use Illuminate\Support\Str;
 class Renderer
 {
     public function __construct(protected BlockRegistry $registry) {}
+
+    /**
+     * A translatable value must reach the view as a string.
+     *
+     * Filament's RichEditor keeps a TipTap document while editing, and a bug
+     * once wrote that structure straight into the tree. The editor no longer
+     * does, but a public page must not fatal on data written by an older
+     * version, so convert rather than trust.
+     */
+    protected function toText(mixed $value): string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (is_array($value) && isset($value['type'])) {
+            return RichContentRenderer::make($value)->toHtml();
+        }
+
+        return is_scalar($value) ? (string) $value : '';
+    }
 
     /** @param array<int, array> $tree */
     public function render(array $tree, string $locale, bool $editing = false): string
@@ -71,8 +93,10 @@ class Renderer
             $value = $attributes[$key] ?? null;
 
             if (is_array($value)) {
-                $attributes[$key] = $value[$locale] ?? '';
+                $value = $value[$locale] ?? '';
             }
+
+            $attributes[$key] = $this->toText($value);
         }
 
         return $attributes;

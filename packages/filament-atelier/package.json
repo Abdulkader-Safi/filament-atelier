@@ -1,0 +1,13 @@
+{
+    "name": "filament-atelier",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tailwindcss --input resources/css/atelier.css --output resources/dist/atelier.css --minify",
+        "dev": "tailwindcss --input resources/css/atelier.css --output resources/dist/atelier.css --watch"
+    },
+    "devDependencies": {
+        "@tailwindcss/cli": "^4.0.0",
+        "tailwindcss": "^4.0.0"
+    }
+}

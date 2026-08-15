@@ -56,4 +56,4 @@ GSAP has been free for commercial use since April 2025, including the plugins th
 
 MIT. See `LICENSE.md`.
 
-The MIT licence covers Atelier's own code. It does not extend to dependencies, and GSAP in particular carries its own terms (see the note above).
+The MIT license covers Atelier's own code. It does not extend to dependencies, and GSAP in particular carries its own terms (see the note above).

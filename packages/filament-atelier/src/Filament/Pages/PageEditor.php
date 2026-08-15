@@ -10,6 +10,7 @@ use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use Safi\Atelier\BlockRegistry;
+use Safi\Atelier\Filament\Resources\PageResource;
 use Safi\Atelier\Models\Page;
 
 /**
@@ -22,6 +23,9 @@ use Safi\Atelier\Models\Page;
 class PageEditor extends FilamentPage
 {
     protected string $view = 'atelier::filament.pages.page-editor';
+
+    /** Full-screen shell instead of the panel chrome. The builder owns the viewport. */
+    protected static string $layout = 'atelier::filament.layouts.editor';
 
     protected static bool $shouldRegisterNavigation = false;
 
@@ -50,12 +54,20 @@ class PageEditor extends FilamentPage
         $this->tree = $this->page->draft();
         $this->locale = array_key_first(config('atelier.locales'));
 
-        $this->selectBlock($this->tree[0]['id'] ?? null);
+        // Open on the section list, not on a section. The first thing an
+        // editor wants is the shape of the page, not one block's fields.
+        $this->closeInspector();
     }
 
     public function getTitle(): string
     {
         return $this->page->title;
+    }
+
+    /** The editor's own toolbar is the header. Filament's would just eat space. */
+    public function getHeading(): string
+    {
+        return '';
     }
 
     // Schema ---------------------------------------------------------------
@@ -80,7 +92,7 @@ class PageEditor extends FilamentPage
 
         $this->tree[$index]['attributes'] = $this->mergeLocale(
             $this->tree[$index]['attributes'] ?? [],
-            $this->data ?? [],
+            $this->dehydratedData(),
         );
 
         $this->persist();
@@ -91,7 +103,29 @@ class PageEditor extends FilamentPage
     public function selectBlock(?string $id): void
     {
         $this->selectedId = $id;
-        $this->data = $this->flattenLocale($this->selectedNode()['attributes'] ?? []);
+
+        // The schema is built from the selected block, so the cached one is
+        // stale the moment the selection changes.
+        $this->rebuildForm();
+
+        $this->form->fill($this->flattenLocale($this->selectedNode()['attributes'] ?? []));
+    }
+
+    /**
+     * Filament caches a schema per name. Selecting a different block changes
+     * which components the schema should have, so drop the cache first.
+     */
+    protected function rebuildForm(): void
+    {
+        unset($this->cachedSchemas['form']);
+    }
+
+    /** Back to the section list. The panel shows one thing at a time. */
+    public function closeInspector(): void
+    {
+        $this->selectedId = null;
+        $this->rebuildForm();
+        $this->data = [];
     }
 
     public function addBlock(string $type): void
@@ -205,7 +239,32 @@ class PageEditor extends FilamentPage
         return URL::signedRoute('atelier.preview', [
             'page' => $this->page->getKey(),
             'locale' => $this->locale,
-        ]);
+        ], absolute: false);
+    }
+
+    public function getSelectedSectionProperty(): ?array
+    {
+        if (! $this->selectedId) {
+            return null;
+        }
+
+        return collect($this->sections)->firstWhere('id', $this->selectedId);
+    }
+
+    public function getBackUrlProperty(): string
+    {
+        return PageResource::getUrl('index');
+    }
+
+    /** Absolute and time-limited, because this one leaves the editor. */
+    public function getShareUrlProperty(): string
+    {
+        return URL::temporarySignedRoute(
+            'atelier.preview',
+            now()->addMinutes((int) config('atelier.preview.link_expiry_minutes', 1440)),
+            ['page' => $this->page->getKey(), 'locale' => $this->locale],
+            absolute: false,
+        );
     }
 
     public function getSectionsProperty(): array
@@ -294,6 +353,31 @@ class PageEditor extends FilamentPage
         }
 
         return null;
+    }
+
+    /**
+     * The form's dehydrated state, not the raw Livewire property.
+     *
+     * Fields with a state cast (RichEditor being the one that bites) keep an
+     * internal representation in $data that is not what should be stored.
+     * Reading $data directly wrote TipTap JSON into the block tree, and the
+     * Blade view then tried to echo an array. Dehydrating runs the casts, and
+     * it only works because selectBlock() fills through the form rather than
+     * assigning $data. The two have to stay a pair.
+     * getState() would do it too, but it validates, and validating on every
+     * keystroke is not what a live preview wants.
+     */
+    protected function dehydratedData(): array
+    {
+        // Seed with the raw state, the way getState() does, because
+        // dehydrateState() transforms what is already there rather than
+        // reading it out of the Livewire component itself.
+        $state = ['data' => $this->data ?? []];
+
+        $this->form->dehydrateState($state);
+        $this->form->mutateDehydratedState($state);
+
+        return data_get($state, 'data') ?? [];
     }
 
     /** Per-locale maps down to plain values for the form. */
