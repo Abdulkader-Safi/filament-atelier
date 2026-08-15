@@ -5,18 +5,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Repository layout
 
 ```
-Docs/                        the spec, the authority for what to build
-packages/filament-atelier/   the plugin itself
-example/                     a Laravel 13 app for testing the plugin
+composer.json, src/, config/, database/, resources/, routes/   the package itself
+Docs/                                                          the spec
+example/                                                       a Laravel 13 app for testing
 ```
 
-`example/` is a throwaway host app, not a deliverable. It exists so the plugin can be installed and exercised for real. It's wired to `packages/filament-atelier` through a composer path repository with a symlink, so an edit in the package is live in the example app with no reinstall.
+**The package lives at the repository root**, because Composer and Packagist read `composer.json` from there. It was moved out of `packages/filament-atelier/` on 15 Aug for exactly that reason; nothing could install it while it sat in a subdirectory.
 
-Work happens in `packages/filament-atelier`. Only touch `example/` to set up a test scenario or to reproduce something.
+`example/` is a throwaway host app, not a deliverable. It installs the package through a composer path repository pointing at `..`, so it symlinks and an edit is live with no reinstall. Its 26 tests are the project's test suite for now.
+
+`.gitattributes` export-ignores `example/` and `Docs/`, so `composer require` pulls the package and nothing else.
+
+Only touch `example/` to set up a test scenario or to reproduce something.
 
 ## Status
 
-The build is starting. `Docs/` is complete and `example/` is a fresh Laravel 13 app with no Filament yet. Follow the build order in `Docs/tasks/`, starting with feature 01, the preview spike.
+MVP, working and installable. Blocks, the builder, page settings, SEO and public pages all run. `Docs/features.md` lists what exists, `Docs/installation.md` covers putting it on a project and the known limits. Feature 01 in `Docs/tasks/` is done and records what the preview spike proved.
 
 ## Stack
 

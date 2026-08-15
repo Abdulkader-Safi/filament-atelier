@@ -1,0 +1,15 @@
+* text=auto eol=lf
+
+# Keep `composer require` down to the package itself.
+/example            export-ignore
+/Docs               export-ignore
+/tests              export-ignore
+/.github            export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/CLAUDE.md          export-ignore
+/CLAUDE.local.md    export-ignore
+/package.json       export-ignore
+/package-lock.json  export-ignore
+
+# resources/dist is NOT ignored: it ships compiled so consumers need no build.

@@ -1,8 +1,8 @@
 .DS_Store
 Thumbs.db
 
-/vendor
-/node_modules
+vendor/
+node_modules/
 composer.lock
 package-lock.json
 yarn.lock

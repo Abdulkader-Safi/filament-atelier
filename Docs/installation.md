@@ -151,8 +151,8 @@ In the builder: the sidebar lists sections, clicking one swaps it to that sectio
 Only if you're working on the package itself, not when consuming it:
 
 ```bash
-cd packages/filament-atelier && npm run build   # the editor's own stylesheet
-cd ../../example && php artisan filament:assets
+npm run build                                 # the editor's own stylesheet, from the repo root
+cd example && php artisan filament:assets
 ```
 
 ## Known limits in this MVP
