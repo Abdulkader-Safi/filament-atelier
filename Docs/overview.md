@@ -17,6 +17,7 @@ The build is starting. `example/` is a fresh Laravel 13 app for testing, the plu
 ## Files
 
 - `tasks/` — one markdown file per feature, in build order, each covering what it is, why it exists, how it should feel, how it works in the panel, and its checklist. `tasks/README.md` is the index. This is where the work gets tracked.
+- `installation.md` — putting Atelier on a real project, writing a block, and the MVP's known limits.
 - `prd.md` — the current PRD (v2). Start here. Covers the five decisions taken on 14 Aug, the data model changes, the block interface, the two preview problems, the 10-step plan, and 4 open questions.
 - `architecture.md` — the technical design from 22 June. Still correct on the block tree, registry, CSS strategy and SEO. Superseded on the editor, locales and slugs, see the note at its top.
 - `research/filament-plugin-development.md` — building a Filament plugin, the Builder field, custom fields and pages, assets, and a maturity read on existing packages.

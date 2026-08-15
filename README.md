@@ -6,9 +6,9 @@ A developer defines the sections in code. The client builds pages from them in a
 
 ## Status
 
-Specification stage. There is no code in this repository yet.
+MVP, and installable. Blocks, the builder, page settings, SEO and public pages all work. See `Docs/installation.md` to put it on a project, and the limits at the bottom of that file before you promise anything to a client.
 
-The PRD is written and awaiting sign-off. Everything here is under `Docs/`. When the build starts, it starts with the live preview loop, because that's the only part with real unknowns.
+The repository holds the plugin in `packages/filament-atelier` and a Laravel 13 test app in `example/`.
 
 ## The idea
 
@@ -17,6 +17,16 @@ A page is stored as a JSON tree of typed blocks and rendered by Blade at request
 A block type is one PHP class and one Blade view. The class declares its key, label, icon and category, plus a Filament schema that becomes its settings form. Register it and it shows up in the section picker. Adding a block never means editing a file inside the plugin.
 
 The editor puts the section list on the left, a live iframe in the middle, and the selected section's settings on the right. The iframe loads the public layout and the public stylesheet, so what the client sees is what ships. There's a width switcher for desktop, tablet and mobile, because the point of a preview is catching a headline that wraps onto three lines before anyone else does.
+
+## Install
+
+```bash
+composer require safi/filament-atelier
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate && php artisan storage:link
+```
+
+Register `AtelierPlugin::make()->blocks(DefaultBlocks::all())` in your panel, and point Tailwind at the package's views. Full steps, including the one that fails silently if you skip it, are in `Docs/installation.md`.
 
 ## What v1 covers
 
