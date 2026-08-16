@@ -1,6 +1,6 @@
 # Filament Atelier
 
-![Filament Atelier](https://raw.githubusercontent.com/Abdulkader-Safi/filament-atelier/main/art/atelier.png)
+![Filament Atelier](./art/atelier.png)
 
 A visual page builder for Laravel, built as a Filament plugin.
 
