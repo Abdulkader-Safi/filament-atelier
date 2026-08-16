@@ -1,5 +1,7 @@
 # Filament Atelier
 
+![Filament Atelier](https://raw.githubusercontent.com/Abdulkader-Safi/filament-atelier/main/art/atelier.png)
+
 A visual page builder for Laravel, built as a Filament plugin.
 
 A developer defines the sections in code. The client builds pages from them in a three-pane editor, and sees the real page render as they type. The public site stays server-rendered Blade, bilingual, and fast.

@@ -1,6 +1,7 @@
 * text=auto eol=lf
 
 # Keep `composer require` down to the package itself.
+/art                export-ignore
 /example            export-ignore
 /Docs               export-ignore
 /tests              export-ignore
