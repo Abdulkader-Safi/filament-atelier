@@ -8,7 +8,7 @@ A developer defines the sections in code. The client builds pages from them in a
 
 ## Status
 
-MVP, and installable. The builder, blocks, page settings, per-locale SEO and public pages all work. Read "Not built yet" below and the limits in `Docs/installation.md` before you promise anything to a client.
+MVP, and installable. The builder, blocks, page settings, per-locale SEO and public pages all work. Read "Not built yet" below and the [known limits](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation#known-limits) before you promise anything to a client.
 
 The package is the repository root. `example/` is a Laravel 13 app that installs it for testing, and `Docs/` holds the spec. Both are export-ignored, so `composer require` pulls the package and nothing else.
 
@@ -31,7 +31,7 @@ php artisan vendor:publish --tag=filament-atelier-migrations
 php artisan migrate && php artisan storage:link
 ```
 
-Register `AtelierPlugin::make()->blocks(DefaultBlocks::all())` in your panel, and point Tailwind at the package's views. Full steps, including the one that fails silently if you skip it, are in `Docs/installation.md`.
+Register `AtelierPlugin::make()->blocks(DefaultBlocks::all())` in your panel, and point Tailwind at the package's views. Full steps, including the ones that fail silently if you skip them, are in the [Installation guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation).
 
 ### Upgrading
 
@@ -78,14 +78,18 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 
 ## Documentation
 
-Everything lives in `Docs/`, and later documents override earlier ones.
+**The docs are in the [wiki](https://github.com/Abdulkader-Safi/filament-atelier/wiki).**
 
-- `Docs/prd.md` is the current spec and the authority
-- `Docs/tasks/` is the work breakdown, one file per feature in build order
-- `Docs/architecture.md` is the technical design, partly superseded, with a banner saying which parts
-- `Docs/research/` holds background briefs on Gutenberg, Elementor, Filament plugin development, and preview/drafts/animation/SEO
+- **[Installation](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation)** — install, register the plugin, the three steps
+  that fail silently, using your own layout, upgrading, and the config reference
+- **[Usage](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Usage)** — building a page, the editor, publishing, preview links
+- **[How it works](https://github.com/Abdulkader-Safi/filament-atelier/wiki/How-it-works)** — the block tree, the render path, why the preview
+  is the real page
+- **[Agent quickstart](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Agent-quickstart)** — a start-to-finish setup for a coding agent
 
-Start with `Docs/overview.md` if you want the short version.
+`Docs/` in this repository is the spec and the design history: the PRD, the task
+breakdown, and the research behind the decisions. It's for anyone working on Atelier
+itself, not for using it, and it's export-ignored so `composer require` never pulls it.
 
 ## If you reach for GSAP
 
