@@ -8,7 +8,7 @@ A developer defines the sections in code. The client builds pages from them in a
 
 ## Status
 
-MVP, and installable. Blocks, the builder, page settings, SEO and public pages all work. See `Docs/installation.md` to put it on a project, and the limits at the bottom of that file before you promise anything to a client.
+MVP, and installable. The builder, blocks, page settings, per-locale SEO and public pages all work. Read "Not built yet" below and the limits in `Docs/installation.md` before you promise anything to a client.
 
 The package is the repository root. `example/` is a Laravel 13 app that installs it for testing, and `Docs/` holds the spec. Both are export-ignored, so `composer require` pulls the package and nothing else.
 
@@ -45,24 +45,36 @@ php artisan migrate
 
 `vendor:publish` skips files you already have, so this only ever copies what's new and never overwrites a migration you've edited. Skipping it after an update that adds a table shows up as a "no such table" error the first time that feature runs. `CHANGELOG.md` says when a release needs it.
 
-## What v1 covers
+## What ships today
 
-- Three-pane editor: add, reorder, duplicate, hide and delete sections, with live preview
-- A marketing block set: header, hero, features, logo wall, testimonials, CTA, FAQ, rich text, image, gallery, contact form, footer, plus raw HTML as an escape hatch
-- English and Arabic on every page, with `dir="rtl"` and hreflang
-- Draft and published as separate columns, so editing never touches the live page, plus revision snapshots and shareable signed preview links
-- Per-locale SEO fields, JSON-LD, and a sitemap covering both locales
-- Scroll animations picked from a dropdown, backed by GSAP
-- Design tokens shared by the editor and the front end
-- Per-block asset loading and a Core Web Vitals budget
+- **Three-pane editor.** Add, reorder, duplicate, hide and delete sections, with the live preview beside them. Reordering is up and down buttons, not drag, and new sections land at the end.
+- **Nine blocks:** hero, features, logo wall, testimonials, CTA, FAQ, rich text, image, gallery.
+- **Shared section controls.** A block declares `supports()` and gets background and vertical space in its settings pane, built once rather than per block.
+- **Design tokens.** Colour, font, spacing and width as CSS custom properties, read by the editor preview and the public page from the same layout, so the two cannot drift.
+- **English and Arabic on every page,** with `dir="rtl"`, hreflang, and an Arabic font stack that follows `dir` rather than a locale code.
+- **Draft and published as separate columns,** so editing never touches the live page. Every publish leaves a revision snapshot behind, and preview links are signed and expiring.
+- **Per-locale SEO fields:** meta title, description, social share image and canonical, rendered into the head with Open Graph and Twitter tags.
 
-Block types are defined in code in v1. Creating new block types from the panel is planned for v2.
+## Not built yet
+
+Listed because a page builder is judged on what it does not do:
+
+- **Header, footer, contact form and raw HTML blocks.** The contact form will be presentational, posting to a route you wire yourself.
+- **Sitemap, `robots.txt` and JSON-LD.** Meta, canonical, hreflang and Open Graph are in; structured data is not. The plan is `Docs/tasks/11-seo-v0.2.md`.
+- **Redirects when a slug changes.** Rename a published page today and inbound links 404.
+- **A revisions UI.** Snapshots are written and `restoreRevision()` works, but there is no screen for browsing or comparing them.
+- **Per-block asset loading and a measured performance budget.** No page cache, no per-block CSS or JS, no Lighthouse numbers recorded.
+- **Drag to reorder,** and inserting a section anywhere but the end.
+
+Block types are defined in code, and that is the design rather than a stopgap. Creating block types from the panel is v2 and deliberately parked.
 
 ## Built on
 
-Laravel 12/13, Filament v4, Livewire 4, Alpine 3, Tailwind 4, GSAP 3.15.
+Laravel 12/13, Filament 5, Livewire 4, Alpine 3, Tailwind 4.
 
 No page-builder dependency. Atelier owns the page model, slug resolution, routing and rendering, so there's no third-party page abstraction to work around or wait on. The reasoning is in `Docs/prd.md` under "Why not Fabricator".
+
+Animation belongs to whoever writes the block. A block is your PHP class and your Blade view, so it animates the way you want it to, and Atelier stays out of it.
 
 ## Documentation
 
@@ -75,12 +87,12 @@ Everything lives in `Docs/`, and later documents override earlier ones.
 
 Start with `Docs/overview.md` if you want the short version.
 
-## A note on GSAP
+## If you reach for GSAP
 
-GSAP has been free for commercial use since April 2025, including the plugins that used to be behind Club GreenSock. It is not MIT and it is not open source. It ships fine in client projects, but don't describe it as open source.
+Atelier does not ship GSAP, and animation lives in your own block views. If you use GSAP there: it has been free for commercial use since April 2025, including the plugins that used to be behind Club GreenSock, but it is not MIT and it is not open source. It ships fine in client projects. Don't describe it as open source in a proposal.
 
 ## Licence
 
 MIT. See `LICENSE.md`.
 
-The MIT license covers Atelier's own code. It does not extend to dependencies, and GSAP in particular carries its own terms (see the note above).
+The MIT license covers Atelier's own code. It does not extend to dependencies, and anything you pull into your own block views carries its own terms.
