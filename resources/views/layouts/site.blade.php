@@ -59,6 +59,11 @@
     {{-- The public stylesheet, and the same one the editor preview loads.
          If these ever diverge, the preview stops being worth having. --}}
     @vite(['resources/css/app.css'])
+
+    {{-- Design tokens, after the stylesheet so they win, and inline because
+         the whole block is under a kilobyte. Both the preview and the public
+         page read these, which is what stops the preview drifting. --}}
+    <style>{!! \Safi\Atelier\Tokens::css() !!}body{font-family:var(--atelier-font-sans)}</style>
 </head>
 <body class="bg-white text-neutral-900 antialiased">
     <main data-atelier-canvas>

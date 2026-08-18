@@ -65,11 +65,11 @@ class Renderer
                 : '';
         }
 
-        $attributes = $this->localise(
+        $attributes = $this->resolveTokens($this->localise(
             $node['attributes'] ?? [],
             $block::translatable(),
             $locale,
-        );
+        ));
 
         $children = $node['children'] ?? [];
 
@@ -82,6 +82,24 @@ class Renderer
             'locale' => $locale,
             'editing' => $editing,
         ])->render();
+    }
+
+    /**
+     * Turn every stored `{ "token": "color.primary" }` into a CSS value.
+     *
+     * Done here rather than in each view, so a block author writes
+     * `style="background:{{ $attributes['background'] }}"` and never learns
+     * that tokens exist.
+     */
+    protected function resolveTokens(array $attributes): array
+    {
+        foreach ($attributes as $key => $value) {
+            $attributes[$key] = is_array($value) && ! isset($value['token'])
+                ? $this->resolveTokens($value)
+                : Tokens::resolve($value);
+        }
+
+        return $attributes;
     }
 
     /**

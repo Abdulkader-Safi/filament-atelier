@@ -10,6 +10,13 @@ breaks is called out under **Breaking** with what to do about it.
 
 ### Added
 
+- Design tokens. Colour, font, spacing and width are emitted as CSS custom properties into
+  the head of both the public page and the editor preview, so the two cannot drift.
+  Defaults ship in `Safi\Atelier\Tokens` and `atelier.tokens` overrides them key by key,
+  which means an existing install picks them up without republishing its config. A block
+  attribute stored as `{"token": "color.primary"}` is resolved to
+  `var(--atelier-color-primary)` before the view runs.
+- An Arabic font stack, swapped in by a `[dir="rtl"]` rule rather than by locale code.
 - `Docs/tasks/11-seo-v0.2.md`, the SEO work planned for v0.2.0: sitemap, `robots.txt`,
   JSON-LD, per-page indexing control, slug redirects, and the head markup fixes.
 

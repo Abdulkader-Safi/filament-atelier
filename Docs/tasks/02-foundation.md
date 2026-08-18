@@ -65,14 +65,22 @@ Previously Fabricator's job. Ours now.
 
 ### Design tokens
 
-**None of this exists.** No token config, no custom properties, no `{ "token": ... }`
-anywhere in `src/` or `resources/`. Blocks are hardcoded Tailwind utilities, so a client
-site restyles by overriding CSS rather than by setting tokens. The preview stays honest
-only because both sides load the same hardcoded classes.
+Built 18 Aug 2026 as `Safi\Atelier\Tokens`. Defaults live in PHP and `atelier.tokens`
+overrides them group key by group key, so an install that predates the config key still
+gets a full palette and overriding one colour does not mean restating the rest.
 
-- [ ] Token config: palette, type scale, spacing scale, layout widths.
-- [ ] Emit as CSS custom properties, loaded by both the public layout and the preview.
-- [ ] Blocks reference tokens as `{ "token": "color.primary" }`, never literals.
+- [x] Token config: palette, type scale, spacing scale, layout widths. Colour, font, space
+      and width groups. Deliberately small: a token nothing renders is a token nobody
+      maintains, so the set grows when a block needs one.
+- [x] Emit as CSS custom properties, loaded by both the public layout and the preview.
+      Inline in the head, after the stylesheet so they win, and under a kilobyte. The
+      preview and the public page share the layout, so they cannot drift.
+- [x] Blocks reference tokens as `{ "token": "color.primary" }`, never literals. The
+      renderer resolves them into `var(--atelier-color-primary)` before the view runs, so
+      a block author never learns tokens exist.
+
+The RTL font swap rides on `[dir="rtl"]` rather than a locale code, which closes 05's
+Arabic font stack item and covers a third RTL language for free.
 
 ## Done when
 

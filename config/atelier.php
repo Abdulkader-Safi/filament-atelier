@@ -35,6 +35,20 @@ return [
         ],
     ],
 
+    /*
+    | Design tokens. The shipped palette, type, spacing and widths live in
+    | Safi\Atelier\Tokens::defaults(); anything set here overrides that group
+    | key by key, so you can change one colour without restating the rest.
+    | They are emitted as CSS custom properties into both the public page and
+    | the editor preview, which is what keeps the preview honest.
+    |
+    | 'tokens' => [
+    |     'color' => ['primary' => '#0f766e'],
+    |     'font'  => ['arabic' => '"IBM Plex Sans Arabic", sans-serif'],
+    | ],
+    */
+    'tokens' => [],
+
     'media' => [
         // Where uploaded images land. The disk must be public, or the
         // preview and the live page render broken images.

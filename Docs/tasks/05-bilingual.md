@@ -55,7 +55,7 @@ Untranslated fields should be visible as untranslated, not silently empty and no
 - [x] Locale set from the route, not from a session or a cookie.
 - [x] `dir="rtl"` and `lang="ar"` on the Arabic render.
 - [x] `hreflang` tags on both, pointing at each other. `x-default` is still missing, carried to 11.
-- [ ] Arabic font stack in the design tokens. No tokens and no font stack, so Arabic renders in whatever the browser picks. This is the most visible of the missing token work.
+- [x] Arabic font stack in the design tokens. `font.arabic`, swapped in by a `[dir="rtl"]` rule rather than by locale code, so any RTL language gets it.
 
 ### Editor
 
