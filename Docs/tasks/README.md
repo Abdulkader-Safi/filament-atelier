@@ -16,6 +16,10 @@ Every file follows the same shape:
 Status as of 18 Aug 2026, audited against the code rather than against memory. Every file
 carries a dated banner saying what its own gaps are.
 
+Work on the repository rather than the package (CI, the security policy, the changelog,
+the documentation surface) has no feature file of its own and is tracked at the bottom of
+[02](02-foundation.md).
+
 | #                          | Feature                       | Status         | Why it's here                                                                   |
 | -------------------------- | ----------------------------- | -------------- | ------------------------------------------------------------------------------- |
 | [01](01-preview-engine.md) | Live preview engine           | Done           | The only genuinely hard part. Prove it or redesign before anything else exists. |

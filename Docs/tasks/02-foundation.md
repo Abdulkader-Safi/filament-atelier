@@ -36,6 +36,27 @@ A "Pages" resource appears in the panel nav after install: list, create, delete,
 - [~] `php artisan filament:assets` wiring for the editor's JS and CSS via `FilamentAsset`. CSS only. The editor's JS is an inline Alpine component in the Blade view, which is fine while it is one `Alpine.data` block and wrong the moment it is two.
 - [ ] Install command that does the whole setup in one step. `Docs/installation.md` is five manual steps, one of which (the Tailwind `@source` line) fails silently when skipped. This is the step that most deserves the command.
 
+### Repository, not package
+
+Added 18 Aug 2026. None of this was in the original file, which is why it went undone
+until the Plumb audit named most of it.
+
+- [x] CI running the suite and Pint on every push and pull request. Third-party actions
+      pinned to full commit SHAs, never tags.
+- [x] A PHP 8.3 job holding the `^8.3` floor honest. Pest needs 8.4, so the suite cannot
+      run there; the job checks that the package parses on 8.3 and that a consumer on 8.3
+      can install it.
+- [x] `SECURITY.md`, with GitHub private vulnerability reporting enabled.
+- [x] Dependabot on the workflows, with a seven-day cooldown.
+- [x] `CHANGELOG.md`, Keep a Changelog format, with the migration step called out per
+      release that needs one.
+- [x] The documentation surface: the wiki is where users read, `docs.md` is the single
+      raw-Markdown file the Filament plugin directory renders, and the README points at
+      both. `Docs/` is export-ignored and is the spec, not the manual.
+- [ ] Keep those three in step. Three places describing one plugin will drift, and the
+      wiki already has: its Usage page still teaches `data-atelier-block` by hand rather
+      than `$shared`, and its Home page still says v0.1.0. `Docs/installation.md` is five manual steps, one of which (the Tailwind `@source` line) fails silently when skipped. This is the step that most deserves the command.
+
 ### Tables
 
 - [~] `pages`: title, status, `draft_content` json, `published_content` json, layout, `preview_token`, `published_at`, timestamps. All present except `preview_token`, plus a `seo` json column. `layout` is stored and never read.
