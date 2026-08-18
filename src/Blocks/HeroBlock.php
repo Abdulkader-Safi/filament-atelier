@@ -16,6 +16,11 @@ class HeroBlock extends BaseBlock
         return 'hero';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-rectangle-group';

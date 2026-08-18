@@ -15,6 +15,11 @@ class LogoWallBlock extends BaseBlock
         return 'logo-wall';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function label(): string
     {
         return 'Logo wall';

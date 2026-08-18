@@ -60,7 +60,7 @@ Pages → open a page. The three-pane editor is the edit screen.
 ### Settings pane
 
 - [x] Build the form from the selected block's `schema()`.
-- [ ] Inject the shared controls the block declares in `supports()`. Nothing reads `supports()` (03).
+- [x] Inject the shared controls the block declares in `supports()`. Appended to the block's own schema as a collapsed "Section style" section, so it never crowds the fields the client came for.
 - [x] Mark which fields are reactive, so only those trigger a preview refresh. Each block marks its own fields `->live(debounce: 400)`.
 - [x] Keep unsaved state when switching between sections. There is no unsaved state: every change writes the draft.
 

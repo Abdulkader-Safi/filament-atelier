@@ -1,5 +1,5 @@
 @php $items = $attributes['items'] ?? []; @endphp
-<section data-atelier-block="{{ $id }}" class="px-6 py-16">
+<section {{ $shared->class(['px-6 py-16']) }}>
     <div class="mx-auto max-w-2xl">
         @if ($heading = $attributes['heading'] ?? null)
             <h2 class="mb-8 text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{{ $heading }}</h2>

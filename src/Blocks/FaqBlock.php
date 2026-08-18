@@ -15,6 +15,11 @@ class FaqBlock extends BaseBlock
         return 'faq';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function label(): string
     {
         return 'FAQ';

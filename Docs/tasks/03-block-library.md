@@ -50,7 +50,11 @@ Developers never see a UI for this. Registration is code.
 - [x] Renderer that walks the JSON tree and resolves each node through the registry.
 - [x] Recursive rendering for `children`, for blocks that nest. No shipped block nests yet, so the path is untested by a real block.
 - [x] Unknown block type renders nothing on the public site and shows a clear placeholder in the preview, rather than throwing.
-- [ ] `supports()` handling: shared background, padding and animation controls injected into the settings pane and applied by the renderer, so each block doesn't reimplement them. The method is on the interface and returns `[]` for every block. Nothing reads it. This is the piece that stops blocks growing their own style fields, and feature 08's animation controls have nowhere to attach until it exists.
+- [~] `supports()` handling: shared background, padding and animation controls injected into the settings pane and applied by the renderer, so each block doesn't reimplement them. Built 18 Aug 2026 as `SharedControls`, with background and padding. Animation is the third and belongs to 08, which now has somewhere to attach.
+
+  Every control emits an inline style built from design tokens, never a utility class. A class written in PHP is a class Tailwind never scans, so it would compile in the example app and silently vanish on a client site. Leaving a control unset keeps the block's own styling, because there is no inline style to beat the utility class.
+
+  The renderer hands each view a `$shared` attribute bag carrying the block id and the resolved styles, and the view merges its own classes into it. That removed the `data-atelier-block` line from all nine views rather than adding one.
 
 ### The marketing set
 
@@ -81,6 +85,12 @@ Developers never see a UI for this. Registration is code.
 - A developer adds a thirteenth block type with one class and one Blade view, it appears in the picker with working controls, and no Atelier file was edited (PRD criterion 4).
 - A page built from hero, features, testimonials, CTA, FAQ and contact renders correctly server-side in both locales.
 
-## Open question to settle before building it
+## Settled, 18 Aug 2026
 
-The contact form block: does it submit to a real destination (a `submissions` table, an email, a CRM), or is it presentational, pointing at a route the developer wires up per site? The second is far cheaper and is the current recommendation. Decide before writing the block, not after.
+The contact form block is **presentational**. It renders the form and posts to a route the
+developer wires per site. Atelier owns no submissions table, no spam handling and no
+retention policy, because a page builder that quietly becomes a data processor is a
+liability on every client site it ships to.
+
+The original question and its cheaper-option recommendation stand as written; this is the
+decision, not a reversal.

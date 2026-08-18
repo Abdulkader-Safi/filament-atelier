@@ -16,6 +16,11 @@ class GalleryBlock extends BaseBlock
         return 'gallery';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-squares-2x2';

@@ -14,6 +14,11 @@ class RichTextBlock extends BaseBlock
         return 'rich-text';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function label(): string
     {
         return 'Rich text';

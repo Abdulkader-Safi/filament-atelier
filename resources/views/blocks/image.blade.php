@@ -7,7 +7,7 @@
         default => 'max-w-3xl',
     };
 @endphp
-<section data-atelier-block="{{ $id }}" class="px-6 py-12">
+<section {{ $shared->class(['px-6 py-12']) }}>
     <figure class="mx-auto {{ $max }}">
         @if ($src)
             <img src="{{ $src }}" alt="{{ $attributes['alt'] ?? '' }}" loading="lazy"

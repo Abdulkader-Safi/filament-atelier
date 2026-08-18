@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 use Safi\Atelier\BlockRegistry;
 use Safi\Atelier\Filament\Resources\PageResource;
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\SharedControls;
 
 /**
  * The three-pane editor. Section list left, live preview centre, settings
@@ -77,7 +78,12 @@ class PageEditor extends FilamentPage
         $block = $this->selectedBlock();
 
         return $schema
-            ->components($block ? $block->schema() : [])
+            ->components($block ? [
+                ...$block->schema(),
+                // The controls the block opted into, built once rather than
+                // reimplemented per block.
+                ...SharedControls::schema($block::supports()),
+            ] : [])
             ->statePath('data');
     }
 

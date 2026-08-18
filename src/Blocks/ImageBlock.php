@@ -15,6 +15,11 @@ class ImageBlock extends BaseBlock
         return 'image';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-photo';

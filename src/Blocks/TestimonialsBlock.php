@@ -16,6 +16,11 @@ class TestimonialsBlock extends BaseBlock
         return 'testimonials';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-chat-bubble-bottom-center-text';

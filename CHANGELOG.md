@@ -17,11 +17,20 @@ breaks is called out under **Breaking** with what to do about it.
   attribute stored as `{"token": "color.primary"}` is resolved to
   `var(--atelier-color-primary)` before the view runs.
 - An Arabic font stack, swapped in by a `[dir="rtl"]` rule rather than by locale code.
+- Shared section controls. A block declares `supports()` and gets those controls in its
+  settings pane, built once rather than reimplemented per block. Background and vertical
+  space ship now. Every control emits an inline style built from tokens, never a utility
+  class, because a class written in PHP is a class the host app's Tailwind never scans.
+  Leaving a control unset keeps the block's own styling.
 - `Docs/tasks/11-seo-v0.2.md`, the SEO work planned for v0.2.0: sitemap, `robots.txt`,
   JSON-LD, per-page indexing control, slug redirects, and the head markup fixes.
 
 ### Changed
 
+- Block views take a `$shared` attribute bag from the renderer and merge their own classes
+  into it. A custom block's root element should now be
+  `<section {{ $shared->class([...]) }}>` rather than writing `data-atelier-block` itself.
+  Existing custom blocks keep working; they just do not get the shared controls.
 - Every file in `Docs/tasks/` audited against the code and marked with what is actually
   built. `Docs/tasks/README.md` carries the status of each feature and the gaps that block
   more than their own feature.

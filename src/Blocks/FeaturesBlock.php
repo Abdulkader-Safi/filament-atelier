@@ -16,6 +16,11 @@ class FeaturesBlock extends BaseBlock
         return 'features';
     }
 
+    public static function supports(): array
+    {
+        return ['background', 'padding'];
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-squares-plus';

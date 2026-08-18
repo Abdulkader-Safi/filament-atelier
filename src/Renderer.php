@@ -73,11 +73,16 @@ class Renderer
 
         $children = $node['children'] ?? [];
 
+        $id = $node['id'] ?? Str::random(8);
+
         return view($block::view(), [
             'block' => $block,
             'attributes' => $attributes,
+            // The root element's attributes: the id the editor tracks sections
+            // by, plus whatever the block opted into through supports().
+            'shared' => SharedControls::attributes($block::supports(), $attributes, $id),
             'children' => $children ? $this->render($children, $locale, $editing) : '',
-            'id' => $node['id'] ?? Str::random(8),
+            'id' => $id,
             'node' => $node,
             'locale' => $locale,
             'editing' => $editing,

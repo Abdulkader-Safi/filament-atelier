@@ -3,11 +3,12 @@
     $center = ($attributes['align'] ?? 'left') === 'center';
     $image = Media::url($attributes['image'] ?? null);
 @endphp
-<section
-    data-atelier-block="{{ $id }}"
-    @class(['relative overflow-hidden px-6 py-24 sm:py-32', 'text-center' => $center])
-    @if ($image) style="background-image:url('{{ $image }}');background-size:cover;background-position:center" @endif
->
+<section {{ $shared
+    ->class(['relative overflow-hidden px-6 py-24 sm:py-32', 'text-center' => $center])
+    ->style([
+        "background-image:url('{$image}')" => (bool) $image,
+        'background-size:cover;background-position:center' => (bool) $image,
+    ]) }}>
     @if ($image)
         <div class="absolute inset-0 bg-black/50"></div>
     @endif
