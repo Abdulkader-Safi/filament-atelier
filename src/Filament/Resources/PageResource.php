@@ -46,43 +46,28 @@ class PageResource extends Resource
         $default = array_key_first($locales);
 
         return $schema->components([
-            Section::make()->schema([
-                TextInput::make('title')
-                    ->required()
-                    ->maxLength(255)
-                    ->helperText('Internal name, and the fallback for the meta title.'),
+            // Two facts about the page itself, side by side. Both are shared
+            // across locales: the title is an internal name, and a layout is
+            // structure, which both locales share by design.
+            Section::make()
+                ->schema([
+                    TextInput::make('title')
+                        ->required()
+                        ->maxLength(255)
+                        ->helperText('Internal name, and the fallback for the meta title.'),
 
-                // The shell around the blocks: a navbar and footer, a docs
-                // sidebar, or nothing at all. Page-level rather than per
-                // locale, because the layout is structure and both locales
-                // share one structure.
-                //
-                // Hidden entirely when the app registered no layouts, since a
-                // select with one option is a question with one answer.
-                Select::make('schema.type')
-                    ->label('Page type')
-                    ->options(PageTypes::options())
-                    ->default('WebPage')
-                    ->native(false)
-                    ->live()
-                    ->helperText('What this page is, for search engines. Standard page is right for most.')
-                    ->columnSpanFull(),
-
-                // Only the chosen type's fields, and nothing at all for the
-                // types that need none.
-                Group::make()
-                    ->schema(fn (callable $get) => PageTypes::fields($get('schema.type') ?? 'WebPage'))
-                    ->columns(2)
-                    ->columnSpanFull(),
-
-                Select::make('layout')
-                    ->label('Layout')
-                    ->options(fn () => app(LayoutRegistry::class)->options())
-                    ->placeholder('Default')
-                    ->helperText('The shell wrapped around this page. Leave as Default to use the site-wide one.')
-                    ->native(false)
-                    ->visible(fn () => app(LayoutRegistry::class)->options() !== []),
-            ]),
+                    // Hidden entirely when the app registered no layouts, since
+                    // a select with one option is a question with one answer.
+                    Select::make('layout')
+                        ->label('Layout')
+                        ->options(fn () => app(LayoutRegistry::class)->options())
+                        ->placeholder('Default')
+                        ->helperText('The shell wrapped around this page. Leave as Default to use the site-wide one.')
+                        ->native(false)
+                        ->visible(fn () => app(LayoutRegistry::class)->options() !== []),
+                ])
+                ->columns(2)
+                ->columnSpanFull(),
 
             Tabs::make('Locales')
                 ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
@@ -127,6 +112,32 @@ class PageResource extends Resource
                         ->url()
                         ->helperText("Leave empty to use this page's own URL."),
                 ]))->all())
+                ->columnSpanFull(),
+
+            // Below the per-locale fields, because it is the least often
+            // touched thing on the screen and the answer is Standard page for
+            // most of them. Page-level, not per locale: a page that is a
+            // Service in English is a Service in Arabic.
+            Section::make('Structured data')
+                ->description('What this page is, for search engines. It becomes the JSON-LD in the head.')
+                ->schema([
+                    Select::make('schema.type')
+                        ->label('Page type')
+                        ->options(PageTypes::options())
+                        ->default('WebPage')
+                        ->native(false)
+                        ->live()
+                        ->helperText('Standard page is right for most.')
+                        ->columnSpanFull(),
+
+                    // Only the chosen type's fields, and nothing at all for the
+                    // types that need none.
+                    Group::make()
+                        ->schema(fn (callable $get) => PageTypes::fields($get('schema.type') ?? 'WebPage'))
+                        ->columns(2)
+                        ->columnSpanFull(),
+                ])
+                ->columns(2)
                 ->columnSpanFull(),
         ]);
     }
