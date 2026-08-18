@@ -95,6 +95,12 @@ Panel-level, in a settings page or config:
 
 ### Structured data
 
+**Moved to [12-structured-data.md](12-structured-data.md), 18 Aug 2026.** The four lines
+below were the whole plan for JSON-LD, and JSON-LD is not a four-line feature: it needs a
+site-level settings screen that does not exist, a page type select, and a way for blocks to
+contribute nodes. The list here stays as written so the history is legible.
+
+
 - [ ] JSON-LD emitted from the same partial as the meta tags.
 - [ ] `FAQPage` generated from `FaqBlock`'s repeater. The content is already structured and
       already per-locale, so this is close to free and is the highest-value item here.

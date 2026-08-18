@@ -32,7 +32,8 @@ the documentation surface) has no feature file of its own and is tracked at the 
 | [08](08-animation.md)      | Animation                     | Dropped        | Animation lives in each block's own view. Nothing was built.                    |
 | [09](09-performance.md)    | Performance                   | Barely started | Conditional assets, CSS cache, Core Web Vitals.                                 |
 | [10](10-verification.md)   | Verification                  | Not started    | The runs that prove the success criteria, not a vibe check.                     |
-| [11](11-seo-v0.2.md)       | SEO depth (v0.2.0)            | Not started    | The half of 07 that never shipped: sitemap, JSON-LD, redirects, robots.         |
+| [11](11-seo-v0.2.md)       | SEO depth (v0.2.0)            | Mostly done    | Sitemap, robots, redirects and noindex shipped. JSON-LD moved to 12.            |
+| [12](12-structured-data.md)| Structured data (JSON-LD)     | Planned        | The full schema list, three sources, and the site settings screen it needs.     |
 
 ### What blocks what
 
