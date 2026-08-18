@@ -84,8 +84,13 @@ Panel-level, in a settings page or config:
 
 ### Indexing control
 
-- [ ] `noindex` / `nofollow` per page per locale, emitted as `<meta name="robots">`.
-- [ ] A noindex page is excluded from the sitemap. One switch, both effects.
+- [x] `noindex` / `nofollow` per page per locale, emitted as `<meta name="robots">`. Two
+      independent toggles: a page can be indexed and still not pass link credit. The tag is
+      emitted only when it says something, because `index, follow` is what every crawler
+      assumes anyway.
+- [x] A noindex page is excluded from the sitemap. One switch, both effects. Decided per
+      locale, so an English page can be listed while its Arabic translation is not, and the
+      alternates drop with it.
 - [ ] `/` and `/{default}/home` both serve the home page today. Decide one, 301 the other.
 
 ### Structured data
@@ -100,15 +105,21 @@ Panel-level, in a settings page or config:
 
 ### Sitemap and robots
 
-- [ ] `spatie/laravel-sitemap` as a dependency, or a route that builds the XML directly.
-      A sitemap of published pages is about forty lines, and the package brings a crawler
-      we do not need. Decide before starting.
-- [ ] `/sitemap.xml` route, both locales, with `xhtml:link` hreflang alternates per entry.
-- [ ] `lastmod` from `published_at`, which the table already stores and nothing reads.
-- [ ] Drafts, noindexed pages and preview URLs excluded.
-- [ ] `robots.txt` published as a stub pointing at the sitemap, and disallowing the panel
-      and the preview route.
-- [ ] Regenerated or cache-busted on publish and unpublish, not on a schedule.
+- [x] `spatie/laravel-sitemap` as a dependency, or a route that builds the XML directly.
+      **Decided: written, no dependency.** The package's job is crawling a site to discover
+      URLs, and we already know every URL we have. `Safi\Atelier\Sitemap` is the forty lines
+      that were left.
+- [x] `/sitemap.xml` route, both locales, with `xhtml:link` hreflang alternates per entry.
+- [x] `lastmod` from `published_at`, which the table already stores and nothing reads.
+- [x] Drafts, noindexed pages and preview URLs excluded.
+- [~] `robots.txt` published as a stub pointing at the sitemap, and disallowing the panel
+      and the preview route. Served from a route rather than published as a file. The catch
+      is documented rather than solved: Laravel ships a real `public/robots.txt`, and the
+      web server answers that before Laravel runs, so the host app deletes it or copies the
+      `Sitemap:` line across. A package cannot tell which one the app meant.
+- [!] Regenerated or cache-busted on publish and unpublish, not on a schedule. Nothing to
+      regenerate: the sitemap is built per request from two queries. Revisit if a site gets
+      big enough for that to show up in a profile.
 
 ### Redirects
 

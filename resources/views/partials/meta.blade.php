@@ -24,6 +24,19 @@
     <meta name="robots" content="noindex, nofollow">
 @elseif ($page)
     @php
+        // Only emitted when it says something. "index, follow" is the default
+        // every crawler already assumes, so a tag saying it is noise.
+        $robots = array_filter([
+            $page->seoFlag($locale, 'noindex') ? 'noindex' : null,
+            $page->seoFlag($locale, 'nofollow') ? 'nofollow' : null,
+        ]);
+    @endphp
+
+    @if ($robots)
+        <meta name="robots" content="{{ implode(', ', $robots) }}">
+    @endif
+
+    @php
         $description = $page->seo($locale, 'meta_description');
         $ogImage = \Safi\Atelier\Media::url($page->seo($locale, 'og_image'));
         $canonical = $page->seo($locale, 'canonical') ?: $page->url($locale);

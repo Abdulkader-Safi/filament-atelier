@@ -233,6 +233,32 @@ Defaults live in `Safi\Atelier\Tokens` and `atelier.tokens` overrides them key b
 
 The Arabic font swap rides on a `[dir="rtl"]` rule rather than a locale code, so a third RTL language gets it for free.
 
+## SEO
+
+Each page carries per-locale meta title, meta description, social share image and canonical
+URL, rendered into the head with Open Graph and Twitter tags alongside `hreflang` between
+locales.
+
+Two toggles per locale control indexing. Marking a locale **noindex** emits the robots tag
+and drops that URL from the sitemap, one switch for both. **Nofollow** is independent: a
+page can be indexed and still not pass link credit.
+
+A sitemap is served at `/sitemap.xml`, listing every published, indexable page in every
+locale with `xhtml:link` alternates and `lastmod` from the publish time. Drafts and
+noindexed pages never appear.
+
+`/robots.txt` points at it and disallows the preview route and the panel. **Laravel ships a
+real `public/robots.txt`, and a file on disk is served before any route runs**, so delete
+that file to use this one, or copy the `Sitemap:` line into yours. Set
+`atelier.robots.disallow_panel` to your panel path, or `null` to leave it crawlable.
+
+### Renaming a slug
+
+Changing a published page's slug writes a 301 from the old URL, and the public route
+consults those before it 404s. The redirect stores the page rather than a target slug, so a
+page renamed twice sends both old URLs to wherever it lives now, with no chain to follow.
+An unpublished target 404s instead: sending someone to a 404 is worse than the 404 itself.
+
 ## Bilingual pages
 
 Translatable attributes hold a per-locale map inside one tree, so both languages share one section order. A missing translation falls back to the default locale rather than rendering a hole.
@@ -252,6 +278,7 @@ Each locale has its own slug row, its own SEO fields and its own URL, with `href
 | `media.disk` | Disk for uploads. Must be public. |
 | `media.directory` | Folder within that disk. |
 | `revisions.keep` | Snapshots kept per page, pruned on publish. |
+| `robots.disallow_panel` | Panel path to disallow in `robots.txt`. `null` leaves it crawlable. |
 
 ## Upgrading
 
@@ -271,8 +298,7 @@ Worth knowing before you promise anything to a client:
 
 - **Block types are code only.** Creating them from the panel is not built, and that is deliberate: it is what stops a client breaking the design.
 - **Reordering is arrow buttons, not drag,** and new sections are added at the end.
-- **No sitemap, `robots.txt` or JSON-LD.** Meta, canonical, hreflang and Open Graph are in; structured data is not.
-- **No redirects when a slug changes.** Renaming a published page 404s its inbound links.
+- **No JSON-LD.** Meta, canonical, hreflang, Open Graph and a sitemap are in; structured data is not.
 - **No revisions UI.** Snapshots are written and restore works from code.
 - **No header, footer, contact form or raw HTML block** in the shipped set yet.
 - **Arabic shares the section order with English.** One tree, translated text, by design.

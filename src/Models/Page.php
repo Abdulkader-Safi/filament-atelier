@@ -194,6 +194,24 @@ class Page extends Model
         return data_get($this->seo, "{$locale}.{$key}") ?: null;
     }
 
+    /**
+     * A yes or no SEO setting.
+     *
+     * Separate from seo() because that returns a string and coerces an empty
+     * value to null, which is right for a meta description and wrong for a
+     * checkbox.
+     */
+    public function seoFlag(string $locale, string $key): bool
+    {
+        return (bool) data_get($this->seo, "{$locale}.{$key}");
+    }
+
+    /** Whether search engines are told to keep this locale of the page out. */
+    public function isIndexable(string $locale): bool
+    {
+        return ! $this->seoFlag($locale, 'noindex');
+    }
+
     /** Falls back to the page title so an unfilled field still renders something sane. */
     public function metaTitle(string $locale): string
     {

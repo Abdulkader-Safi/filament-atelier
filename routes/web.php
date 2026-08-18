@@ -5,6 +5,8 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Route;
 use Safi\Atelier\Http\Controllers\PageController;
 use Safi\Atelier\Http\Controllers\PreviewController;
+use Safi\Atelier\Http\Controllers\RobotsController;
+use Safi\Atelier\Http\Controllers\SitemapController;
 
 // Relative signature: the preview is same-origin, and binding the signature
 // to the host breaks the moment you browse 127.0.0.1 while APP_URL says
@@ -12,6 +14,14 @@ use Safi\Atelier\Http\Controllers\PreviewController;
 Route::middleware(['web', 'signed:relative'])
     ->get('atelier/preview/{page}/{locale}', PreviewController::class)
     ->name('atelier.preview');
+
+// Both are ordinary routes, so an app that defines its own wins. robots.txt in
+// particular is usually a real file in public/, which the web server serves
+// before Laravel is reached at all.
+Route::middleware('web')->group(function () {
+    Route::get('sitemap.xml', SitemapController::class)->name('atelier.sitemap');
+    Route::get('robots.txt', RobotsController::class)->name('atelier.robots');
+});
 
 // Public pages. Registered last and matched loosely, so this never shadows an
 // app's own routes; Laravel matches in registration order.

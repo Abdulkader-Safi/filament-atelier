@@ -63,7 +63,7 @@ change to the first one, so an existing install picks it up by publishing migrat
 
 ### Housekeeping
 
-- [!] Regenerate the sitemap on publish and on unpublish (feature 07). Blocked: there is no sitemap. Carried to 11.
+- [!] Regenerate the sitemap on publish and on unpublish (feature 07). Not needed: the sitemap built in 11 reads the pages table per request, so publishing changes it with nothing to invalidate.
 - [!] Clear any cached page output on publish (feature 09). Blocked: there is no page cache. Carried to 09.
 
 ## Done when

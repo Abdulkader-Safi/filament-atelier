@@ -56,6 +56,17 @@ return [
         'directory' => 'atelier',
     ],
 
+    /*
+    | robots.txt. Atelier serves one at /robots.txt pointing at the sitemap,
+    | but only if the app has no `public/robots.txt`, because a real file is
+    | served before any route runs. Laravel ships one, so delete it or copy
+    | the Sitemap line across.
+    */
+    'robots' => [
+        // Also disallow the panel. Set to null to leave it crawlable.
+        'disallow_panel' => '/admin',
+    ],
+
     'revisions' => [
         // Snapshots kept per page. Oldest are pruned on publish.
         'keep' => 20,

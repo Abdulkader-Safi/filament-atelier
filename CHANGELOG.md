@@ -10,6 +10,16 @@ breaks is called out under **Breaking** with what to do about it.
 
 ### Added
 
+- **A sitemap at `/sitemap.xml`**, both locales, with `xhtml:link` alternates per entry and
+  `lastmod` from `published_at`, which the table already stored and nothing read. Drafts and
+  noindexed pages are excluded. Written rather than pulled in: `spatie/laravel-sitemap`
+  exists to crawl a site and discover URLs, and Atelier already knows every URL it has.
+- **A `robots.txt`** pointing at the sitemap and disallowing the preview route and the panel.
+  Note that Laravel ships a real `public/robots.txt`, and the web server answers that before
+  any route runs, so delete it or copy the `Sitemap:` line into it.
+- **Per-page, per-locale `noindex` and `nofollow` toggles.** One switch keeps a page out of
+  search results and out of the sitemap. The tag is emitted only when it says something,
+  since `index, follow` is what every crawler assumes anyway.
 - **Redirects when a slug changes.** Renaming a published page used to 404 every inbound
   link to it, silently and permanently. Changing a slug now writes a 301 from the old one,
   and the public route consults those before it gives up. The redirect stores the page

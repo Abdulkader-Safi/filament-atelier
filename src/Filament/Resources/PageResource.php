@@ -9,6 +9,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
@@ -77,6 +78,14 @@ class PageResource extends Resource
                         // 403s on S3, which is the worst way for it to break.
                         ->visibility('public')
                         ->helperText('1200 by 630 is the safe size.'),
+
+                    Toggle::make("seo.{$code}.noindex")
+                        ->label('Hide from search engines')
+                        ->helperText('Adds a noindex tag and drops the page from the sitemap. The page stays public.'),
+
+                    Toggle::make("seo.{$code}.nofollow")
+                        ->label('Tell search engines not to follow its links')
+                        ->helperText('Independent of the above. A page can be indexed and still not pass link credit.'),
 
                     TextInput::make("seo.{$code}.canonical")
                         ->label('Canonical URL')

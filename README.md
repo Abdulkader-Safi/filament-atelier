@@ -54,14 +54,14 @@ php artisan migrate
 - **English and Arabic on every page,** with `dir="rtl"`, hreflang, and an Arabic font stack that follows `dir` rather than a locale code.
 - **Draft and published as separate columns,** so editing never touches the live page. Every publish leaves a revision snapshot behind, and preview links are signed and expiring.
 - **Per-locale SEO fields:** meta title, description, social share image and canonical, rendered into the head with Open Graph and Twitter tags.
+- **A sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes,** so renaming a page doesn't 404 its inbound links.
 
 ## Not built yet
 
 Listed because a page builder is judged on what it does not do:
 
 - **Header, footer, contact form and raw HTML blocks.** The contact form will be presentational, posting to a route you wire yourself.
-- **Sitemap, `robots.txt` and JSON-LD.** Meta, canonical, hreflang and Open Graph are in; structured data is not. The plan is `Docs/tasks/11-seo-v0.2.md`.
-- **Redirects when a slug changes.** Rename a published page today and inbound links 404.
+- **JSON-LD.** Meta, canonical, hreflang, Open Graph, a sitemap and per-page noindex are in; structured data is not. The plan is `Docs/tasks/11-seo-v0.2.md`.
 - **A revisions UI.** Snapshots are written and `restoreRevision()` works, but there is no screen for browsing or comparing them.
 - **Per-block asset loading and a measured performance budget.** No page cache, no per-block CSS or JS, no Lighthouse numbers recorded.
 - **Drag to reorder,** and inserting a section anywhere but the end.
