@@ -5,9 +5,17 @@ declare(strict_types=1);
 return [
 
     /*
-    | Locales the builder edits. The first is the default and lives at /{slug};
-    | the rest live at /{locale}/{slug}. Changing this after pages exist means
-    | migrating the per-locale maps inside every block tree, so decide early.
+    | Locales the builder edits. The FIRST ONE IS THE DEFAULT: it lives at
+    | /{slug} with no prefix, the editor opens on it, and a missing translation
+    | falls back to it. The rest live at /{locale}/{slug}.
+    |
+    | Put Arabic first and Arabic becomes the default, with English at
+    | /en/{slug}. Nothing else needs changing.
+    |
+    | Decide early, both the set and the order. Adding or removing a locale
+    | means migrating the per-locale maps inside every block tree. Reordering
+    | needs no data migration, but it changes every URL on the site and writes
+    | no redirects, because the slugs themselves never changed.
     */
     'locales' => [
         'en' => ['label' => 'English', 'dir' => 'ltr'],
