@@ -33,6 +33,12 @@ class Page extends Model
         return $this->hasMany(PageSlug::class, 'page_id');
     }
 
+    /** Old URLs that still point here. Written when a slug changes. */
+    public function redirects(): HasMany
+    {
+        return $this->hasMany(PageRedirect::class, 'page_id');
+    }
+
     /** The working block tree. Always an array, never null. */
     public function draft(): array
     {
@@ -143,10 +149,28 @@ class Page extends Model
                 $slug = Str::slug($this->title) ?: 'page-'.$this->getKey();
             }
 
-            $this->slugs()->updateOrCreate(['locale' => $locale], ['slug' => $slug]);
-        }
+            $previous = $this->slug($locale);
 
-        $this->unsetRelation('slugs');
+            // This page is taking the slug, so any redirect still pointing an
+            // old URL here is now a loop waiting to happen. Whoever claims a
+            // slug owns it.
+            PageRedirect::where('locale', $locale)->where('from_slug', $slug)->delete();
+
+            $this->slugs()->updateOrCreate(['locale' => $locale], ['slug' => $slug]);
+
+            if ($previous !== null && $previous !== $slug) {
+                // Keyed on the unique pair rather than on this page's rows, so
+                // it can never collide with a redirect another page left behind.
+                PageRedirect::updateOrCreate(
+                    ['locale' => $locale, 'from_slug' => $previous],
+                    ['page_id' => $this->getKey(), 'status' => 301],
+                );
+            }
+
+            // The next locale reads its own previous slug, so don't hand it a
+            // collection that predates the write above.
+            $this->unsetRelation('slugs');
+        }
     }
 
     /** The public URL for a locale. The first configured locale has no prefix. */

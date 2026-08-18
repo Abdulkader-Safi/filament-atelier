@@ -21,6 +21,7 @@ class AtelierServiceProvider extends PackageServiceProvider
             ->hasMigrations([
                 'create_atelier_tables',
                 'create_atelier_page_revisions_table',
+                'create_atelier_page_redirects_table',
             ]);
     }
 

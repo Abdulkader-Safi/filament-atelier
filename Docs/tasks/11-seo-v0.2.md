@@ -112,11 +112,19 @@ Panel-level, in a settings page or config:
 
 ### Redirects
 
-- [ ] `atelier_redirects` table: from slug, locale, page id, status code.
-- [ ] Changing a slug writes a 301 from the old one. This is the silent link-rot fix and
-      it is the reason this section exists.
-- [ ] The public route checks redirects before it 404s.
-- [ ] A redirect is dropped when a new page claims that slug, so the two never fight.
+- [x] `atelier_page_redirects` table: locale, from slug, page id, status code, unique on (locale, from slug). Named for the convention the other tables already use.
+- [x] Changing a slug writes a 301 from the old one. This is the silent link-rot fix and
+      it is the reason this section exists. Done 18 Aug 2026 in `Page::setSlugs()`, which
+      is the one path both the create and the edit screen go through.
+- [x] The public route checks redirects before it 404s. An unpublished target still 404s,
+      because redirecting someone to a 404 is worse than the 404 itself.
+- [x] A redirect is dropped when a new page claims that slug, so the two never fight.
+      Whoever claims a slug owns it.
+
+The target is stored as the page rather than as a slug, which was not in the original
+plan and is what makes chains impossible: a page renamed twice leaves two rows both
+resolving to wherever it lives now, so there is nothing to follow and nothing to clean up.
+Six tests.
 
 ### Block markup
 

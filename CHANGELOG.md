@@ -8,6 +8,16 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Added
+
+- **Redirects when a slug changes.** Renaming a published page used to 404 every inbound
+  link to it, silently and permanently. Changing a slug now writes a 301 from the old one,
+  and the public route consults those before it gives up. The redirect stores the page
+  rather than a target slug, so a page renamed twice sends both old URLs to wherever it
+  lives now, with no chain to follow. An unpublished target still 404s, because redirecting
+  someone to a 404 is worse than the 404. **Needs `vendor:publish
+  --tag=filament-atelier-migrations` and `migrate`.**
+
 ## [0.1.4] - 2026-08-18
 
 The head no longer disappears when an app supplies its own layout, and the README stops

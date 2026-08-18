@@ -4,10 +4,11 @@ declare(strict_types=1);
 
 namespace Safi\Atelier\Http\Controllers;
 
-use Illuminate\Http\Response;
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\Models\PageRedirect;
 use Safi\Atelier\Models\PageSlug;
 use Safi\Atelier\Renderer;
+use Symfony\Component\HttpFoundation\Response;
 
 class PageController
 {
@@ -36,7 +37,9 @@ class PageController
 
         $record = PageSlug::where('locale', $locale)->where('slug', $slug)->first();
 
-        abort_if($record === null, 404);
+        if ($record === null) {
+            return $this->redirectOr404($locale, $slug);
+        }
 
         /** @var Page $page */
         $page = $record->page;
@@ -52,5 +55,29 @@ class PageController
             'preview' => false,
             'blocks' => $this->renderer->render($page->published(), $locale),
         ]);
+    }
+
+    /**
+     * A slug nobody claims might still be one this site used to answer on.
+     *
+     * The redirect stores the page rather than a target slug, so a page
+     * renamed twice sends both old URLs to wherever it lives now, with no
+     * chain to follow. An unpublished target 404s: redirecting to a 404 is
+     * worse than the 404 itself.
+     */
+    protected function redirectOr404(string $locale, string $slug): Response
+    {
+        $redirect = PageRedirect::with('page')
+            ->where('locale', $locale)
+            ->where('from_slug', $slug)
+            ->first();
+
+        $target = $redirect?->page?->isPublished()
+            ? $redirect->page->url($locale)
+            : null;
+
+        abort_if($target === null, 404);
+
+        return redirect()->to($target, $redirect->status);
     }
 }
