@@ -141,6 +141,11 @@ class PageResource extends Resource
                     // Schema typed here rather than derived from the page's
                     // blocks. A page can carry FAQ or breadcrumb data whatever
                     // it is built from, including nothing.
+                    // The safety net for blocks that do not describe
+                    // themselves. A block can generate its own schema, but
+                    // most blocks are written by whoever installed this, and
+                    // nobody should have to edit a PHP class to get an FAQ
+                    // into the head.
                     Tabs::make('Schema')
                         ->tabs([
                             Tab::make('FAQ')
@@ -156,6 +161,7 @@ class PageResource extends Resource
                                         ->collapsed()
                                         ->defaultItems(0)
                                         ->addActionLabel('Add a question')
+                                        ->helperText('Type them here when nothing on the page generates them. The answers should still be somewhere a visitor can read, in prose or anywhere else; a question that appears nowhere on the page is against the search engines\' own rules.')
                                         ->columnSpanFull(),
                                 ])])
                                 ->columns(1),

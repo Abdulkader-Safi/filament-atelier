@@ -286,6 +286,57 @@ real `public/robots.txt`, and a file on disk is served before any route runs**, 
 that file to use this one, or copy the `Sitemap:` line into yours. Set
 `atelier.robots.disallow_panel` to your panel path, or `null` to leave it crawlable.
 
+### Structured data
+
+Every page emits one `<script type="application/ld+json">` holding a graph: the
+`Organization` (or the LocalBusiness subtype set on the Site details screen), the `WebSite`,
+this `WebPage`, a `BreadcrumbList` derived from a nested slug, and whichever page type the
+page picked.
+
+**Page type** is a select on the page settings screen: standard page, about, contact,
+listing, article, service, product, event or person. Picking one reveals the few fields that
+type needs. Page-shaped types refine the `WebPage` node; thing-shaped types get their own
+node linked through `mainEntity`, because a page about a product is not a product.
+
+There are two ways to get the rest into the head, and you will use both.
+
+**A block can describe itself.** Implement `structuredData()` and the block contributes nodes
+built from data the client already typed into it:
+
+```php
+public static function structuredData(array $attributes, string $locale, string $url): array
+{
+    return [[
+        '@type' => 'FAQPage',
+        '@id' => StructuredData::id($url, 'faq'),
+        'inLanguage' => $locale,
+        'mainEntity' => collect($attributes['items'] ?? [])->map(fn (array $item) => [
+            '@type' => 'Question',
+            'name' => $item['question'],
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => $item['answer']],
+        ])->all(),
+    ]];
+}
+```
+
+The attributes arrive collapsed to the locale with tokens resolved, exactly as the view
+receives them, so the schema cannot describe something different from what rendered. Nodes
+sharing an `@id` merge, which is how two FAQ blocks on one page become one `FAQPage`. The
+shipped `FaqBlock` does this already.
+
+**Or it can be typed on the page.** Under **Structured data**, a tab per schema type: FAQ
+questions and a breadcrumb trail, per locale, on a page built from anything at all.
+
+That second path is not a fallback, it is the normal one for a site whose blocks you wrote
+yourself. A custom FAQ section has no `structuredData()` unless somebody remembered to add
+it, and nobody should have to edit a PHP class to get an FAQ into the head. Typed entries win
+over derived ones, so typing a question a block already provides replaces it rather than
+listing it twice.
+
+⚠️ Google expects FAQ data to correspond to something a visitor can see on the page. Typed
+questions are for content that is there in another form, prose most often, not for questions
+that appear nowhere.
+
 ### Pages Atelier does not own
 
 A real client site is rarely only Atelier pages. There is usually a blog or a services
@@ -387,7 +438,6 @@ Worth knowing before you promise anything to a client:
 
 - **Block types are code only.** Creating them from the panel is not built, and that is deliberate: it is what stops a client breaking the design.
 - **Reordering is arrow buttons, not drag,** and new sections are added at the end.
-- **No JSON-LD.** Meta, canonical, hreflang, Open Graph and a sitemap are in; structured data is not.
 - **No revisions UI.** Snapshots are written and restore works from code.
 - **No header, footer, contact form or raw HTML block** in the shipped set yet.
 - **Arabic shares the section order with English.** One tree, translated text, by design.
