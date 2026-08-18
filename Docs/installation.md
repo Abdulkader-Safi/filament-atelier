@@ -19,6 +19,24 @@ php artisan storage:link
 
 `storage:link` matters. Uploaded images go to the `public` disk, and without the link every image in the builder and on the site is broken.
 
+## Upgrading an existing install
+
+New tables ship as new migration files, never as an edit to one that already ran, so
+re-publish after every update:
+
+```bash
+composer update safi/filament-atelier
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate
+```
+
+`vendor:publish` skips files you already have, so this copies only what is new. Skipping it
+fails late rather than loudly: the panel loads and the missing table surfaces as
+`no such table: atelier_...` the first time someone uses the feature that needs it.
+
+`CHANGELOG.md` says which releases need it. The unreleased one does, for
+`atelier_page_revisions`.
+
 ## 2. Register the plugin
 
 In your panel provider:

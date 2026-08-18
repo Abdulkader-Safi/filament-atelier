@@ -33,6 +33,18 @@ php artisan migrate && php artisan storage:link
 
 Register `AtelierPlugin::make()->blocks(DefaultBlocks::all())` in your panel, and point Tailwind at the package's views. Full steps, including the one that fails silently if you skip it, are in `Docs/installation.md`.
 
+### Upgrading
+
+New tables ship as new migration files rather than as edits to one that already ran on your database, so re-publish after every update:
+
+```bash
+composer update safi/filament-atelier
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate
+```
+
+`vendor:publish` skips files you already have, so this only ever copies what's new and never overwrites a migration you've edited. Skipping it after an update that adds a table shows up as a "no such table" error the first time that feature runs. `CHANGELOG.md` says when a release needs it.
+
 ## What v1 covers
 
 - Three-pane editor: add, reorder, duplicate, hide and delete sections, with live preview
