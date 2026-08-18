@@ -8,6 +8,14 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-08-18
+
+The SEO release: a sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes.
+
+**This release adds a table.** Run
+`php artisan vendor:publish --tag=filament-atelier-migrations` and `php artisan migrate`
+after updating, or renaming a slug fails on a missing `atelier_page_redirects`.
+
 ### Added
 
 - **A sitemap at `/sitemap.xml`**, both locales, with `xhtml:link` alternates per entry and
@@ -272,7 +280,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.4...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.1...v0.1.2
