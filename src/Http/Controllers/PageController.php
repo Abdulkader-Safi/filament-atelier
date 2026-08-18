@@ -23,8 +23,12 @@ class PageController
         $default = array_key_first($locales);
 
         // /{slug} is the default locale. /{locale}/{slug} is everything else.
+        // The first segment is only a locale when it names one, so /services/web-design
+        // puts both segments back into the slug rather than dropping the second and
+        // serving /services with a 200, which is worse than a 404.
         if ($locale !== null && ! array_key_exists($locale, $locales)) {
-            [$locale, $slug] = [$default, $locale];
+            $slug = $slug === null ? $locale : "{$locale}/{$slug}";
+            $locale = $default;
         }
 
         $locale ??= $default;

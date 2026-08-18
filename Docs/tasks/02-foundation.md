@@ -2,7 +2,7 @@
 
 > **Status, 18 Aug 2026.** Mostly shipped. Open: the install command, `page_revisions`,
 > per-page layout resolution, `schema_version`, and design tokens, which nothing in the
-> codebase implements. One bug: nested slugs serve the wrong page with a 200.
+> codebase implements.
 
 ## What it is
 
@@ -49,7 +49,7 @@ Previously Fabricator's job. Ours now.
 
 - [x] Catch-all front-end route for `/{slug}` and `/{locale}/{slug}`, registered last so it never shadows app routes.
 - [x] Slug resolution against `page_slugs`, returning 404 on a miss.
-- [!] Nested slugs (`/services/web-design`) decided one way or the other now, not retrofitted. **Broken, and it fails the bad way.** `PageController` reads the first segment as a locale, and when it is not one it reassigns `$slug = $locale` and discards everything after it. A page stored at `services/web-design` is unreachable, and the URL returns 200 with the `services` page rendered instead of a 404. Verified 18 Aug 2026. Either support the full path or 404 it, but not this.
+- [x] Nested slugs (`/services/web-design`) decided one way or the other now, not retrofitted. **Decided: supported.** A slug is the whole path after the locale, stored as one string in `page_slugs`, so `services/web-design` is a row like any other and needs no parent relationship. Until 18 Aug 2026 the controller read the first segment as a locale and discarded the rest, which served `/services` with a 200 rather than a 404. Fixed, with two tests.
 - [x] Public controller reads `published_content` only, never the draft.
 - [ ] Layout resolution: the page's `layout` value picks the Blade layout wrapping the blocks. The column exists, nothing reads it. Both controllers use the single `config('atelier.layout')`.
 - [ ] Layouts are registerable by the host app, the same way blocks are, so a client site defines its own shell. There is no layout registry. Swapping `atelier.layout` is the only lever, and doing so loses the whole SEO head, which is why 11 pulls the head into a partial.

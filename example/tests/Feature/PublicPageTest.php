@@ -86,3 +86,17 @@ it('outputs per-locale seo into the head', function () {
         ->assertSee('<title>Custom title</title>', escape: false)
         ->assertSee('Custom description');
 });
+
+it('serves a nested slug rather than the page named by its first segment', function () {
+    publishedPage('Services', 'services');
+    publishedPage('Web design', 'services/web-design');
+
+    get('/services/web-design')->assertOk()->assertSee('Web design heading');
+    get('/services')->assertOk()->assertSee('Services heading');
+});
+
+it('404s a nested slug no page claims', function () {
+    publishedPage('Services', 'services');
+
+    get('/services/nope')->assertNotFound();
+});

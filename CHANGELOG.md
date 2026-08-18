@@ -19,11 +19,15 @@ breaks is called out under **Breaking** with what to do about it.
   built. `Docs/tasks/README.md` carries the status of each feature and the gaps that block
   more than their own feature.
 
+### Fixed
+
+- A nested slug such as `services/web-design` was unreachable. The public route read the
+  first path segment as a locale and discarded the rest, so the URL returned 200 with the
+  `services` page rendered instead of the one asked for. A slug is now the whole path
+  after the locale.
+
 ### Known issues
 
-- A nested slug such as `services/web-design` is unreachable. The public route reads the
-  first path segment as a locale and discards the rest, so the URL returns 200 with the
-  `services` page rendered instead of a 404.
 - Every meta tag lives inside `atelier::layouts.site`. An app that points
   `config('atelier.layout')` at its own view gets no title, description, canonical,
   hreflang or Open Graph tags.
