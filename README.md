@@ -56,7 +56,7 @@ php artisan migrate
 - **Draft and published as separate columns,** so editing never touches the live page. Every publish leaves a revision snapshot behind, and preview links are signed and expiring.
 - **Per-locale SEO fields:** meta title, description, social share image and canonical, rendered into the head with Open Graph and Twitter tags.
 - **A sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes,** so renaming a page doesn't 404 its inbound links.
-- **JSON-LD on every page:** the organisation, the site, the page, breadcrumbs, and a page type you pick. FAQ schema either generated from an FAQ block or typed on the settings screen. A blog or services resource that isn't an Atelier page can [add its own URLs](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO#adding-urls-atelier-does-not-own) to the sitemap.
+- **[JSON-LD on every page](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Structured-data):** the organisation with its opening hours and contact points, the site, the page, breadcrumbs, and a page type picked from nine. FAQ schema either generated from an FAQ block or typed on the settings screen. A blog or services resource that isn't an Atelier page can [add its own URLs](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO#adding-urls-atelier-does-not-own) to the sitemap and share the same graph.
 
 ## Not built yet
 
@@ -124,6 +124,7 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 
 - **[Publishing](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Publishing)** — drafts, publishing, preview links, revisions
 - **[SEO](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO)** — meta, the sitemap, slug redirects, and adding URLs Atelier doesn't own
+- **[Structured data](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Structured-data)** — the JSON-LD graph, page types, FAQ, and giving your own routes the same graph
 - **[Configuration](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Configuration)** — every key in `config/atelier.php`
 - **[Troubleshooting](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Troubleshooting)** — everything that fails quietly, in the order it catches people
 
