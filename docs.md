@@ -70,7 +70,7 @@ The first locale is the default and lives at `/{slug}`. Every other locale lives
 
 ## Using your own layout
 
-`atelier.layout` points at the Blade view wrapping the rendered blocks, and pointing it at your own is the normal way to give a client site its own shell. Your layout receives `$blocks` (the rendered HTML), `$locale`, `$page`, `$title` and `$preview`.
+`atelier.layout` points at the Blade view wrapping the rendered blocks, and pointing it at your own is the normal way to give a client site its own shell. That is the site-wide default; **[Layouts](#layouts)** below covers registering several and letting each page pick one. Either way a layout receives `$blocks` (the rendered HTML), `$locale`, `$page`, `$title` and `$preview`.
 
 Include the two partials:
 
@@ -117,6 +117,40 @@ The builder is full screen, outside the panel chrome:
 Every change writes the draft immediately, so there is no Save button. The live page reads a separate column and cannot change until you press Publish. An unpublished page 404s, so a half-finished page cannot leak. Hiding a section keeps it in the editor and removes it from the public page, which is the reversible alternative to deleting.
 
 Publishing snapshots the tree into `atelier_page_revisions`, pruned to `revisions.keep`. `Page::restoreRevision()` copies one back into the draft. There is no UI for browsing revisions yet.
+
+## Layouts
+
+A site is rarely one shell. Marketing pages want a navbar and a footer, documentation wants
+a sidebar, a landing page often wants neither. The blocks are the same either way, so the
+shell is a per-page choice.
+
+Register the layouts you have written where you register blocks:
+
+```php
+AtelierPlugin::make()
+    ->blocks(DefaultBlocks::all())
+    ->layouts([
+        'site' => ['label' => 'Navbar and footer', 'view' => 'layouts.site'],
+        'docs' => ['label' => 'Sidebar', 'view' => 'layouts.docs'],
+        'bare' => 'layouts.bare',
+    ]);
+```
+
+The short form is just a view name, and the label comes from the key. A **Layout** dropdown
+appears in page settings listing them, and hides itself when no layouts are registered.
+Leaving it empty uses the site-wide `atelier.layout`.
+
+The choice is page-level rather than per locale, because a layout is structure and both
+locales share one structure by design.
+
+A layout receives `$blocks`, `$page`, `$locale`, `$title` and `$preview`. Echo `$blocks`
+unescaped inside an element carrying `data-atelier-canvas`, which is what the editor swaps
+on every preview refresh, and include both partials as shown above. The editor's preview
+renders through the same layout the public page will use: a preview through a different
+shell is a preview that lies.
+
+Delete a layout from the panel provider and pages still naming it fall back to the site-wide
+default rather than erroring.
 
 ## Writing a block
 

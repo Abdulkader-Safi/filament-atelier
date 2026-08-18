@@ -50,6 +50,7 @@ php artisan migrate
 - **Three-pane editor.** Add, reorder, duplicate, hide and delete sections, with the live preview beside them. Reordering is up and down buttons, not drag, and new sections land at the end.
 - **Nine blocks:** hero, features, logo wall, testimonials, CTA, FAQ, rich text, image, gallery.
 - **Shared section controls.** A block declares `supports()` and gets background and vertical space in its settings pane, built once rather than per block.
+- **[Multiple layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts), picked per page.** Register a navbar-and-footer shell, a docs sidebar and anything else; the client chooses one from a dropdown in page settings.
 - **Design tokens.** Colour, font, spacing and width as CSS custom properties, read by the editor preview and the public page from the same layout, so the two cannot drift.
 - **English and Arabic on every page,** with `dir="rtl"`, hreflang, and an Arabic font stack that follows `dir` rather than a locale code.
 - **Draft and published as separate columns,** so editing never touches the live page. Every publish leaves a revision snapshot behind, and preview links are signed and expiring.
@@ -110,6 +111,7 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 - **[Installation](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation)** — install, register the plugin, the three steps
   that fail silently, using your own layout, upgrading, and the config reference
 - **[Usage](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Usage)** — building a page, the editor, publishing, preview links
+- **[Layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts)** — registering multiple shells and picking one per page
 - **[SEO](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO)** — what every page emits, the sitemap, slug redirects, and putting
   non-Atelier URLs like a blog into the sitemap
 - **[How it works](https://github.com/Abdulkader-Safi/filament-atelier/wiki/How-it-works)** — the block tree, the render path, why the preview
