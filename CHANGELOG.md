@@ -12,10 +12,12 @@ breaks is called out under **Breaking** with what to do about it.
 
 - `SECURITY.md`, and GitHub private vulnerability reporting enabled on the repository, so
   a researcher has somewhere to send a report that is not a public issue.
-- CI. The suite runs on PHP 8.3 and 8.4 against the example app on every push and pull
-  request, and Pint checks formatting. Third-party actions are pinned to full commit SHAs
-  rather than tags, because a tag can be re-pointed at malicious code by whoever controls
-  the action.
+- CI. The suite runs on PHP 8.4 against the example app on every push and pull request, and
+  Pint checks formatting. A separate job holds the `^8.3` floor honest: the suite cannot run
+  there because Pest requires 8.4, so it checks the two halves the constraint actually
+  promises, that the package parses on 8.3 and that a consumer on 8.3 can install it.
+  Third-party actions are pinned to full commit SHAs rather than tags, because a tag can be
+  re-pointed at malicious code by whoever controls the action.
 - `.github/dependabot.yml`, covering the workflows with a seven-day cooldown, so an update
   is never merged the moment it is published.
 

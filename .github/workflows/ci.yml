@@ -22,8 +22,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The floor the package claims, and the current stable.
-        php: ['8.3', '8.4']
+        # Only 8.4 and up. Pest 5 requires PHP ^8.4, so the suite cannot run on
+        # the 8.3 floor the package itself supports. The floor job below checks
+        # what that constraint actually promises.
+        php: ['8.4']
 
     steps:
       # Third-party actions are pinned to a full commit SHA, never a tag. A tag
@@ -60,6 +62,44 @@ jobs:
       - name: Run the suite
         working-directory: example
         run: php artisan test
+
+  floor:
+    name: PHP 8.3 floor
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.3'
+          coverage: none
+
+      # composer.json promises `"php": "^8.3"`. The suite cannot verify that,
+      # because Pest needs 8.4, so verify the two halves the promise is made of:
+      # the code parses on 8.3, and someone on 8.3 can install the thing.
+      - name: The package parses on 8.3
+        run: |
+          find src config routes database -type f \( -name '*.php' -o -name '*.stub' \) \
+            -print0 | xargs -0 -n1 -P4 php -l
+
+      - name: A consumer on 8.3 can install it
+        run: |
+          mkdir -p "$RUNNER_TEMP/floor"
+          cd "$RUNNER_TEMP/floor"
+          cat > composer.json <<JSON
+          {
+              "require": {},
+              "minimum-stability": "stable",
+              "repositories": [
+                  { "type": "path", "url": "$GITHUB_WORKSPACE" }
+              ]
+          }
+          JSON
+          composer require safi/filament-atelier:@dev \
+            --no-interaction --no-progress --dry-run
 
   lint:
     name: Pint
