@@ -65,6 +65,14 @@ class AtelierDemoSeeder extends Seeder
             'same_as' => ['https://github.com/Abdulkader-Safi/filament-atelier'],
             'price_range' => '$$',
             'area_served' => 'Dubai, Abu Dhabi',
+            'opening_hours' => [
+                ['days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday'], 'opens' => '09:00', 'closes' => '18:00'],
+                ['days' => ['Friday'], 'opens' => '09:00', 'closes' => '12:00'],
+            ],
+            'contact_points' => [
+                ['type' => 'sales', 'telephone' => '+971 4 000 0000', 'languages' => 'Arabic, English'],
+            ],
+            'founding_date' => '2019-01-01',
         ]]);
     }
 

@@ -448,3 +448,105 @@ it('still builds a trail from the slug when nothing is chosen', function () {
 
     expect(graphOf('/services/web-design')['BreadcrumbList']['itemListElement'])->toHaveCount(3);
 });
+
+it('emits opening hours, grouped the way a person thinks about them', function () {
+    SiteSettings::current()->update(['data' => [
+        'name' => ['en' => 'dsrpt'],
+        'type' => 'Store',
+        'opening_hours' => [
+            ['days' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday'], 'opens' => '09:00', 'closes' => '18:00'],
+            ['days' => ['Saturday'], 'opens' => '10:00', 'closes' => '14:00'],
+        ],
+    ]]);
+
+    schemaPage();
+    $hours = graphOf('/about')['Store']['openingHoursSpecification'];
+
+    expect($hours)->toHaveCount(2)
+        ->and($hours[0]['@type'])->toBe('OpeningHoursSpecification')
+        ->and($hours[0]['dayOfWeek'])->toBe(['Monday', 'Tuesday', 'Wednesday', 'Thursday'])
+        ->and($hours[0]['opens'])->toBe('09:00')
+        ->and($hours[1]['dayOfWeek'])->toBe(['Saturday']);
+});
+
+it('says who answers and in which language', function () {
+    SiteSettings::current()->update(['data' => [
+        'name' => ['en' => 'dsrpt'],
+        'area_served' => 'Dubai, Abu Dhabi',
+        'contact_points' => [
+            ['type' => 'sales', 'telephone' => '+971 4 000 0000', 'languages' => 'Arabic, English'],
+        ],
+    ]]);
+
+    schemaPage();
+    $points = graphOf('/about')['Organization']['contactPoint'];
+
+    expect($points)->toHaveCount(1)
+        ->and($points[0]['contactType'])->toBe('sales')
+        ->and($points[0]['availableLanguage'])->toBe(['Arabic', 'English'])
+        ->and($points[0]['areaServed'])->toBe(['Dubai', 'Abu Dhabi']);
+});
+
+it('carries the legal details when they are filled in', function () {
+    SiteSettings::current()->update(['data' => [
+        'name' => ['en' => 'dsrpt'],
+        'founding_date' => '2019-01-01',
+        'employees' => '12',
+        'vat_id' => '100123456700003',
+    ]]);
+
+    schemaPage();
+    $org = graphOf('/about')['Organization'];
+
+    expect($org['foundingDate'])->toBe('2019-01-01')
+        ->and($org['numberOfEmployees'])->toBe('12')
+        ->and($org['vatID'])->toBe('100123456700003')
+        ->and($org)->not->toHaveKey('taxID');
+});
+
+it('completes a product offer with condition and a price end date', function () {
+    $page = schemaPage();
+    $page->update(['schema' => ['type' => 'Product', 'data' => [
+        'price' => '99',
+        'currency' => 'AED',
+        'availability' => 'InStock',
+        'condition' => 'NewCondition',
+        'price_valid_until' => '2027-01-01',
+    ]]]);
+
+    $offer = graphOf('/about')['Product']['offers'];
+
+    expect($offer['itemCondition'])->toBe('https://schema.org/NewCondition')
+        ->and($offer['priceValidUntil'])->toBe('2027-01-01')
+        ->and($offer['availability'])->toBe('https://schema.org/InStock');
+});
+
+it('defaults an event to going ahead, in person, and says so when it is not', function () {
+    $page = schemaPage();
+    $page->update(['schema' => ['type' => 'Event', 'data' => ['start' => '2026-09-01 18:00']]]);
+
+    $event = graphOf('/about')['Event'];
+
+    expect($event['eventStatus'])->toBe('https://schema.org/EventScheduled')
+        ->and($event['eventAttendanceMode'])->toBe('https://schema.org/OfflineEventAttendanceMode');
+
+    // A cancelled event with no status keeps advertising itself.
+    $page->update(['schema' => ['type' => 'Event', 'data' => [
+        'start' => '2026-09-01 18:00',
+        'status' => 'EventCancelled',
+        'attendance' => 'OnlineEventAttendanceMode',
+    ]]]);
+
+    expect(graphOf('/about')['Event']['eventStatus'])->toBe('https://schema.org/EventCancelled')
+        ->and(graphOf('/about')['Event']['eventAttendanceMode'])->toBe('https://schema.org/OnlineEventAttendanceMode');
+});
+
+it('leaves hours and contact points out when nobody filled them in', function () {
+    SiteSettings::current()->update(['data' => ['name' => ['en' => 'Bare']]]);
+
+    schemaPage();
+    $org = graphOf('/about')['Organization'];
+
+    expect($org)->not->toHaveKey('openingHoursSpecification')
+        ->and($org)->not->toHaveKey('contactPoint');
+});

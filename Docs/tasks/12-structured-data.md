@@ -306,22 +306,21 @@ actually gains, not by how interesting the schema is.
 
 The cheapest work here, because the node exists and the client already knows the answer.
 
-- [ ] **`openingHoursSpecification`** on LocalBusiness. A local business with no hours is half
-      a listing, and hours are the single most looked-at fact in a local result. Needs a
-      day-and-time repeater on the Site details screen, which is why it was skipped the first
-      time round. **The highest value item on this page.**
-- [ ] **`contactPoint`** on Organization: a phone number with a `contactType`, the languages
+- [x] **`openingHoursSpecification`** on LocalBusiness. One row per set of hours, listing the
+      days that share them, which is both the shape schema.org wants and the way a person
+      thinks: weekdays nine to six, Friday morning only.
+- [x] **`contactPoint`** on Organization: a phone number with a `contactType`, the languages
       it is answered in, and the areas it serves. A bare `telephone` says none of that, and
       "we answer in Arabic and English" is a real differentiator in the GCC.
-- [ ] **Product completeness.** `aggregateRating`, `itemCondition`, `priceValidUntil`, and for
-      merchant listings `shippingDetails` and `hasMerchantReturnPolicy`. Google demoted
-      product results without the last two, so a Product node today is incomplete rather than
-      wrong.
-- [ ] **Event completeness.** `eventStatus` (scheduled, postponed, cancelled, moved online)
-      and `eventAttendanceMode` (offline, online, mixed). Both became close to expected after
-      2020, and a cancelled event with no `eventStatus` keeps advertising itself.
-- [ ] **`Organization` legal details:** `foundingDate`, `vatID`, `taxID`, `numberOfEmployees`.
-      Cheap fields on a screen that already exists, and a trust signal for a business search.
+- [~] **Product completeness.** `itemCondition` and `priceValidUntil` are in. Still missing:
+      `aggregateRating`, which needs review data the package does not hold, and
+      `shippingDetails` with `hasMerchantReturnPolicy`, which are merchant facts belonging to
+      a shop rather than to a page builder. Worth revisiting only for a client actually
+      selling through the site.
+- [x] **Event completeness.** `eventStatus` and `eventAttendanceMode`, defaulting to going
+      ahead and in person, so the common case needs no thought and cancelling is one select.
+- [x] **`Organization` legal details:** `foundingDate`, `vatID`, `taxID`, `numberOfEmployees`,
+      in a collapsed section because most sites will not fill them in.
 
 ### B. Types worth adding
 

@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Safi\Atelier\Filament\Pages;
 
 use Filament\Actions\Action;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page as FilamentPage;
 use Filament\Schemas\Components\Section;
@@ -134,9 +137,71 @@ class SiteDetails extends FilamentPage
                         TextInput::make('area_served')
                             ->label('Areas served')
                             ->helperText('Comma separated, e.g. Dubai, Abu Dhabi.'),
+
+                        // The single most looked-at fact in a local search
+                        // result, and the one most sites never mark up.
+                        Repeater::make('opening_hours')
+                            ->label('Opening hours')
+                            ->schema([
+                                CheckboxList::make('days')
+                                    ->label('Days')
+                                    ->options(self::days())
+                                    ->columns(4)
+                                    ->required()
+                                    ->columnSpanFull(),
+                                TimePicker::make('opens')->label('Opens')->seconds(false)->required(),
+                                TimePicker::make('closes')->label('Closes')->seconds(false)->required(),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->addActionLabel('Add hours')
+                            ->itemLabel(fn (array $state) => self::hoursLabel($state))
+                            ->helperText('One row per set of hours. Group the days that share them, and add a second row for the days that differ.')
+                            ->columnSpanFull(),
                     ])
                     ->columns(2)
                     ->visible(fn (callable $get) => $get('type') !== 'Organization'),
+
+                Section::make('Contact points')
+                    ->description('Who answers, and in which language. A bare telephone number says none of that.')
+                    ->schema([
+                        Repeater::make('contact_points')
+                            ->label('Contact points')
+                            ->schema([
+                                Select::make('type')
+                                    ->label('For')
+                                    ->options([
+                                        'customer support' => 'Customer support',
+                                        'sales' => 'Sales',
+                                        'billing support' => 'Billing',
+                                        'technical support' => 'Technical support',
+                                        'reservations' => 'Reservations',
+                                    ])
+                                    ->native(false)
+                                    ->required(),
+                                TextInput::make('telephone')->label('Telephone')->tel(),
+                                TextInput::make('email')->label('Email')->email(),
+                                TextInput::make('languages')
+                                    ->label('Languages')
+                                    ->helperText('Comma separated, e.g. Arabic, English.'),
+                            ])
+                            ->columns(2)
+                            ->defaultItems(0)
+                            ->addActionLabel('Add a contact point')
+                            ->itemLabel(fn (array $state) => $state['type'] ?? 'Contact point')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Legal')
+                    ->description('Optional, and a trust signal for a business search.')
+                    ->schema([
+                        DatePicker::make('founding_date')->label('Founded'),
+                        TextInput::make('employees')->label('Employees')->numeric(),
+                        TextInput::make('vat_id')->label('VAT number'),
+                        TextInput::make('tax_id')->label('Tax number'),
+                    ])
+                    ->columns(2)
+                    ->collapsed(),
             ])
             ->statePath('data');
     }
@@ -155,6 +220,32 @@ class SiteDetails extends FilamentPage
         SiteSettings::current()->update(['data' => $this->form->getState()]);
 
         Notification::make()->title('Saved')->success()->send();
+    }
+
+    /** @return array<string, string> */
+    public static function days(): array
+    {
+        return [
+            'Monday' => 'Mon',
+            'Tuesday' => 'Tue',
+            'Wednesday' => 'Wed',
+            'Thursday' => 'Thu',
+            'Friday' => 'Fri',
+            'Saturday' => 'Sat',
+            'Sunday' => 'Sun',
+        ];
+    }
+
+    /** "Mon, Tue, Wed 09:00 to 18:00", for the collapsed repeater row. */
+    protected static function hoursLabel(array $state): string
+    {
+        $days = collect($state['days'] ?? [])
+            ->map(fn (string $day) => self::days()[$day] ?? $day)
+            ->implode(', ');
+
+        $hours = trim(($state['opens'] ?? '').' to '.($state['closes'] ?? ''), ' to');
+
+        return trim($days.' '.$hours) ?: 'Hours';
     }
 
     /**

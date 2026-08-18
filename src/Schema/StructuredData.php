@@ -189,6 +189,12 @@ class StructuredData
             'geo' => $this->geo(),
             'priceRange' => SiteSettings::get('price_range'),
             'areaServed' => $this->areaServed(),
+            'openingHoursSpecification' => $this->openingHours(),
+            'contactPoint' => $this->contactPoints(),
+            'foundingDate' => SiteSettings::get('founding_date'),
+            'numberOfEmployees' => SiteSettings::get('employees'),
+            'vatID' => SiteSettings::get('vat_id'),
+            'taxID' => SiteSettings::get('tax_id'),
         ]);
 
         if ($logo) {
@@ -245,6 +251,76 @@ class StructuredData
         return $areas->isEmpty()
             ? null
             : $areas->map(fn (string $area) => ['@type' => 'Place', 'name' => $area])->all();
+    }
+
+    /**
+     * When the doors are open.
+     *
+     * One specification per set of hours, listing the days that share them,
+     * which is the shape schema.org wants and also the shape a person thinks
+     * in: weekdays nine to six, Saturday ten to two.
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    protected function openingHours(): ?array
+    {
+        $hours = collect(SiteSettings::get('opening_hours', []))
+            ->filter(fn (mixed $row) => is_array($row) && filled($row['days'] ?? null))
+            ->map(fn (array $row) => Graph::node([
+                '@type' => 'OpeningHoursSpecification',
+                'dayOfWeek' => array_values((array) $row['days']),
+                'opens' => $row['opens'] ?? null,
+                'closes' => $row['closes'] ?? null,
+            ]))
+            ->filter()
+            ->values()
+            ->all();
+
+        return $hours ?: null;
+    }
+
+    /**
+     * Who answers, and in which language.
+     *
+     * `telephone` on the organisation says there is a number. A contact point
+     * says it is answered by sales, in Arabic and English, which is the part
+     * a search result can actually use.
+     *
+     * @return array<int, array<string, mixed>>|null
+     */
+    protected function contactPoints(): ?array
+    {
+        $points = collect(SiteSettings::get('contact_points', []))
+            ->filter(fn (mixed $row) => is_array($row))
+            ->map(fn (array $row) => Graph::node([
+                '@type' => 'ContactPoint',
+                'contactType' => $row['type'] ?? null,
+                'telephone' => $row['telephone'] ?? null,
+                'email' => $row['email'] ?? null,
+                'availableLanguage' => $this->list($row['languages'] ?? null),
+                'areaServed' => $this->list(SiteSettings::get('area_served')),
+            ]))
+            ->filter()
+            ->values()
+            ->all();
+
+        return $points ?: null;
+    }
+
+    /**
+     * A comma separated field into a list.
+     *
+     * @return array<int, string>|null
+     */
+    protected function list(?string $value): ?array
+    {
+        $items = collect(explode(',', (string) $value))
+            ->map(fn (string $item) => trim($item))
+            ->filter()
+            ->values()
+            ->all();
+
+        return $items ?: null;
     }
 
     /** The site itself, so a page can say which site it is part of. */
@@ -354,6 +430,10 @@ class StructuredData
             'availability' => ($availability = $page->schemaValue('availability'))
                 ? 'https://schema.org/'.$availability
                 : null,
+            'itemCondition' => ($condition = $page->schemaValue('condition'))
+                ? 'https://schema.org/'.$condition
+                : null,
+            'priceValidUntil' => $page->schemaValue('price_valid_until'),
             'url' => $page->url($locale),
         ]);
 
@@ -387,6 +467,10 @@ class StructuredData
             'Event' => [
                 'startDate' => $page->schemaValue('start'),
                 'endDate' => $page->schemaValue('end'),
+                // A cancelled event with no status keeps advertising itself.
+                'eventStatus' => 'https://schema.org/'.$page->schemaValue('status', 'EventScheduled'),
+                'eventAttendanceMode' => 'https://schema.org/'
+                    .$page->schemaValue('attendance', 'OfflineEventAttendanceMode'),
                 'location' => Graph::node([
                     '@type' => 'Place',
                     'name' => $page->schemaValue('location'),

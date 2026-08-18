@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Safi\Atelier\Schema;
 
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
@@ -102,6 +103,18 @@ class PageTypes
                         'PreOrder' => 'Pre-order',
                     ])
                     ->native(false),
+                Select::make('schema.data.condition')
+                    ->label('Condition')
+                    ->options([
+                        'NewCondition' => 'New',
+                        'UsedCondition' => 'Used',
+                        'RefurbishedCondition' => 'Refurbished',
+                        'DamagedCondition' => 'Damaged',
+                    ])
+                    ->native(false),
+                DatePicker::make('schema.data.price_valid_until')
+                    ->label('Price valid until')
+                    ->helperText('A price with no end date is treated as stale.'),
             ],
 
             'Event' => [
@@ -113,6 +126,27 @@ class PageTypes
                 TextInput::make('schema.data.location_address')->label('Address'),
                 TextInput::make('schema.data.price')->label('Ticket price')->numeric(),
                 TextInput::make('schema.data.currency')->label('Currency')->maxLength(3),
+                Select::make('schema.data.status')
+                    ->label('Status')
+                    ->options([
+                        'EventScheduled' => 'Going ahead',
+                        'EventRescheduled' => 'Rescheduled',
+                        'EventPostponed' => 'Postponed',
+                        'EventCancelled' => 'Cancelled',
+                        'EventMovedOnline' => 'Moved online',
+                    ])
+                    ->default('EventScheduled')
+                    ->native(false)
+                    ->helperText('Cancelling here is what stops it being advertised.'),
+                Select::make('schema.data.attendance')
+                    ->label('Attendance')
+                    ->options([
+                        'OfflineEventAttendanceMode' => 'In person',
+                        'OnlineEventAttendanceMode' => 'Online',
+                        'MixedEventAttendanceMode' => 'Both',
+                    ])
+                    ->default('OfflineEventAttendanceMode')
+                    ->native(false),
             ],
 
             'Person' => [

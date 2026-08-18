@@ -35,6 +35,15 @@ breaks is called out under **Breaking** with what to do about it.
   The encoding is a security boundary, not formatting: a client typing `</script>` into a
   meta title cannot close the block, and Arabic stays readable rather than becoming
   `\uXXXX` escapes.
+- **Opening hours, contact points and legal details** on Site details, feeding
+  `openingHoursSpecification`, `contactPoint`, `foundingDate`, `numberOfEmployees`, `vatID`
+  and `taxID`. Hours are one row per set, listing the days that share them, which is both
+  what schema.org wants and how a person thinks about them. A contact point says who answers
+  and in which language, which a bare telephone number does not.
+- **`itemCondition` and `priceValidUntil` on a Product**, and **`eventStatus` with
+  `eventAttendanceMode` on an Event**, defaulting to going ahead and in person. A cancelled
+  event with no status keeps advertising itself, which is the one that actually costs
+  somebody something.
 - **A schema editor on the page settings screen**, under Structured data, with a tab per
   schema type. It does not depend on the page's blocks: FAQ questions and a breadcrumb trail
   can be typed directly, per locale, on a page built from anything at all.
