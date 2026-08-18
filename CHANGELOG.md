@@ -8,48 +8,111 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-08-18
+
+Structured data. Every page now emits a JSON-LD graph describing the site, the page and what
+the page is about, from three sources: a settings screen, a page type select, and blocks that
+describe themselves.
+
+It also fixes a routing bug that has been there since the first release and is worth reading
+even if none of the rest interests you.
+
+**This release adds a table and a column.** After updating:
+
+```bash
+composer update safi/filament-atelier
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate
+```
+
+Nothing else is required. A site that fills in none of the new screens still emits a valid
+graph, because everything derivable is derived.
+
 ### Fixed
 
 - **Atelier's catch-all was shadowing the host app's own routes.** The package registered its
-  routes as a provider boots, which happens before Laravel loads `routes/web.php`, and Laravel
-  matches in registration order. So an app's own `/blog/{slug}` lost to Atelier's
-  `/{locale}/{slug?}` and 404'd, which is the opposite of what the package documents and
+  routes as its provider booted, which happens before Laravel loads `routes/web.php`, and
+  Laravel matches in registration order. So an app's own `/blog/{slug}` lost to Atelier's
+  `/{locale}/{slug?}` and 404'd, which is the opposite of what this package documents and
   promises. Routes now register from a `booted()` callback, after every provider, so the
   catch-all really is last. Route caching still works.
 
-  Anyone who has worked around this by moving routes into a service provider or renaming a
-  path can undo it after upgrading.
+  If you worked around this by moving routes into a service provider, renaming a path, or
+  putting your blog on a third segment, you can undo it after upgrading.
 
 ### Added
 
-- **A Site details screen**, under a Settings group in the panel: the organisation behind the
-  site, its logo, its social profiles and, for a business with premises, its address, geo and
-  price range. Name and description are translatable; a phone number is not.
+- **A JSON-LD graph on every public page.** One `<script type="application/ld+json">` holding
+  the `Organization` (or the LocalBusiness subtype you pick), the `WebSite`, this `WebPage`
+  with its language and dates, a `BreadcrumbList` derived from nested slugs, `ImageObject`
+  nodes for the logo and share image, and whatever the page is about.
+
+  Nodes reference each other by `@id` rather than repeating the organisation on each one.
+  Nothing is stored: the graph is built at render from data you already filled in, so there
+  is no second copy to keep in step and no cache to clear. Empty values never appear, so a
+  page with nothing filled in is still valid rather than a node full of nulls. The Arabic
+  page describes the same organisation in Arabic, pointing at the same `@id`. Previews emit
+  nothing, being `noindex` anyway.
+
+  The encoding is a security boundary rather than formatting: a client typing `</script>`
+  into a meta title cannot close the block, and Arabic stays readable rather than becoming
+  `\uXXXX` escapes.
+
+- **A Site details screen**, under a Settings group in the panel. The organisation behind the
+  site: name and description (translatable), legal name, logo, type, social profiles, and for
+  a business with premises its address, geo, price range, areas served, **opening hours** and
+  **contact points**, plus founding date, employee count, VAT and tax numbers.
 
   It is a screen rather than config on purpose. Tokens, locales and layouts are a developer's
   decisions and belong in a file. An address is client-owned data that changes without a
   deploy, and the person who knows it does not have a text editor open.
 
-  **Needs `vendor:publish --tag=filament-atelier-migrations` and `migrate`.**
-- **JSON-LD on every public page.** One `<script type="application/ld+json">` holding a
-  single `@graph`: the `Organization` (or whichever LocalBusiness subtype was picked, with
-  its address, geo, telephone and areas served), the `WebSite`, this `WebPage` with its
-  dates and language, a `BreadcrumbList` derived from nested slugs, and `ImageObject` nodes
-  for the logo and share image. Nodes reference each other by `@id` rather than repeating
-  the organisation, and nothing is stored: the graph is a projection of the tree, built at
-  render.
+  Hours are one row per set, listing the days that share them, which is both what schema.org
+  wants and how a person thinks about them. A contact point says who answers and in which
+  language, which a bare telephone number does not.
 
-  Empty values never appear, so a client who fills in nothing still gets a valid graph
-  rather than a node full of nulls. The Arabic page describes the same organisation in
-  Arabic with `inLanguage: ar`, pointing at the same `@id`. Previews emit nothing, since
-  they are `noindex` anyway.
+- **A page type select**, on the page settings screen under Structured data: standard page,
+  about, contact, listing, article, service, product, event, person or job vacancy. Choosing
+  one reveals the few fields it needs and nothing else, and none of them repeat a field the
+  page already has, since the name and description come from the meta fields, the image from
+  the share image and the dates from publishing.
 
-  The encoding is a security boundary, not formatting: a client typing `</script>` into a
-  meta title cannot close the block, and Arabic stays readable rather than becoming
-  `\uXXXX` escapes.
-- **Structured data for pages Atelier does not own.** A blog post or a services record on
-  the host app's own route can share the site's graph rather than typing out the
-  organisation a second time:
+  Page-shaped types refine the `WebPage` node itself, because an About page *is* a web page.
+  Thing-shaped types become their own node linked through `mainEntity`, because a page about
+  a product is not a product. The type is page-level, not per locale: a page that is a
+  Service in English is a Service in Arabic.
+
+  Defaults do the work where they can. An Article with no author credits the organisation. An
+  Event defaults to going ahead and in person, so cancelling is one select and a cancelled
+  event stops advertising itself. A vacancy dates itself from the publish date and locates
+  itself from the site address, and marking it remote sets `jobLocationType`, without which a
+  remote role is filtered out of remote searches. A listing page emits an `ItemList` of the
+  pages directly under it, derived from the slug path, so a services index stays right when a
+  service is added.
+
+- **FAQ schema, two ways.** The FAQ block turns its questions into `FAQPage` automatically,
+  with nothing typed twice: two FAQ blocks on one page merge into a single node, a question
+  with no answer is dropped, and a hidden section contributes nothing.
+
+  Questions can also be **typed** under Structured data, per locale, on a page built from
+  anything at all. That is not a fallback: on a site whose blocks you wrote yourself, a custom
+  FAQ section has no schema unless somebody remembered to add it, and nobody should edit a PHP
+  class to get an FAQ into the head. Typed entries win over derived ones. Note that Google
+  expects FAQ data to correspond to something a visitor can see, so this is for content on the
+  page in another form, not for questions that appear nowhere.
+
+  Breadcrumbs take a mode in the same place: from the slug path (the default), typed by hand
+  for a page whose slug is not its hierarchy, or off.
+
+- **Blocks can describe themselves.** `structuredData($attributes, $locale, $url)` on a block
+  returns nodes for the page's graph, and a node whose `@id` is already there merges into it.
+  The attributes arrive collapsed to the locale with tokens resolved, exactly as the view
+  receives them, so the schema cannot describe something different from what rendered. Adding
+  a block that contributes schema needs no change inside the plugin.
+
+- **Your own routes can share the graph.** A blog post or a services record lives on your
+  route, in your view, and Atelier never sees it, but it should not have to reinvent the
+  organisation:
 
   ```blade
   @include('atelier::partials.schema', ['nodes' => [[
@@ -60,59 +123,18 @@ breaks is called out under **Breaking** with what to do about it.
   ]]])
   ```
 
-  It hands back the `Organization` and `WebSite` nodes and adds whatever you pass, with the
-  same pruning, merging and safe encoding an Atelier page's own graph gets. The publisher is
-  then the same node the rest of the site points at, rather than a copy that drifts the first
-  time a phone number changes.
-- **`CollectionPage` now lists what is under it.** Marking a page as a listing emits an
-  `ItemList` of its direct children, derived from the slug path rather than typed, so a
-  services index stays right when a service is added. Noindexed children are left out, and a
-  grandchild is not a child.
-- **`JobPosting`**, a page type for a vacancy. Dated from the publish date and located from
-  the site address unless the page says otherwise, so a listing needs a closing date and a
-  salary and little else. Marking one remote sets `jobLocationType`, without which a remote
-  role is filtered out of remote searches.
-- **Opening hours, contact points and legal details** on Site details, feeding
-  `openingHoursSpecification`, `contactPoint`, `foundingDate`, `numberOfEmployees`, `vatID`
-  and `taxID`. Hours are one row per set, listing the days that share them, which is both
-  what schema.org wants and how a person thinks about them. A contact point says who answers
-  and in which language, which a bare telephone number does not.
-- **`itemCondition` and `priceValidUntil` on a Product**, and **`eventStatus` with
-  `eventAttendanceMode` on an Event**, defaulting to going ahead and in person. A cancelled
-  event with no status keeps advertising itself, which is the one that actually costs
-  somebody something.
-- **A schema editor on the page settings screen**, under Structured data, with a tab per
-  schema type. It does not depend on the page's blocks: FAQ questions and a breadcrumb trail
-  can be typed directly, per locale, on a page built from anything at all.
+  It emits the `Organization` and `WebSite` nodes plus whatever you pass, with the same
+  pruning, merging and escaping. The publisher is then the same node the rest of the site
+  points at rather than a copy that drifts the first time a phone number changes. Pair it with
+  `->sitemap([...])` and a blog is in the sitemap and in the graph without Atelier knowing it
+  exists.
 
-  Useful when the content is on the page but not in a shape anything can derive from, an FAQ
-  answered inside a rich text section being the common one. Note that Google expects FAQ data
-  to correspond to something a visitor can see, so this is for content that is there in
-  another form, not for questions that appear nowhere.
+### Deliberately not included
 
-  Typed entries win over derived ones, so typing a question a block already provides replaces
-  it rather than listing it twice. Breadcrumbs take a mode: from the slug path (the default),
-  typed by hand for a page whose slug is not its hierarchy, or off.
-- **FAQ schema, generated from the FAQ block.** A page with an FAQ block emits `FAQPage`
-  with every question and answer, in both locales, with nothing typed twice. Two FAQ blocks
-  on one page merge into a single `FAQPage` rather than emitting two, a question with no
-  answer is dropped, and a hidden section contributes nothing, because describing a section
-  a visitor cannot see is the thing search engines penalise.
-- **Blocks can contribute JSON-LD.** `structuredData($attributes, $locale, $url)` on a block
-  returns nodes for the page's graph, and a node whose `@id` is already in the graph merges
-  into it. The attributes arrive already collapsed to the locale with tokens resolved, the
-  same way the view receives them, so the schema cannot describe something different from
-  what rendered. Adding a block that contributes schema needs no change inside the plugin.
-- **A Page type select**, on the page settings screen next to Layout: standard page, about,
-  contact, listing, article, service, product, event or person. Choosing one reveals the few
-  fields that type needs and nothing else, and none of them duplicate a field the page
-  already has, since the name and description come from the meta fields and the image from
-  the share image.
-
-  Page-shaped types refine the `WebPage` node itself, because an About page *is* a web page.
-  Thing-shaped types become their own node linked through `mainEntity`, because a page about
-  a product is not a product. The type is page-level, not per locale: a page that is a
-  Service in English is a Service in Arabic.
+- **`Review` and `AggregateRating` from testimonials.** Google ignores reviews a business
+  publishes about itself, and the block has no rating field to aggregate.
+- **`HowTo`.** Its rich results were dropped in September 2023, so it is markup for nobody.
+- **`WebSite` `SearchAction`.** The sitelinks search box was deprecated in November 2024.
 
 ## [0.2.0] - 2026-08-18
 
@@ -435,7 +457,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.2.0...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.4...v0.1.5
