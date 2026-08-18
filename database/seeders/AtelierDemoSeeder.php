@@ -7,6 +7,7 @@ namespace Safi\Atelier\Database\Seeders;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\Models\SiteSettings;
 
 /**
  * Demo content, so a fresh install opens on something real rather than an
@@ -18,13 +19,57 @@ class AtelierDemoSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->siteDetails();
+
         $this->page('Home', ['en' => '', 'ar' => ''], $this->home(), publish: true);
-        $this->page('About', ['en' => 'about', 'ar' => 'about'], $this->about(), publish: true);
-        $this->page('Contact', ['en' => 'contact', 'ar' => 'contact'], $this->contact(), publish: false);
+        $this->page('About', ['en' => 'about', 'ar' => 'about'], $this->about(), publish: true, schema: ['type' => 'AboutPage']);
+        $this->page('Contact', ['en' => 'contact', 'ar' => 'contact'], $this->contact(), publish: false, schema: ['type' => 'ContactPage']);
+
+        $this->page('Web design', ['en' => 'services/web-design', 'ar' => 'services/web-design'], $this->service(), publish: true, schema: [
+            'type' => 'Service',
+            'data' => [
+                'service_type' => 'Web design',
+                'area_served' => 'Dubai, Abu Dhabi',
+                'price' => '5000',
+                'currency' => 'AED',
+            ],
+        ]);
+    }
+
+    /**
+     * Enough of a site for the structured data to say something.
+     *
+     * Left alone if somebody has already filled it in, because this seeder is
+     * meant to be safe to run twice.
+     */
+    protected function siteDetails(): void
+    {
+        $settings = SiteSettings::current();
+
+        if (filled($settings->data)) {
+            return;
+        }
+
+        $settings->update(['data' => [
+            'name' => ['en' => 'Atelier Demo', 'ar' => 'أتيليه'],
+            'description' => ['en' => 'A demo site built with Filament Atelier.'],
+            'type' => 'ProfessionalService',
+            'telephone' => '+971 4 000 0000',
+            'email' => 'hello@example.com',
+            'address' => [
+                'street' => '1 Sheikh Zayed Road',
+                'locality' => 'Dubai',
+                'country' => 'AE',
+            ],
+            'geo' => ['latitude' => '25.2048', 'longitude' => '55.2708'],
+            'same_as' => ['https://github.com/Abdulkader-Safi/filament-atelier'],
+            'price_range' => '$$',
+            'area_served' => 'Dubai, Abu Dhabi',
+        ]]);
     }
 
     /** @param array<string, string> $slugs */
-    protected function page(string $title, array $slugs, array $tree, bool $publish): void
+    protected function page(string $title, array $slugs, array $tree, bool $publish, array $schema = []): void
     {
         $default = array_key_first(config('atelier.locales'));
         $slug = $slugs[$default] === '' ? 'home' : $slugs[$default];
@@ -35,6 +80,7 @@ class AtelierDemoSeeder extends Seeder
         $page->fill([
             'title' => $title,
             'draft_content' => $tree,
+            'schema' => $schema ?: null,
             'seo' => [
                 $default => [
                     'meta_title' => $title,
@@ -149,6 +195,36 @@ class AtelierDemoSeeder extends Seeder
             $this->block('image', [
                 'alt' => ['en' => 'A placeholder, until you upload something'],
                 'width' => 'wide',
+            ]),
+        ];
+    }
+
+    /** A service page: a thing-shaped type, and a nested slug so breadcrumbs appear. */
+    protected function service(): array
+    {
+        return [
+            $this->block('hero', [
+                'eyebrow' => ['en' => 'Services', 'ar' => 'الخدمات'],
+                'heading' => ['en' => 'Web design', 'ar' => 'تصميم المواقع'],
+                'subheading' => ['en' => 'Sites that load fast, read well, and stay editable by the people who own them.'],
+                'cta_label' => ['en' => 'Talk to us'],
+                'cta_url' => '/contact',
+                'align' => 'center',
+            ]),
+            $this->block('features', [
+                'heading' => ['en' => 'What it includes', 'ar' => 'ما الذي يشمله'],
+                'columns' => 'three',
+                'items' => ['en' => [
+                    ['icon' => 'heroicon-o-swatch', 'title' => 'Design', 'body' => 'A layout built around your content, not a template.'],
+                    ['icon' => 'heroicon-o-code-bracket', 'title' => 'Build', 'body' => 'Server-rendered Blade, so it is fast and crawlable.'],
+                    ['icon' => 'heroicon-o-pencil-square', 'title' => 'Handover', 'body' => 'You edit it afterwards, without calling anyone.'],
+                ]],
+            ]),
+            $this->block('cta', [
+                'heading' => ['en' => 'Start a project', 'ar' => 'ابدأ مشروعاً'],
+                'body' => ['en' => 'Tell us what you need and we will tell you what it takes.'],
+                'cta_label' => ['en' => 'Get in touch'],
+                'cta_url' => '/contact',
             ]),
         ];
     }
