@@ -54,7 +54,7 @@ php artisan migrate
 - **English and Arabic on every page,** with `dir="rtl"`, hreflang, and an Arabic font stack that follows `dir` rather than a locale code.
 - **Draft and published as separate columns,** so editing never touches the live page. Every publish leaves a revision snapshot behind, and preview links are signed and expiring.
 - **Per-locale SEO fields:** meta title, description, social share image and canonical, rendered into the head with Open Graph and Twitter tags.
-- **A sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes,** so renaming a page doesn't 404 its inbound links.
+- **A sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes,** so renaming a page doesn't 404 its inbound links. A blog or services resource that isn't an Atelier page can [add its own URLs](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO#adding-urls-atelier-does-not-own) to the sitemap.
 
 ## Not built yet
 
@@ -67,6 +67,33 @@ Listed because a page builder is judged on what it does not do:
 - **Drag to reorder,** and inserting a section anywhere but the end.
 
 Block types are defined in code, and that is the design rather than a stopgap. Creating block types from the panel is v2 and deliberately parked.
+
+## SEO
+
+Server-rendered Blade is the reason the architecture is shaped this way, so this part isn't an afterthought.
+
+Every page emits a title, description, canonical, `hreflang` between locales, Open Graph and Twitter tags, all editable per locale in page settings. Two toggles per locale control indexing: hiding a page from search engines adds `noindex` **and** drops it from the sitemap, decided per locale so an English page can be listed while its Arabic translation isn't.
+
+`/sitemap.xml` lists every published, indexable page in every locale with alternates and `lastmod`, generated per request with no cache to clear. Open it in a browser and a stylesheet renders it as a table. `/robots.txt` points at it and keeps crawlers out of the panel and the preview route.
+
+Renaming a published page's slug writes a 301 from the old URL, so a client can't silently 404 every inbound link to a page that ranks.
+
+### Sitemap URLs from outside Atelier
+
+A client site is rarely only Atelier pages. A blog or services resource with its own model, panel tab and routes hands its URLs over when you register the plugin:
+
+```php
+AtelierPlugin::make()
+    ->blocks(DefaultBlocks::all())
+    ->sitemap([
+        fn () => Post::published()->get()->map(fn (Post $post) => [
+            'loc' => route('blog.show', $post),
+            'lastmod' => $post->updated_at,
+        ]),
+    ]);
+```
+
+A source is a closure or the name of an invokable class resolved from the container, the same shape as `->blocks()`. It returns URL strings, or arrays with `lastmod` and per-locale `alternates`. Sources run when the sitemap is requested, so they're free to query. Full details and the reasoning are in the [SEO guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO).
 
 ## Built on
 
@@ -83,6 +110,8 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 - **[Installation](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation)** — install, register the plugin, the three steps
   that fail silently, using your own layout, upgrading, and the config reference
 - **[Usage](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Usage)** — building a page, the editor, publishing, preview links
+- **[SEO](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO)** — what every page emits, the sitemap, slug redirects, and putting
+  non-Atelier URLs like a blog into the sitemap
 - **[How it works](https://github.com/Abdulkader-Safi/filament-atelier/wiki/How-it-works)** — the block tree, the render path, why the preview
   is the real page
 - **[Agent quickstart](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Agent-quickstart)** — a start-to-finish setup for a coding agent
