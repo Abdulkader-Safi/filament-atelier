@@ -87,10 +87,17 @@ Developers never see a UI for this. Registration is code.
 
 ## Settled, 18 Aug 2026
 
-The contact form block is **presentational**. It renders the form and posts to a route the
-developer wires per site. Atelier owns no submissions table, no spam handling and no
-retention policy, because a page builder that quietly becomes a data processor is a
-liability on every client site it ships to.
+The contact form block is **presentational**, and it is presentational because the app
+already does the work.
+
+The block is defined in code like every other block, so the developer writing it owns the
+route it posts to. That route is ordinary Laravel: a form request, a model, a save. The
+app has already registered and handles storing the submission, so there is nothing left
+for Atelier to do with it. A second submissions table inside the plugin would duplicate
+what the site already has, and would drag spam handling, retention and export in with it.
+
+What the block gives the client is the section: heading, intro text, which fields show, the
+button label, and the action URL the developer points at their own route.
 
 The original question and its cheaper-option recommendation stand as written; this is the
 decision, not a reversal.

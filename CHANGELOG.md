@@ -8,6 +8,11 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Added
+
+- `SECURITY.md`, and GitHub private vulnerability reporting enabled on the repository, so
+  a researcher has somewhere to send a report that is not a public issue.
+
 ## [0.1.2] - 2026-08-18
 
 Design tokens, shared section controls and page revisions. Three of the four gaps that
@@ -52,8 +57,8 @@ after updating, or `atelier_page_revisions` is missing and publishing a page fai
   built. `Docs/tasks/README.md` carries the status of each feature and the gaps that block
   more than their own feature.
 - The contact form block is settled as presentational: it posts to a route the developer
-  wires per site. Atelier owns no submissions table, so it never quietly becomes a data
-  processor on a client site.
+  wires per site, and the app's own code already handles storing the submission. Atelier
+  owns no submissions table, so it never duplicates what the site already has.
 - Upgrading is documented in the README, `Docs/installation.md` and the wiki, because a
   missed `vendor:publish` fails late rather than loudly.
 
