@@ -8,6 +8,18 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Atelier's catch-all was shadowing the host app's own routes.** The package registered its
+  routes as a provider boots, which happens before Laravel loads `routes/web.php`, and Laravel
+  matches in registration order. So an app's own `/blog/{slug}` lost to Atelier's
+  `/{locale}/{slug?}` and 404'd, which is the opposite of what the package documents and
+  promises. Routes now register from a `booted()` callback, after every provider, so the
+  catch-all really is last. Route caching still works.
+
+  Anyone who has worked around this by moving routes into a service provider or renaming a
+  path can undo it after upgrading.
+
 ### Added
 
 - **A Site details screen**, under a Settings group in the panel: the organisation behind the

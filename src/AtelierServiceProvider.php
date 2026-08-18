@@ -17,7 +17,6 @@ class AtelierServiceProvider extends PackageServiceProvider
             ->name('filament-atelier')
             ->hasConfigFile('atelier')
             ->hasViews('atelier')
-            ->hasRoute('web')
             ->hasMigrations([
                 'create_atelier_tables',
                 'create_atelier_page_revisions_table',
@@ -36,6 +35,19 @@ class AtelierServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
+        // Registered from a booted callback rather than through hasRoute(),
+        // and the difference is not cosmetic.
+        //
+        // A package provider boots before the application's own routes are
+        // loaded, so hasRoute() put Atelier's catch-all ahead of everything in
+        // routes/web.php. Laravel matches in registration order, so a client's
+        // own /blog/{slug} lost to /{locale}/{slug?} and 404'd, which is the
+        // exact opposite of what this package promises.
+        //
+        // booted() runs after every provider, so the app's routes are already
+        // in and the catch-all is genuinely last.
+        $this->app->booted(fn () => $this->loadRoutesFrom(__DIR__.'/../routes/web.php'));
+
         // The panel's stylesheet only contains classes Filament itself uses,
         // so the editor's own utilities have to ship compiled with the plugin.
         // Rebuild with `npm run build` in the package after changing a view.

@@ -53,6 +53,41 @@ class StructuredData
         return rtrim(url('/'), '/').'#'.$fragment;
     }
 
+    /**
+     * A graph for a page Atelier does not own.
+     *
+     * A blog post or a services record lives on the host app's own route, in
+     * the host app's own view, and Atelier never sees it. What it should not
+     * have to reinvent is the organisation behind the site: an `Article` whose
+     * publisher is typed out by hand will drift from the one on every other
+     * page the first time a phone number changes.
+     *
+     * So this hands back the shared half, and the caller adds its own nodes:
+     *
+     *     StructuredData::for([[
+     *         '@type' => 'Article',
+     *         '@id' => url()->current().'#article',
+     *         'headline' => $post->title,
+     *         'publisher' => ['@id' => StructuredData::siteId('organization')],
+     *     ]])
+     *
+     * @param  array<int, array<string, mixed>>  $nodes
+     */
+    public static function for(array $nodes = [], ?string $locale = null): Graph
+    {
+        $locale ??= app()->getLocale();
+
+        $builder = app(static::class);
+
+        $builder->organization($locale)->website($locale);
+
+        foreach ($nodes as $node) {
+            $builder->graph->add($node);
+        }
+
+        return $builder->graph;
+    }
+
     /** The whole graph for one page in one locale. */
     public function forPage(Page $page, string $locale): Graph
     {

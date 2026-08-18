@@ -637,3 +637,48 @@ it('falls back to the site address for a vacancy with no location', function () 
     expect($address['addressLocality'])->toBe('Dubai')
         ->and($address['addressCountry'])->toBe('AE');
 });
+
+it('gives a page Atelier does not own the same organisation graph', function () {
+    // A host app route, its own view, no Atelier page behind it.
+    $html = get('/blog/hello-world')->assertOk()->getContent();
+
+    preg_match('#<script type="application/ld\+json">(.*?)</script>#s', $html, $m);
+    $graph = collect(json_decode($m[1], true)['@graph'])->keyBy('@type');
+
+    expect($graph['Article']['headline'])->toBe('Hello World')
+        ->and($graph['Article']['author']['name'])->toBe('Abdulkader Safi')
+        // The publisher is the same node the rest of the site points at, not a
+        // second copy that drifts when a phone number changes.
+        ->and($graph['Article']['publisher']['@id'])->toBe($graph['ProfessionalService']['@id'])
+        ->and($graph['ProfessionalService']['telephone'])->toBe('+971 4 000 0000')
+        ->and($graph['WebSite']['publisher']['@id'])->toBe($graph['ProfessionalService']['@id']);
+});
+
+it('escapes a host app node the same way it escapes its own', function () {
+    $graph = \Safi\Atelier\Schema\StructuredData::for([[
+        '@type' => 'Article',
+        '@id' => 'https://example.com/post#article',
+        'headline' => '</script><img src=x>',
+    ]]);
+
+    expect($graph->toJson())->not->toContain('</script>')
+        ->and($graph->toJson())->toContain('\u003C/script\u003E');
+});
+
+it('drops the empties from a host app node too', function () {
+    $graph = \Safi\Atelier\Schema\StructuredData::for([[
+        '@type' => 'Article',
+        '@id' => 'https://example.com/post#article',
+        'headline' => 'Real',
+        'description' => null,
+        'author' => ['@type' => 'Person', 'name' => ''],
+    ]]);
+
+    $article = collect($graph->nodes())->firstWhere('@type', 'Article');
+
+    expect($article)->toHaveKey('headline')
+        ->and($article)->not->toHaveKey('description')
+        // A Person with no name says nothing, so it goes rather than sitting
+        // there as an empty node.
+        ->and($article)->not->toHaveKey('author');
+});

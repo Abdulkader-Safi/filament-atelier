@@ -68,7 +68,7 @@ until the Plumb audit named most of it.
 
 Previously Fabricator's job. Ours now.
 
-- [x] Catch-all front-end route for `/{slug}` and `/{locale}/{slug}`, registered last so it never shadows app routes.
+- [x] Catch-all front-end route for `/{slug}` and `/{locale}/{slug}`, registered last so it never shadows app routes. **It was not, until 18 Aug 2026.** A package provider boots before Laravel loads `routes/web.php`, so registering through `hasRoute()` put the catch-all ahead of every app route and a client's own `/blog/{slug}` 404'd. Now registered from a `booted()` callback, with a test.
 - [x] Slug resolution against `page_slugs`, returning 404 on a miss.
 - [x] Nested slugs (`/services/web-design`) decided one way or the other now, not retrofitted. **Decided: supported.** A slug is the whole path after the locale, stored as one string in `page_slugs`, so `services/web-design` is a row like any other and needs no parent relationship. Until 18 Aug 2026 the controller read the first segment as a locale and discarded the rest, which served `/services` with a 200 rather than a 404. Fixed, with two tests.
 - [x] Public controller reads `published_content` only, never the draft.

@@ -162,6 +162,14 @@ class Graph
         foreach ($node as $key => $value) {
             if (is_array($value)) {
                 $value = static::prune($value);
+
+                // A nested node left holding only its own type says nothing:
+                // a Person with no name, an address with no address. A bare
+                // `@id` is different, that is a reference to another node and
+                // is the whole point of a graph, so it stays.
+                if (array_keys($value) === ['@type']) {
+                    $value = [];
+                }
             }
 
             if ($value === null || $value === '' || $value === []) {

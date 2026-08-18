@@ -100,3 +100,13 @@ it('404s a nested slug no page claims', function () {
 
     get('/services/nope')->assertNotFound();
 });
+
+it('lets the app own a route Atelier would otherwise swallow', function () {
+    // Atelier's catch-all matches two segments, so an app route like
+    // /blog/{slug} is exactly what it would shadow. The package registers
+    // after the app for this reason.
+    publishedPage('Blog', 'blog');
+
+    get('/blog/hello-world')->assertOk()->assertSee('Hello World');
+    get('/blog')->assertOk()->assertSee('Blog heading');
+});
