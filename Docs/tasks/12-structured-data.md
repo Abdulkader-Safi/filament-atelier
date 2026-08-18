@@ -40,23 +40,76 @@ is a plugin that nags about completeness while emitting schema that says nothing
 
 ## In the dashboard
 
-**Panel-level, a Site details screen** (does not exist yet, and blocks most of tier 1):
+Two surfaces, and only one of them is per page.
 
-- Organisation name, legal name, logo, description
-- Type: Organization, or a LocalBusiness subtype
-- Social profile URLs, which become `sameAs`
-- Contact: telephone, email, address, opening hours, price range, areas served
-- Founding date, VAT or registration number where a client wants it
+### 1. Site details, a new panel screen
 
-**Per page, in the SEO tab:**
+Organisation facts belong to the site, not to a page, and they are **client-owned data that
+changes without a deploy**: a new phone number, a new Instagram account, moving office. That
+rules out config, which is where tokens, locales and layouts live.
 
-- **Page type** select, defaulting to WebPage
-- Fields for the chosen type only, appearing underneath. Article wants an author and dates;
-  Service wants a provider and an area; Event wants a start, an end and a location
-- **Exclude from structured data**, for the rare page that should say nothing
+A Filament page under a **Settings** nav group, saving to a single-row `atelier_settings`
+table:
 
-Per locale, because a translated page describes the same thing in another language and
-`inLanguage` has to match.
+```
+Settings
+└── Site details
+    ├── Identity      name, legal name, logo, description, type
+    ├── Profiles      the social URLs that become sameAs
+    └── Contact       telephone, email, address, geo, opening hours,
+                      price range, areas served        (LocalBusiness only)
+```
+
+Some of it is translatable (name, description), most is not (a phone number is a phone
+number). It does not exist today in any form, and every tier 1 node depends on it.
+
+### 2. Page type, on the page settings screen
+
+The existing screen, with one addition. Where it goes matters, so concretely:
+
+```
+Pages › Edit                    [Edit page content] [View live] [Publish] …
+
+┌─ Section ──────────────────────────────────────────────────┐
+│  Title              Internal name, and the meta fallback   │
+│  Layout             The shell wrapped around this page     │
+│  Page type          What this page is: Service, Article…   │  ← new
+│     └ fields for the chosen type appear here               │  ← new
+└────────────────────────────────────────────────────────────┘
+
+┌─ [ English ] [ العربية ] ──────────────────────────────────┐
+│  Slug                                                      │
+│  Meta title            ─┐                                  │
+│  Meta description      ─┴ already the schema's name and    │
+│  Social share image       description, per locale          │
+│  Hide from search engines                                  │
+│  Tell search engines not to follow its links               │
+│  Canonical URL                                             │
+│  Exclude from structured data                              │  ← new
+└────────────────────────────────────────────────────────────┘
+```
+
+**The type is page-level, not per locale**, alongside Layout, for the same reason: a page
+that is a Service in English is a Service in Arabic. It is one fact about the page, not two.
+
+**Type-specific fields sit with it and are mostly shared too.** A price, a start date, a
+latitude and an availability are not translated. The one thing that does vary by language is
+the name and the description, and those already exist as the per-locale meta title and meta
+description, so the schema reads them rather than asking again. A type needing a genuinely
+translatable extra field puts that field in the locale tabs.
+
+That keeps the addition to roughly four fields for a client who picks a type, and zero for a
+client who does not.
+
+### Not in the editor
+
+Nothing structured-data goes in the three-pane builder. The builder is for arranging and
+filling sections, and a schema type is a property of the page, not of a section. It belongs
+with the slug and the meta description, one screen back.
+
+The exception is the part with no UI at all: anything derived from a block, like the FAQ
+schema, is generated from what the client already typed into that block and never appears as
+a field anywhere.
 
 ---
 
@@ -202,7 +255,7 @@ to the best of what is known now, and it is exactly the kind of thing that chang
 
 ### The page type select
 
-- [ ] Type select in the SEO tab, per locale, defaulting to WebPage.
+- [ ] Type select in the page-level section next to Layout, defaulting to WebPage. Page-level rather than per locale: a page that is a Service in English is a Service in Arabic.
 - [ ] Conditional fields per type, so choosing Event asks for a start date and nothing else.
 - [ ] First set of types: `WebPage`, `AboutPage`, `ContactPage`, `Article`, `Service`,
       `Product`, `Event`, `LocalBusiness`, `Person`.
