@@ -106,21 +106,35 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 
 ## Documentation
 
-**The docs are in the [wiki](https://github.com/Abdulkader-Safi/filament-atelier/wiki).**
+**Everything is in the [wiki](https://github.com/Abdulkader-Safi/filament-atelier/wiki).**
 
-- **[Installation](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation)** — install, register the plugin, the three steps
-  that fail silently, using your own layout, upgrading, and the config reference
-- **[Usage](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Usage)** — building a page, the editor, publishing, preview links
-- **[Layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts)** — registering multiple shells and picking one per page
-- **[SEO](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO)** — what every page emits, the sitemap, slug redirects, and putting
-  non-Atelier URLs like a blog into the sitemap
-- **[How it works](https://github.com/Abdulkader-Safi/filament-atelier/wiki/How-it-works)** — the block tree, the render path, why the preview
-  is the real page
-- **[Agent quickstart](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Agent-quickstart)** — a start-to-finish setup for a coding agent
+**Getting started**
 
-`Docs/` in this repository is the spec and the design history: the PRD, the task
-breakdown, and the research behind the decisions. It's for anyone working on Atelier
-itself, not for using it, and it's export-ignored so `composer require` never pulls it.
+- **[Installation](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation)** — install, register the plugin, the three steps that fail silently, and upgrading
+- **[Usage](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Usage)** — the editor, page settings, and the day-to-day flow
+
+**Building a site**
+
+- **[Blocks](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Blocks)** — writing your own section types, shared controls, and the five things that bite
+- **[Layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts)** — several shells, picked per page
+- **[Design tokens](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Design-tokens)** — colour, type and spacing read by the editor and the site alike
+- **[Bilingual and RTL](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Bilingual-and-RTL)** — two languages in one tree, and mirroring properly
+
+**Running it**
+
+- **[Publishing](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Publishing)** — drafts, publishing, preview links, revisions
+- **[SEO](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO)** — meta, the sitemap, slug redirects, and adding URLs Atelier doesn't own
+- **[Configuration](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Configuration)** — every key in `config/atelier.php`
+- **[Troubleshooting](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Troubleshooting)** — everything that fails quietly, in the order it catches people
+
+**Reference**
+
+- **[How it works](https://github.com/Abdulkader-Safi/filament-atelier/wiki/How-it-works)** — the data model and the reasoning behind it
+- **[Agent quickstart](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Agent-quickstart)** — a copy-pasteable brief for an AI coding agent
+
+`Docs/` in this repository is the spec and the design history: the PRD, the task breakdown,
+and the research behind the decisions. It's for anyone working on Atelier itself, not for
+using it, and it's export-ignored so `composer require` never pulls it.
 
 ## If you reach for GSAP
 
