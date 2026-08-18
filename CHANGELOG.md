@@ -47,6 +47,23 @@ breaks is called out under **Breaking** with what to do about it.
   The encoding is a security boundary, not formatting: a client typing `</script>` into a
   meta title cannot close the block, and Arabic stays readable rather than becoming
   `\uXXXX` escapes.
+- **Structured data for pages Atelier does not own.** A blog post or a services record on
+  the host app's own route can share the site's graph rather than typing out the
+  organisation a second time:
+
+  ```blade
+  @include('atelier::partials.schema', ['nodes' => [[
+      '@type' => 'Article',
+      '@id' => url()->current().'#article',
+      'headline' => $post->title,
+      'publisher' => ['@id' => \Safi\Atelier\Schema\StructuredData::siteId('organization')],
+  ]]])
+  ```
+
+  It hands back the `Organization` and `WebSite` nodes and adds whatever you pass, with the
+  same pruning, merging and safe encoding an Atelier page's own graph gets. The publisher is
+  then the same node the rest of the site points at, rather than a copy that drifts the first
+  time a phone number changes.
 - **`CollectionPage` now lists what is under it.** Marking a page as a listing emits an
   `ItemList` of its direct children, derived from the slug path rather than typed, so a
   services index stays right when a service is added. Noindexed children are left out, and a

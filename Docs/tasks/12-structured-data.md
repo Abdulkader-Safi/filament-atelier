@@ -346,9 +346,12 @@ The cheapest work here, because the node exists and the client already knows the
 
 ### C. Structural
 
-- [ ] **A registry for the host app's own models**, the same shape as `->sitemap([...])`. A
-      blog resource on its own panel tab can contribute sitemap URLs today but cannot
-      contribute `Article` nodes for the same routes, which is an odd half.
+- [x] **A registry for the host app's own models**, the same shape as `->sitemap([...])`.
+      **Built as a partial rather than a registry**, and the change of shape is the point: a
+      blog post renders on the host app's own route, in the host app's own view, so there is
+      nothing for Atelier to hook into. What it needed was not a registration API but a way
+      to reuse the shared half. `@include('atelier::partials.schema', ['nodes' => [...]])`
+      returns the Organization and WebSite nodes plus whatever the caller passes.
 - [ ] **`ImageGallery` and `ImageObject`** from the gallery and image blocks. Low value on its
       own, and the mechanism is already there through `structuredData()`.
 - [ ] **`speakable`** on WebPage. Narrow: it was news-only and US English at launch. Check
