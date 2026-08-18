@@ -8,6 +8,12 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-18
+
+Multiple layouts, picked per page. A minor rather than a patch because it adds a real
+capability and a new registration method, not because anything breaks: no migration, and
+every existing page keeps rendering through `config('atelier.layout')` untouched.
+
 ### Added
 
 - **Multiple layouts, chosen per page.** A site is rarely one shell: marketing pages want a
@@ -323,7 +329,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.6...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.3...v0.1.4
