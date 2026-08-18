@@ -9,6 +9,7 @@ use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Field;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 
 /**
  * The page types a client can pick, and the few fields each one needs.
@@ -43,6 +44,7 @@ class PageTypes
             'Product' => 'Product',
             'Event' => 'Event',
             'Person' => 'Person or profile',
+            'JobPosting' => 'Job vacancy',
         ];
     }
 
@@ -146,6 +148,47 @@ class PageTypes
                         'MixedEventAttendanceMode' => 'Both',
                     ])
                     ->default('OfflineEventAttendanceMode')
+                    ->native(false),
+            ],
+
+            'JobPosting' => [
+                DatePicker::make('schema.data.posted_at')
+                    ->label('Posted')
+                    ->helperText('Only if it differs from when the page was published.'),
+                DatePicker::make('schema.data.valid_through')
+                    ->label('Closes')
+                    ->helperText('A vacancy with no closing date stays listed forever.'),
+                Select::make('schema.data.employment_type')
+                    ->label('Type')
+                    ->options([
+                        'FULL_TIME' => 'Full time',
+                        'PART_TIME' => 'Part time',
+                        'CONTRACTOR' => 'Contract',
+                        'TEMPORARY' => 'Temporary',
+                        'INTERN' => 'Internship',
+                    ])
+                    ->native(false),
+                Toggle::make('schema.data.remote')
+                    ->label('Remote')
+                    ->helperText('Without this a remote role is filtered out of remote searches.'),
+                TextInput::make('schema.data.location')
+                    ->label('City')
+                    ->helperText('Leave empty to use the site details.'),
+                TextInput::make('schema.data.country')
+                    ->label('Country code')
+                    ->maxLength(2),
+                TextInput::make('schema.data.salary')->label('Salary')->numeric(),
+                TextInput::make('schema.data.currency')->label('Currency')->maxLength(3),
+                Select::make('schema.data.salary_unit')
+                    ->label('Per')
+                    ->options([
+                        'HOUR' => 'Hour',
+                        'DAY' => 'Day',
+                        'WEEK' => 'Week',
+                        'MONTH' => 'Month',
+                        'YEAR' => 'Year',
+                    ])
+                    ->default('MONTH')
                     ->native(false),
             ],
 

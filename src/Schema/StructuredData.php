@@ -68,6 +68,7 @@ class StructuredData
             ->breadcrumbs($page, $locale, $url)
             ->mainEntity($page, $locale, $url)
             ->faq($page, $locale, $url)
+            ->itemList($page, $locale, $url)
             ->fromBlocks($page, $locale, $url);
 
         return $this->graph;
@@ -375,6 +376,49 @@ class StructuredData
     }
 
     /**
+     * A listing page's children, as an ordered list.
+     *
+     * Derived from the slug path rather than typed, so a services index lists
+     * every service under it and stays right when one is added. The same fact
+     * the breadcrumb trail is built on, read the other way round.
+     */
+    public function itemList(Page $page, string $locale, string $url): static
+    {
+        if ($page->schemaType() !== 'CollectionPage') {
+            return $this;
+        }
+
+        $items = $page->children($locale)
+            ->filter(fn (Page $child) => $child->isIndexable($locale) && $child->url($locale))
+            ->values()
+            ->map(fn (Page $child, int $index) => [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => $child->metaTitle($locale),
+                'url' => $child->url($locale),
+            ])
+            ->all();
+
+        if ($items === []) {
+            return $this;
+        }
+
+        $this->graph->add([
+            '@type' => 'ItemList',
+            '@id' => static::id($url, 'itemlist'),
+            'itemListElement' => $items,
+        ]);
+
+        $this->graph->add([
+            '@type' => 'CollectionPage',
+            '@id' => static::id($url, 'webpage'),
+            'mainEntity' => ['@id' => static::id($url, 'itemlist')],
+        ]);
+
+        return $this;
+    }
+
+    /**
      * The thing the page is about, when it is about a thing.
      *
      * Linked from the WebPage through `mainEntity` rather than replacing it,
@@ -478,6 +522,37 @@ class StructuredData
                 ]),
                 'organizer' => ['@id' => static::siteId('organization')],
                 'offers' => $offer,
+            ],
+
+            'JobPosting' => [
+                'title' => $page->metaTitle($locale),
+                'datePosted' => $page->schemaValue('posted_at')
+                    ?? $page->published_at?->toDateString(),
+                'validThrough' => $page->schemaValue('valid_through'),
+                'employmentType' => $page->schemaValue('employment_type'),
+                'hiringOrganization' => ['@id' => static::siteId('organization')],
+                'jobLocation' => Graph::node([
+                    '@type' => 'Place',
+                    'address' => Graph::node([
+                        '@type' => 'PostalAddress',
+                        'addressLocality' => $page->schemaValue('location')
+                            ?? SiteSettings::get('address.locality'),
+                        'addressCountry' => $page->schemaValue('country')
+                            ?? SiteSettings::get('address.country'),
+                    ]),
+                ]),
+                // Remote roles need this or they are filtered out of remote
+                // searches, which is the whole reason somebody posts one.
+                'jobLocationType' => $page->schemaValue('remote') ? 'TELECOMMUTE' : null,
+                'baseSalary' => Graph::node([
+                    '@type' => 'MonetaryAmount',
+                    'currency' => $page->schemaValue('currency'),
+                    'value' => Graph::node([
+                        '@type' => 'QuantitativeValue',
+                        'value' => $page->schemaValue('salary'),
+                        'unitText' => $page->schemaValue('salary_unit', 'MONTH'),
+                    ]),
+                ]),
             ],
 
             'Person' => [

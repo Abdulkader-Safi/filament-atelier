@@ -6,6 +6,7 @@ namespace Safi\Atelier\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Safi\Atelier\LayoutRegistry;
 
@@ -189,6 +190,38 @@ class Page extends Model
             // collection that predates the write above.
             $this->unsetRelation('slugs');
         }
+    }
+
+    /**
+     * Published pages sitting directly under this one, by slug path.
+     *
+     * `services` finds `services/web-design`, and not `services/web/design`,
+     * because a listing lists its own children rather than its whole subtree.
+     * The slug path is the hierarchy, the same fact breadcrumbs are built on,
+     * so this needs no parent column.
+     *
+     * @return Collection<int, static>
+     */
+    public function children(string $locale): Collection
+    {
+        $slug = $this->slug($locale);
+
+        if ($slug === null) {
+            return collect();
+        }
+
+        return static::query()
+            ->where('status', 'published')
+            ->whereKeyNot($this->getKey())
+            ->whereHas('slugs', fn ($query) => $query
+                ->where('locale', $locale)
+                ->where('slug', 'like', $slug.'/%')
+                ->whereRaw('length(slug) - length(replace(slug, "/", "")) = ?', [
+                    substr_count($slug, '/') + 1,
+                ]))
+            ->with('slugs')
+            ->orderBy('title')
+            ->get();
     }
 
     /** The public URL for a locale. The first configured locale has no prefix. */

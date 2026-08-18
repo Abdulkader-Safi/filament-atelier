@@ -327,12 +327,13 @@ The cheapest work here, because the node exists and the client already knows the
 - [ ] **`VideoObject`.** Still earns rich results, and almost nobody marks video up. Needs
       `name`, `description`, `thumbnailUrl` and `uploadDate`, so it wants a video block to
       derive from rather than a typed form.
-- [ ] **`JobPosting`.** `title`, `datePosted`, `validThrough`, `hiringOrganization`,
-      `jobLocation`, `employmentType`, `baseSalary`. Careers pages are a normal client ask and
-      this one still produces a real listing.
-- [ ] **`CollectionPage` with `ItemList`.** A services index or a blog index that lists its
-      children in order. The type is already in the select and emits nothing extra, which is
-      the gap.
+- [x] **`JobPosting`.** Dated from the publish date and located from the site address unless
+      the page says otherwise, so a vacancy needs a closing date and a salary and nothing
+      else. `jobLocationType` is set for remote roles, without which they are filtered out of
+      remote searches, which is the whole reason somebody posts one.
+- [x] **`CollectionPage` with `ItemList`.** Derived from the slug path rather than typed, so
+      a services index lists every service under it and stays right when one is added. Direct
+      children only, and a noindexed child is left out.
 - [ ] **`QAPage`.** Genuinely different from `FAQPage`: one question, multiple answers, one
       accepted. Still earns rich results where FAQ no longer does.
 - [ ] **`Course`.** `provider`, `hasCourseInstance`, `offers`. Worth it only for a client who

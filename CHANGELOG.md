@@ -35,6 +35,14 @@ breaks is called out under **Breaking** with what to do about it.
   The encoding is a security boundary, not formatting: a client typing `</script>` into a
   meta title cannot close the block, and Arabic stays readable rather than becoming
   `\uXXXX` escapes.
+- **`CollectionPage` now lists what is under it.** Marking a page as a listing emits an
+  `ItemList` of its direct children, derived from the slug path rather than typed, so a
+  services index stays right when a service is added. Noindexed children are left out, and a
+  grandchild is not a child.
+- **`JobPosting`**, a page type for a vacancy. Dated from the publish date and located from
+  the site address unless the page says otherwise, so a listing needs a closing date and a
+  salary and little else. Marking one remote sets `jobLocationType`, without which a remote
+  role is filtered out of remote searches.
 - **Opening hours, contact points and legal details** on Site details, feeding
   `openingHoursSpecification`, `contactPoint`, `foundingDate`, `numberOfEmployees`, `vatID`
   and `taxID`. Hours are one row per set, listing the days that share them, which is both

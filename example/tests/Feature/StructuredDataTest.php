@@ -550,3 +550,90 @@ it('leaves hours and contact points out when nobody filled them in', function ()
     expect($org)->not->toHaveKey('openingHoursSpecification')
         ->and($org)->not->toHaveKey('contactPoint');
 });
+
+it('lists a collection page\'s children, in order, from the slug path', function () {
+    $index = schemaPage('Services', 'services');
+    $index->update(['schema' => ['type' => 'CollectionPage']]);
+
+    schemaPage('Web design', 'services/web-design');
+    schemaPage('Branding', 'services/branding');
+    // A grandchild: a listing lists its own children, not its whole subtree.
+    schemaPage('An audit', 'services/branding/audit');
+    // And something that is not under it at all.
+    schemaPage('Careers', 'careers');
+
+    $graph = graphOf('/services');
+    $items = $graph['ItemList']['itemListElement'];
+
+    expect($items)->toHaveCount(2)
+        // Ordered by title, so the list is stable rather than by insertion.
+        ->and($items[0]['name'])->toBe('Branding')
+        ->and($items[1]['name'])->toBe('Web design')
+        ->and($items[1]['url'])->toBe('http://localhost:8000/services/web-design')
+        ->and($graph['CollectionPage']['mainEntity']['@id'])->toBe($graph['ItemList']['@id']);
+});
+
+it('leaves a hidden child out of the list', function () {
+    $index = schemaPage('Services', 'services');
+    $index->update(['schema' => ['type' => 'CollectionPage']]);
+
+    $child = schemaPage('Web design', 'services/web-design');
+    $secret = schemaPage('Internal', 'services/internal');
+    $secret->update(['seo' => ['en' => ['noindex' => true]]]);
+
+    $items = graphOf('/services')['ItemList']['itemListElement'];
+
+    expect($items)->toHaveCount(1)
+        ->and($items[0]['name'])->toBe('Web design');
+});
+
+it('emits no list for a collection page with nothing under it', function () {
+    $index = schemaPage('Services', 'services');
+    $index->update(['schema' => ['type' => 'CollectionPage']]);
+
+    expect(graphOf('/services'))->not->toHaveKey('ItemList');
+});
+
+it('describes a job vacancy', function () {
+    $page = schemaPage('Senior Laravel developer', 'careers/laravel');
+    $page->update(['schema' => ['type' => 'JobPosting', 'data' => [
+        'valid_through' => '2026-12-31',
+        'employment_type' => 'FULL_TIME',
+        'salary' => '25000',
+        'currency' => 'AED',
+        'salary_unit' => 'MONTH',
+        'location' => 'Dubai',
+        'country' => 'AE',
+    ]]]);
+
+    $job = graphOf('/careers/laravel')['JobPosting'];
+
+    expect($job['title'])->toBe('Senior Laravel developer')
+        ->and($job['validThrough'])->toBe('2026-12-31')
+        ->and($job['employmentType'])->toBe('FULL_TIME')
+        ->and($job['hiringOrganization']['@id'])->toBe('http://localhost:8000#organization')
+        ->and($job['jobLocation']['address']['addressLocality'])->toBe('Dubai')
+        ->and($job['baseSalary']['currency'])->toBe('AED')
+        ->and($job['baseSalary']['value']['value'])->toBe('25000')
+        ->and($job['baseSalary']['value']['unitText'])->toBe('MONTH')
+        // Dated from the publish date without anybody typing it.
+        ->and($job['datePosted'])->not->toBeNull()
+        ->and($job)->not->toHaveKey('jobLocationType');
+});
+
+it('marks a remote vacancy so it survives a remote search', function () {
+    $page = schemaPage('Remote role', 'careers/remote');
+    $page->update(['schema' => ['type' => 'JobPosting', 'data' => ['remote' => true]]]);
+
+    expect(graphOf('/careers/remote')['JobPosting']['jobLocationType'])->toBe('TELECOMMUTE');
+});
+
+it('falls back to the site address for a vacancy with no location', function () {
+    $page = schemaPage('Local role', 'careers/local');
+    $page->update(['schema' => ['type' => 'JobPosting']]);
+
+    $address = graphOf('/careers/local')['JobPosting']['jobLocation']['address'];
+
+    expect($address['addressLocality'])->toBe('Dubai')
+        ->and($address['addressCountry'])->toBe('AE');
+});
