@@ -12,6 +12,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -23,6 +24,7 @@ use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\ListPages;
 use Safi\Atelier\LayoutRegistry;
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\Schema\PageTypes;
 
 /**
  * The page's settings: title, per-locale slugs and SEO. Content is edited in
@@ -57,6 +59,22 @@ class PageResource extends Resource
                 //
                 // Hidden entirely when the app registered no layouts, since a
                 // select with one option is a question with one answer.
+                Select::make('schema.type')
+                    ->label('Page type')
+                    ->options(PageTypes::options())
+                    ->default('WebPage')
+                    ->native(false)
+                    ->live()
+                    ->helperText('What this page is, for search engines. Standard page is right for most.')
+                    ->columnSpanFull(),
+
+                // Only the chosen type's fields, and nothing at all for the
+                // types that need none.
+                Group::make()
+                    ->schema(fn (callable $get) => PageTypes::fields($get('schema.type') ?? 'WebPage'))
+                    ->columns(2)
+                    ->columnSpanFull(),
+
                 Select::make('layout')
                     ->label('Layout')
                     ->options(fn () => app(LayoutRegistry::class)->options())

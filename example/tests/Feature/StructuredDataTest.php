@@ -177,3 +177,91 @@ it('keeps a zero, which is a fact, and drops an empty string, which is not', fun
     expect(Graph::prune(['a' => 0, 'b' => false, 'c' => '', 'd' => null, 'e' => []]))
         ->toBe(['a' => 0, 'b' => false]);
 });
+
+it('refines the WebPage for a page-shaped type', function () {
+    $page = schemaPage();
+    $page->update(['schema' => ['type' => 'ContactPage']]);
+
+    $graph = graphOf('/about');
+
+    // An About page is a WebPage, so the type is refined rather than doubled.
+    expect($graph)->toHaveKey('ContactPage')
+        ->and($graph)->not->toHaveKey('WebPage')
+        ->and($graph['ContactPage']['isPartOf']['@id'])->toBe('http://localhost:8000#website');
+});
+
+it('gives a thing-shaped type its own node, linked from the page', function () {
+    $page = schemaPage();
+    $page->update([
+        'seo' => ['en' => ['meta_title' => 'Web design', 'meta_description' => 'We design websites.']],
+        'schema' => ['type' => 'Service', 'data' => [
+            'service_type' => 'Web design',
+            'area_served' => 'Dubai, Abu Dhabi',
+            'price' => '5000',
+            'currency' => 'AED',
+        ]],
+    ]);
+
+    $graph = graphOf('/about');
+
+    // The page is still a WebPage. It is *about* a service.
+    expect($graph)->toHaveKey('WebPage')
+        ->and($graph['WebPage']['mainEntity']['@id'])->toBe($graph['Service']['@id'])
+        ->and($graph['Service']['name'])->toBe('Web design')
+        ->and($graph['Service']['serviceType'])->toBe('Web design')
+        ->and($graph['Service']['provider']['@id'])->toBe('http://localhost:8000#organization')
+        ->and($graph['Service']['areaServed'])->toHaveCount(2)
+        ->and($graph['Service']['offers']['price'])->toBe('5000')
+        ->and($graph['Service']['offers']['priceCurrency'])->toBe('AED');
+});
+
+it('builds a product offer with a schema.org availability url', function () {
+    $page = schemaPage();
+    $page->update(['schema' => ['type' => 'Product', 'data' => [
+        'sku' => 'ABC-1',
+        'brand' => 'dsrpt',
+        'price' => '99',
+        'currency' => 'AED',
+        'availability' => 'InStock',
+    ]]]);
+
+    $graph = graphOf('/about');
+
+    expect($graph['Product']['sku'])->toBe('ABC-1')
+        ->and($graph['Product']['brand'])->toBe(['@type' => 'Brand', 'name' => 'dsrpt'])
+        ->and($graph['Product']['offers']['availability'])->toBe('https://schema.org/InStock');
+});
+
+it('credits the organisation when an article names no author', function () {
+    $page = schemaPage();
+    $page->update(['schema' => ['type' => 'Article']]);
+
+    $graph = graphOf('/about');
+
+    expect($graph['Article']['author']['@id'])->toBe('http://localhost:8000#organization')
+        ->and($graph['Article']['publisher']['@id'])->toBe('http://localhost:8000#organization')
+        ->and($graph['Article']['datePublished'])->not->toBeNull();
+
+    $page->update(['schema' => ['type' => 'Article', 'data' => ['author' => 'Abdulkader Safi']]]);
+
+    expect(graphOf('/about')['Article']['author'])
+        ->toBe(['@type' => 'Person', 'name' => 'Abdulkader Safi']);
+});
+
+it('emits a plain WebPage when the client picks nothing', function () {
+    schemaPage();
+
+    $graph = graphOf('/about');
+
+    expect($graph)->toHaveKey('WebPage')
+        ->and($graph['WebPage'])->not->toHaveKey('mainEntity')
+        ->and(array_keys($graph))->not->toContain('Service', 'Product', 'Article');
+});
+
+it('keeps the type when the page is translated', function () {
+    $page = schemaPage();
+    $page->update(['schema' => ['type' => 'Service', 'data' => ['service_type' => 'Web design']]]);
+
+    // The type is one fact about the page, so Arabic says the same thing.
+    expect(graphOf('/ar/about-ar'))->toHaveKey('Service');
+});

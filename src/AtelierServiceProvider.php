@@ -23,6 +23,7 @@ class AtelierServiceProvider extends PackageServiceProvider
                 'create_atelier_page_revisions_table',
                 'create_atelier_page_redirects_table',
                 'create_atelier_settings_table',
+                'add_schema_to_atelier_pages_table',
             ]);
     }
 

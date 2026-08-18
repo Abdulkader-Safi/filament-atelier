@@ -257,10 +257,15 @@ to the best of what is known now, and it is exactly the kind of thing that chang
 
 ### The page type select
 
-- [ ] Type select in the page-level section next to Layout, defaulting to WebPage. Page-level rather than per locale: a page that is a Service in English is a Service in Arabic.
-- [ ] Conditional fields per type, so choosing Event asks for a start date and nothing else.
-- [ ] First set of types: `WebPage`, `AboutPage`, `ContactPage`, `Article`, `Service`,
-      `Product`, `Event`, `LocalBusiness`, `Person`.
+- [x] Type select in the page-level section next to Layout, defaulting to WebPage. Page-level rather than per locale: a page that is a Service in English is a Service in Arabic. Stored in its own `schema` column.
+- [x] Conditional fields per type, so choosing Event asks for a start date and nothing else. Nothing duplicates a field the page already has: the name and description come from the meta fields, the image from the share image.
+- [x] First set of types: `WebPage`, `AboutPage`, `ContactPage`, `CollectionPage`, `Article`,
+      `Service`, `Product`, `Event`, `Person`. `LocalBusiness` is deliberately not among them:
+      it describes the business, which is the Site details screen, not a page.
+
+      Page-shaped types refine the `WebPage` node itself, because an About page *is* a web
+      page. Thing-shaped types get their own node linked through `mainEntity`, because a page
+      about a product is not a product. That distinction is the whole modelling decision.
 - [ ] Second set, once the first is proven: `CollectionPage`, `QAPage`, `ProfilePage`,
       `JobPosting`, `Course`, `SoftwareApplication`, `VideoObject`.
 - [ ] An **exclude from structured data** toggle for the page that should say nothing.

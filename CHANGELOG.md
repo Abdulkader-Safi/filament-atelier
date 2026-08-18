@@ -35,6 +35,16 @@ breaks is called out under **Breaking** with what to do about it.
   The encoding is a security boundary, not formatting: a client typing `</script>` into a
   meta title cannot close the block, and Arabic stays readable rather than becoming
   `\uXXXX` escapes.
+- **A Page type select**, on the page settings screen next to Layout: standard page, about,
+  contact, listing, article, service, product, event or person. Choosing one reveals the few
+  fields that type needs and nothing else, and none of them duplicate a field the page
+  already has, since the name and description come from the meta fields and the image from
+  the share image.
+
+  Page-shaped types refine the `WebPage` node itself, because an About page *is* a web page.
+  Thing-shaped types become their own node linked through `mainEntity`, because a page about
+  a product is not a product. The type is page-level, not per locale: a page that is a
+  Service in English is a Service in Arabic.
 
 ## [0.2.0] - 2026-08-18
 

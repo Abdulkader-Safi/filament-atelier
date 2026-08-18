@@ -16,6 +16,7 @@ use Safi\Atelier\LayoutRegistry;
  * @property array|null $published_content
  * @property string|null $layout
  * @property array|null $seo
+ * @property array|null $schema
  */
 class Page extends Model
 {
@@ -27,6 +28,7 @@ class Page extends Model
         'draft_content' => 'array',
         'published_content' => 'array',
         'seo' => 'array',
+        'schema' => 'array',
         'published_at' => 'datetime',
     ];
 
@@ -220,6 +222,22 @@ class Page extends Model
     public function seoFlag(string $locale, string $key): bool
     {
         return (bool) data_get($this->seo, "{$locale}.{$key}");
+    }
+
+    /** What this page is, in schema.org terms. Page-level, never per locale. */
+    public function schemaType(): string
+    {
+        $type = data_get($this->schema, 'type');
+
+        return is_string($type) && $type !== '' ? $type : 'WebPage';
+    }
+
+    /** A field belonging to the chosen type. */
+    public function schemaValue(string $key, mixed $default = null): mixed
+    {
+        $value = data_get($this->schema, "data.{$key}");
+
+        return blank($value) ? $default : $value;
     }
 
     /** Whether search engines are told to keep this locale of the page out. */

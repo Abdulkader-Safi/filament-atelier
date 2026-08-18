@@ -46,7 +46,8 @@ class StructuredData
         $this->organization($locale)
             ->website($locale)
             ->webPage($page, $locale, $url)
-            ->breadcrumbs($page, $locale, $url);
+            ->breadcrumbs($page, $locale, $url)
+            ->mainEntity($page, $locale, $url);
 
         return $this->graph;
     }
@@ -157,8 +158,13 @@ class StructuredData
     {
         $image = Media::url($page->seo($locale, 'og_image'));
 
+        $type = $page->schemaType();
+
         $this->graph->add([
-            '@type' => 'WebPage',
+            // A page-shaped type refines what the page is, so it replaces the
+            // WebPage type rather than sitting beside it. An About page is a
+            // WebPage; a page about a product is not a product.
+            '@type' => PageTypes::isPageShaped($type) ? $type : 'WebPage',
             '@id' => static::id($url, 'webpage'),
             'url' => $url,
             'name' => $page->metaTitle($locale),
@@ -181,6 +187,132 @@ class StructuredData
         }
 
         return $this;
+    }
+
+    /**
+     * The thing the page is about, when it is about a thing.
+     *
+     * Linked from the WebPage through `mainEntity` rather than replacing it,
+     * because a page describing a service is not itself a service. The name
+     * and description come from the meta fields the client already filled in.
+     */
+    public function mainEntity(Page $page, string $locale, string $url): static
+    {
+        $type = $page->schemaType();
+
+        if (PageTypes::isPageShaped($type)) {
+            return $this;
+        }
+
+        $id = static::id($url, 'mainentity');
+        $image = Media::url($page->seo($locale, 'og_image'));
+
+        $node = [
+            '@type' => $type,
+            '@id' => $id,
+            'name' => $page->metaTitle($locale),
+            'description' => $page->seo($locale, 'meta_description'),
+            'url' => $url,
+            'image' => $image,
+            ...$this->typeFields($page, $locale),
+        ];
+
+        $this->graph->add($node);
+
+        // The link only makes sense once the node exists.
+        if ($this->graph->has($id)) {
+            $this->graph->add([
+                '@type' => 'WebPage',
+                '@id' => static::id($url, 'webpage'),
+                'mainEntity' => ['@id' => $id],
+            ]);
+        }
+
+        return $this;
+    }
+
+    /**
+     * The handful of fields belonging to the chosen type.
+     *
+     * @return array<string, mixed>
+     */
+    protected function typeFields(Page $page, string $locale): array
+    {
+        $offer = Graph::node([
+            '@type' => 'Offer',
+            'price' => $page->schemaValue('price'),
+            'priceCurrency' => $page->schemaValue('currency'),
+            'availability' => ($availability = $page->schemaValue('availability'))
+                ? 'https://schema.org/'.$availability
+                : null,
+            'url' => $page->url($locale),
+        ]);
+
+        return match ($page->schemaType()) {
+            'Article' => [
+                'headline' => $page->metaTitle($locale),
+                'author' => ($author = $page->schemaValue('author'))
+                    ? ['@type' => 'Person', 'name' => $author]
+                    : ['@id' => static::siteId('organization')],
+                'publisher' => ['@id' => static::siteId('organization')],
+                'datePublished' => $page->schemaValue('published_at')
+                    ?? $page->published_at?->toAtomString(),
+                'dateModified' => $page->updated_at?->toAtomString(),
+            ],
+
+            'Service' => [
+                'serviceType' => $page->schemaValue('service_type'),
+                'provider' => ['@id' => static::siteId('organization')],
+                'areaServed' => $this->places($page->schemaValue('area_served')),
+                'offers' => $offer,
+            ],
+
+            'Product' => [
+                'sku' => $page->schemaValue('sku'),
+                'brand' => ($brand = $page->schemaValue('brand'))
+                    ? ['@type' => 'Brand', 'name' => $brand]
+                    : null,
+                'offers' => $offer,
+            ],
+
+            'Event' => [
+                'startDate' => $page->schemaValue('start'),
+                'endDate' => $page->schemaValue('end'),
+                'location' => Graph::node([
+                    '@type' => 'Place',
+                    'name' => $page->schemaValue('location'),
+                    'address' => $page->schemaValue('location_address'),
+                ]),
+                'organizer' => ['@id' => static::siteId('organization')],
+                'offers' => $offer,
+            ],
+
+            'Person' => [
+                'name' => $page->schemaValue('name') ?? $page->metaTitle($locale),
+                'jobTitle' => $page->schemaValue('job_title'),
+                'worksFor' => ['@id' => static::siteId('organization')],
+                'sameAs' => $page->schemaValue('same_as'),
+            ],
+
+            default => [],
+        };
+    }
+
+    /**
+     * A comma separated list into Place nodes.
+     *
+     * @return array<int, array<string, string>>|null
+     */
+    protected function places(?string $list): ?array
+    {
+        $places = collect(explode(',', (string) $list))
+            ->map(fn (string $place) => trim($place))
+            ->filter()
+            ->values();
+
+        return $places->isEmpty()
+            ? null
+            : $places->map(fn (string $place) => ['@type' => 'Place', 'name' => $place])->all();
     }
 
     /**
