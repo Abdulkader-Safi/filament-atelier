@@ -66,6 +66,7 @@ Listed because a page builder is judged on what it does not do:
 - **A revisions UI.** Snapshots are written and `restoreRevision()` works, but there is no screen for browsing or comparing them.
 - **Per-block asset loading and a measured performance budget.** No page cache, no per-block CSS or JS, no Lighthouse numbers recorded.
 - **Drag to reorder,** and inserting a section anywhere but the end.
+- **`Review` schema from testimonials.** Deliberate: Google ignores reviews a business publishes about itself, and the block has no rating field.
 
 Block types are defined in code, and that is the design rather than a stopgap. Creating block types from the panel is v2 and deliberately parked.
 
@@ -95,6 +96,41 @@ AtelierPlugin::make()
 ```
 
 A source is a closure or the name of an invokable class resolved from the container, the same shape as `->blocks()`. It returns URL strings, or arrays with `lastmod` and per-locale `alternates`. Sources run when the sitemap is requested, so they're free to query. Full details and the reasoning are in the [SEO guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO).
+
+## Structured data
+
+Every page emits one JSON-LD graph, built at render from data you already filled in. Nothing is stored, so there's no second copy to keep in step and no cache to clear.
+
+Three things feed it. **Settings → Site details** holds the organisation: name, logo, social profiles, address, opening hours, contact points. **Structured data** on the page settings screen holds what the page is. And blocks describe themselves, so an FAQ block becomes `FAQPage` with nothing typed twice.
+
+A service page at a nested slug emits its organisation with hours and geo, the site, the page, a `BreadcrumbList` derived from the slug path, a `Service` node with its `Offer`, and an `FAQPage` from the block on it. All linked by `@id` rather than repeating the organisation on every node.
+
+**Page type** is a select of nine: standard, about, contact, listing, article, service, product, event, person, job vacancy. Picking one reveals the few fields it needs, and none of them repeat something the page already has, so the name comes from the meta title and the dates from publishing. Page-shaped types refine the `WebPage`; thing-shaped types get their own node linked through `mainEntity`, because a page about a product is not a product.
+
+**FAQ and breadcrumbs can be typed rather than derived.** On a site whose blocks you wrote yourself, a custom FAQ section has no schema unless somebody remembered to add it, so both are editable per locale under Structured data, and typed entries win over derived ones.
+
+### Your own routes, same graph
+
+A blog post lives on your route, in your view, and Atelier never sees it. It shouldn't have to reinvent the organisation:
+
+```blade
+@include("atelier::partials.schema", [
+    "nodes" => [
+        [
+            "@type" => "Article",
+            "@id" => url()->current() . "#article",
+            "headline" => $post->title,
+            "datePublished" => $post->published_at?->toAtomString(),
+            "publisher" => [
+                "@id" => \Safi\Atelier\Schema\StructuredData::siteId(
+                    "organization"),
+            ],
+        ],
+    ],
+])
+```
+
+That emits the `Organization` and `WebSite` nodes plus whatever you pass, with the same pruning and safe encoding. The post's publisher is then the same node the rest of the site points at, not a copy that drifts the first time a phone number changes. Full details in the [structured data guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Structured-data).
 
 ## Built on
 
