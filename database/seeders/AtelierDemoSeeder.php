@@ -220,6 +220,22 @@ class AtelierDemoSeeder extends Seeder
                     ['icon' => 'heroicon-o-pencil-square', 'title' => 'Handover', 'body' => 'You edit it afterwards, without calling anyone.'],
                 ]],
             ]),
+            // On the same page as the Service node and the breadcrumb trail,
+            // so one URL shows every part of the structured data working.
+            $this->block('faq', [
+                'heading' => ['en' => 'Questions about this service', 'ar' => 'أسئلة عن هذه الخدمة'],
+                'items' => [
+                    'en' => [
+                        ['question' => 'How long does a site take?', 'answer' => 'Four to eight weeks for most, depending on how much content exists on day one.'],
+                        ['question' => 'Can we edit it afterwards?', 'answer' => 'That is the point. Every section on the site is editable without calling a developer.'],
+                        ['question' => 'Do you work in Arabic?', 'answer' => 'Yes. Every page is bilingual, right to left, from the same content tree.'],
+                    ],
+                    'ar' => [
+                        ['question' => 'كم يستغرق بناء الموقع؟', 'answer' => 'من أربعة إلى ثمانية أسابيع في الغالب، حسب حجم المحتوى الجاهز.'],
+                        ['question' => 'هل يمكننا التعديل لاحقاً؟', 'answer' => 'هذا هو الهدف. كل قسم قابل للتعديل دون الرجوع إلى المطور.'],
+                    ],
+                ],
+            ]),
             $this->block('cta', [
                 'heading' => ['en' => 'Start a project', 'ar' => 'ابدأ مشروعاً'],
                 'body' => ['en' => 'Tell us what you need and we will tell you what it takes.'],
