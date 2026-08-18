@@ -1,5 +1,9 @@
 # 04. Three-pane editor
 
+> **Status, 18 Aug 2026.** Built and working. Two deliberate divergences from this file:
+> the editor autosaves, so there is no Save button and no unsaved-changes warning, and
+> reorder is up and down buttons rather than drag. Drag is the one worth coming back to.
+
 ## What it is
 
 The product. A custom Filament page that replaces the default page edit screen with three panes:
@@ -38,33 +42,33 @@ Pages → open a page. The three-pane editor is the edit screen.
 
 ### Layout
 
-- [ ] Custom Filament page registered as the page edit screen on our own `PageResource`.
-- [ ] Three-pane responsive layout. Decide and document what happens under about 1024px: the honest answer is that this editor is a desktop tool.
-- [ ] Toolbar: width switcher, language switcher, Save, Publish, a link to view the live page.
+- [~] Custom Filament page registered as the page edit screen on our own `PageResource`. It is a standalone panel page at `/atelier/{record}`, reached from a button on the page settings screen, not the resource's edit route. The split turned out to be right: settings, slugs and SEO belong on a form, not in the builder chrome. Worth writing into the resource so a row click lands in the builder.
+- [ ] Three-pane responsive layout. Decide and document what happens under about 1024px: the honest answer is that this editor is a desktop tool. The layout has no breakpoints and nothing is documented, so on a narrow screen the panes just squeeze.
+- [~] Toolbar: width switcher, language switcher, Save, Publish, a link to view the live page. Width, language, status badge, open-preview and Publish are there. No Save, by design, because every change persists to the draft immediately. No view-live link; that one lives on the settings screen and should be here too.
 
 ### Section list
 
-- [ ] Render the section list from the draft block tree.
-- [ ] Drag to reorder, persisting to `draft_content` and refreshing the preview.
-- [ ] Add section: picker grouped by `category()`, with icons and labels.
-- [ ] Insert at a chosen position, not only at the end.
-- [ ] Duplicate a section, with a fresh block `id`.
-- [ ] Hide a section: excluded from the public render, still visible and marked in the editor.
-- [ ] Delete with a confirm, since this one isn't reversible without revisions.
-- [ ] Smart row labels from the block's heading where one exists, falling back to the block label.
+- [x] Render the section list from the draft block tree.
+- [!] Drag to reorder, persisting to `draft_content` and refreshing the preview. Shipped as up and down buttons (`move($id, $offset)`). It persists and refreshes correctly, but "drag a section up, the page reorders in front of you" is the feel this file asked for and buttons are not it.
+- [x] Add section: picker grouped by `category()`, with icons and labels.
+- [ ] Insert at a chosen position, not only at the end. `addBlock()` appends. Adding a section to the middle of a twelve-section page means adding it at the bottom and clicking up eleven times.
+- [x] Duplicate a section, with a fresh block `id`.
+- [x] Hide a section: excluded from the public render, still visible and marked in the editor.
+- [x] Delete with a confirm, since this one isn't reversible without revisions. Still not reversible: revisions are not built (06).
+- [x] Smart row labels from the block's heading where one exists, falling back to the block label.
 
 ### Settings pane
 
-- [ ] Build the form from the selected block's `schema()`.
-- [ ] Inject the shared controls the block declares in `supports()`.
-- [ ] Mark which fields are reactive, so only those trigger a preview refresh.
-- [ ] Keep unsaved state when switching between sections.
+- [x] Build the form from the selected block's `schema()`.
+- [ ] Inject the shared controls the block declares in `supports()`. Nothing reads `supports()` (03).
+- [x] Mark which fields are reactive, so only those trigger a preview refresh. Each block marks its own fields `->live(debounce: 400)`.
+- [x] Keep unsaved state when switching between sections. There is no unsaved state: every change writes the draft.
 
 ### State
 
-- [ ] All edits write to `draft_content` only.
-- [ ] Warn on navigating away with unsaved changes.
-- [ ] Handle two people editing the same page, or decide explicitly not to and say so here.
+- [x] All edits write to `draft_content` only.
+- [!] Warn on navigating away with unsaved changes. Not applicable as built. The editor autosaves on every change, so there is never unsaved work to lose. Worth stating on the screen, because a client who cannot find a Save button assumes their work is not saved.
+- [ ] Handle two people editing the same page, or decide explicitly not to and say so here. Undecided, and autosave makes it sharper than it would otherwise be: two editors on one page silently overwrite each other with no conflict and no warning. Decide before a client has two people in the panel.
 
 ## Done when
 

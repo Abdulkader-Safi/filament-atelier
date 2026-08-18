@@ -1,5 +1,10 @@
 # 05. Bilingual and RTL
 
+> **Status, 18 Aug 2026.** Data, routing and rendering are done. What is missing is the
+> editor's honesty about translation: nothing shows which sections are untranslated, and
+> nothing marks a field as shared across locales. The Arabic font stack is missing too,
+> because design tokens were never built.
+
 ## What it is
 
 English and Arabic on every page. Translatable block attributes hold a map keyed by locale inside the same block tree:
@@ -40,29 +45,29 @@ Untranslated fields should be visible as untranslated, not silently empty and no
 
 ### Data
 
-- [ ] Per-locale maps on translatable attributes, with a way for a block's `schema()` to declare which fields are translatable.
-- [ ] Sensible behaviour when a locale's value is missing: decide between empty and English fallback, then apply it everywhere consistently.
-- [ ] `page_slugs` rows per locale, unique on (locale, slug).
+- [x] Per-locale maps on translatable attributes, with a way for a block's `schema()` to declare which fields are translatable. Declared by a static `translatable()` on the block rather than inside `schema()`, which keeps the schema a plain Filament schema.
+- [x] Sensible behaviour when a locale's value is missing: decide between empty and English fallback, then apply it everywhere consistently. **Decided: fall back to the default locale.** `Renderer::localise()` does it in one place, so it is consistent by construction. This closes the question 01 left open when the Arabic hero rendered no heading.
+- [x] `page_slugs` rows per locale, unique on (locale, slug).
 
 ### Routing and rendering
 
-- [ ] `/{slug}` for English, `/ar/{slug}` for Arabic.
-- [ ] Locale set from the route, not from a session or a cookie.
-- [ ] `dir="rtl"` and `lang="ar"` on the Arabic render.
-- [ ] `hreflang` tags on both, pointing at each other.
-- [ ] Arabic font stack in the design tokens.
+- [x] `/{slug}` for English, `/ar/{slug}` for Arabic.
+- [x] Locale set from the route, not from a session or a cookie.
+- [x] `dir="rtl"` and `lang="ar"` on the Arabic render.
+- [x] `hreflang` tags on both, pointing at each other. `x-default` is still missing, carried to 11.
+- [ ] Arabic font stack in the design tokens. No tokens and no font stack, so Arabic renders in whatever the browser picks. This is the most visible of the missing token work.
 
 ### Editor
 
-- [ ] Locale toggle in the toolbar.
-- [ ] Settings pane edits the selected locale's values.
-- [ ] Preview renders the selected locale, including RTL.
-- [ ] Shared vs translatable fields visually distinguished.
-- [ ] An at-a-glance indicator of which sections have untranslated content.
+- [x] Locale toggle in the toolbar.
+- [x] Settings pane edits the selected locale's values. `flattenLocale()` and `mergeLocale()` keep the other locale untouched.
+- [x] Preview renders the selected locale, including RTL.
+- [ ] Shared vs translatable fields visually distinguished. Nothing marks them, so editing a shared field while on Arabic silently changes English too. `translatable()` already knows which is which, so this is a label, not a mechanism.
+- [ ] An at-a-glance indicator of which sections have untranslated content. Nothing shows it, and the default-locale fallback actively hides it: an untranslated Arabic section renders English and looks finished.
 
 ### Blocks
 
-- [ ] Every block in the marketing set audited in RTL: logical properties, no hardcoded `left`/`right`, icons and arrows that need mirroring get mirrored.
+- [~] Every block in the marketing set audited in RTL: logical properties, no hardcoded `left`/`right`, icons and arrows that need mirroring get mirrored. Grepped 18 Aug 2026: no physical direction utilities in any block view. The visual pass is still a human run (10, run 4).
 
 ## Done when
 

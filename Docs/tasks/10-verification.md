@@ -1,5 +1,11 @@
 # 10. Verification
 
+> **Status, 18 Aug 2026. Not started.** None of the nine runs has been done. The 29
+> automated tests in `example/` cover fragments of runs 3 and 5, and no automated test
+> can stand in for runs 1 and 2, which are the two that need someone who is not Safi.
+> Runs 7, 8 and 9 cannot start yet: the sitemap, the animation layer and the page cache
+> do not exist.
+
 ## What it is
 
 The runs that prove the eleven success criteria in `prd.md`. Not a code review, not a test suite, though both should exist. These are end-to-end runs by the people the software is for, doing the thing the software is for.
@@ -67,6 +73,8 @@ A developer who didn't build Atelier adds a new block type from the docs alone.
 
 ### Run 7: SEO
 
+Blocked. JSON-LD and the sitemap are not built. See 11.
+
 - [ ] Meta and JSON-LD in the head, per locale.
 - [ ] Rich Results Test passes on a page with an FAQ block.
 - [ ] Sitemap covers both locales and contains no draft or preview URL.
@@ -74,12 +82,16 @@ A developer who didn't build Atelier adds a new block type from the docs alone.
 
 ### Run 8: animation
 
+Blocked. Feature 08 is not started.
+
 - [ ] Preset applied from the dropdown works on the public page.
 - [ ] It survives Livewire SPA navigation between pages, both directions.
 - [ ] Reduced-motion setting disables it.
 - [ ] Covers PRD criterion 10.
 
 ### Run 9: performance
+
+Can run today against the current build, and the numbers are worth having before 09 starts.
 
 - [ ] Lighthouse on a representative page, both locales, numbers recorded in `09-performance.md`.
 - [ ] Covers PRD criterion 11.

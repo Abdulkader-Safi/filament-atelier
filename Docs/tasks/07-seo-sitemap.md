@@ -1,5 +1,10 @@
 # 07. SEO and sitemap
 
+> **18 Aug 2026.** Partly shipped. The meta half is live, marked below. The sitemap,
+> the structured data and the fallbacks are not, and the gap list for v0.2.0 lives in
+> [11-seo-v0.2.md](11-seo-v0.2.md) with what the code audit added to it. Nothing here
+> is reversed; this file is just no longer the whole picture.
+
 ## What it is
 
 Per-locale meta fields on every page (title, description, OG image, canonical), JSON-LD structured data, and an auto-generated sitemap covering both locales. Meta and JSON-LD via `ralphjsmit/laravel-seo`, sitemap via `spatie/laravel-sitemap`.
@@ -32,12 +37,12 @@ The sitemap needs no UI. It regenerates on publish.
 
 ### Meta
 
-- [ ] Per-locale SEO fields on the page, stored so adding a locale later isn't a migration.
-- [ ] `ralphjsmit/laravel-seo` wired into the public layout head.
-- [ ] Fallbacks: title from the page title, description from the first text content on the page, OG image from the first image.
-- [ ] Canonical set to the clean URL by default, overridable.
-- [ ] `hreflang` between locales (built in feature 05, verified here).
-- [ ] `noindex` on preview responses (built in feature 06, verified here).
+- [x] Per-locale SEO fields on the page, stored so adding a locale later isn't a migration.
+- [!] `ralphjsmit/laravel-seo` wired into the public layout head. Hand-rolled in the layout instead, so the package is not a dependency. Revisit in 11 when JSON-LD lands.
+- [~] Fallbacks: title from the page title only. Description and OG image have none, so an empty field means no tag. Carried to 11.
+- [x] Canonical set to the clean URL by default, overridable.
+- [x] `hreflang` between locales (built in feature 05, verified here). `x-default` still missing, carried to 11.
+- [x] `noindex` on preview responses (built in feature 06, verified here).
 
 ### Structured data
 

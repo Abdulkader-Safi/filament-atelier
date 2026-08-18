@@ -1,5 +1,10 @@
 # 03. Block library and rendering
 
+> **Status, 18 Aug 2026.** The contract and the renderer are done. Nine of the thirteen
+> blocks exist. Header, footer and raw HTML are not built, the contact form is still
+> blocked on the open question at the bottom, and `supports()` is declared on the
+> interface and consumed by nothing.
+
 ## What it is
 
 The `Block` contract, the renderer that walks a JSON tree and outputs HTML, and the starter set of marketing blocks a client site actually needs.
@@ -40,36 +45,36 @@ Developers never see a UI for this. Registration is code.
 
 ### Contract and renderer
 
-- [ ] `Block` interface as above.
-- [ ] Convention for the Blade view path, so `render()` isn't needed on the interface.
-- [ ] Renderer that walks the JSON tree and resolves each node through the registry.
-- [ ] Recursive rendering for `children`, for blocks that nest.
-- [ ] Unknown block type renders nothing on the public site and shows a clear placeholder in the preview, rather than throwing.
-- [ ] `supports()` handling: shared background, padding and animation controls injected into the settings pane and applied by the renderer, so each block doesn't reimplement them.
+- [x] `Block` interface as above, plus `translatable()` and `view()`, and a `BaseBlock` carrying the defaults.
+- [x] Convention for the Blade view path, so `render()` isn't needed on the interface. `hero` resolves to `atelier::blocks.hero`, overridable per block.
+- [x] Renderer that walks the JSON tree and resolves each node through the registry.
+- [x] Recursive rendering for `children`, for blocks that nest. No shipped block nests yet, so the path is untested by a real block.
+- [x] Unknown block type renders nothing on the public site and shows a clear placeholder in the preview, rather than throwing.
+- [ ] `supports()` handling: shared background, padding and animation controls injected into the settings pane and applied by the renderer, so each block doesn't reimplement them. The method is on the interface and returns `[]` for every block. Nothing reads it. This is the piece that stops blocks growing their own style fields, and feature 08's animation controls have nowhere to attach until it exists.
 
 ### The marketing set
 
 - [ ] Header
-- [ ] Hero
-- [ ] Features
-- [ ] Logo wall
-- [ ] Testimonials
-- [ ] CTA
-- [ ] FAQ
-- [ ] Rich text
-- [ ] Image
-- [ ] Gallery
-- [ ] Contact form (see open question)
+- [x] Hero
+- [x] Features
+- [x] Logo wall
+- [x] Testimonials
+- [x] CTA
+- [x] FAQ
+- [x] Rich text
+- [x] Image
+- [x] Gallery
+- [!] Contact form. Still blocked on the open question below.
 - [ ] Footer
-- [ ] Raw HTML, the escape hatch for one-off markup
+- [ ] Raw HTML, the escape hatch for one-off markup. This is the v1 escape hatch named in the PRD's non-negotiables, so its absence is load-bearing: there is currently no way to put one-off markup on a page.
 
 ### Quality bar per block
 
-- [ ] Lean markup, no wrapper divs that exist only to hold a class.
-- [ ] Tailwind utilities plus design tokens, no per-block bespoke CSS unless there's no alternative.
-- [ ] Explicit width and height on every image, to protect CLS.
-- [ ] Correct in RTL using logical properties, not `left`/`right`.
-- [ ] Every block registered with an icon and a category.
+- [x] Lean markup, no wrapper divs that exist only to hold a class.
+- [~] Tailwind utilities plus design tokens, no per-block bespoke CSS unless there's no alternative. Utilities yes, tokens no, because tokens were never built (02).
+- [~] Explicit width and height on every image, to protect CLS. Present on every `<img>`, but hardcoded per view (1600x900, 800x600, 80x80) rather than read from the file, so an upload with a different ratio causes the shift the attributes exist to prevent. The hero's image is a CSS background and has no dimensions at all.
+- [x] Correct in RTL using logical properties, not `left`/`right`. Audited 18 Aug 2026: no `ml-`, `mr-`, `pl-`, `pr-`, `text-left`, `text-right` or `border-l/r` in any block view. The visual pass across every block is still a human run (10, run 4).
+- [x] Every block registered with an icon and a category.
 
 ## Done when
 

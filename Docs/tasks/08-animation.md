@@ -1,5 +1,11 @@
 # 08. Animation
 
+> **Status, 18 Aug 2026. Not started.** No GSAP dependency, no preset map, no `data-anim`
+> attribute anywhere in `src/` or `resources/`. It is also blocked in a way this file did
+> not anticipate: animation was meant to arrive through `supports()`, and nothing reads
+> `supports()` yet (03). Build that first or every block grows its own animation fields,
+> which is the outcome this feature exists to avoid.
+
 ## What it is
 
 Scroll and entrance animations picked from a dropdown per section, stored as data on the block:
