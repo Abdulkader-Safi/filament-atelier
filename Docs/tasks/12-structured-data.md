@@ -295,6 +295,75 @@ to the best of what is known now, and it is exactly the kind of thing that chang
       blog resource can emit `Article` for its own routes.
 - [ ] Document it with a worked example, like the sitemap sources are documented.
 
+---
+
+## What is left, ranked
+
+Written 18 Aug 2026, after tiers one to three shipped. Ordered by what a client site
+actually gains, not by how interesting the schema is.
+
+### A. Fields missing from nodes we already emit
+
+The cheapest work here, because the node exists and the client already knows the answer.
+
+- [ ] **`openingHoursSpecification`** on LocalBusiness. A local business with no hours is half
+      a listing, and hours are the single most looked-at fact in a local result. Needs a
+      day-and-time repeater on the Site details screen, which is why it was skipped the first
+      time round. **The highest value item on this page.**
+- [ ] **`contactPoint`** on Organization: a phone number with a `contactType`, the languages
+      it is answered in, and the areas it serves. A bare `telephone` says none of that, and
+      "we answer in Arabic and English" is a real differentiator in the GCC.
+- [ ] **Product completeness.** `aggregateRating`, `itemCondition`, `priceValidUntil`, and for
+      merchant listings `shippingDetails` and `hasMerchantReturnPolicy`. Google demoted
+      product results without the last two, so a Product node today is incomplete rather than
+      wrong.
+- [ ] **Event completeness.** `eventStatus` (scheduled, postponed, cancelled, moved online)
+      and `eventAttendanceMode` (offline, online, mixed). Both became close to expected after
+      2020, and a cancelled event with no `eventStatus` keeps advertising itself.
+- [ ] **`Organization` legal details:** `foundingDate`, `vatID`, `taxID`, `numberOfEmployees`.
+      Cheap fields on a screen that already exists, and a trust signal for a business search.
+
+### B. Types worth adding
+
+- [ ] **`VideoObject`.** Still earns rich results, and almost nobody marks video up. Needs
+      `name`, `description`, `thumbnailUrl` and `uploadDate`, so it wants a video block to
+      derive from rather than a typed form.
+- [ ] **`JobPosting`.** `title`, `datePosted`, `validThrough`, `hiringOrganization`,
+      `jobLocation`, `employmentType`, `baseSalary`. Careers pages are a normal client ask and
+      this one still produces a real listing.
+- [ ] **`CollectionPage` with `ItemList`.** A services index or a blog index that lists its
+      children in order. The type is already in the select and emits nothing extra, which is
+      the gap.
+- [ ] **`QAPage`.** Genuinely different from `FAQPage`: one question, multiple answers, one
+      accepted. Still earns rich results where FAQ no longer does.
+- [ ] **`Course`.** `provider`, `hasCourseInstance`, `offers`. Worth it only for a client who
+      teaches.
+- [ ] **`ProfilePage`.** Wraps a Person page. Cheap once Person exists, which it does.
+- [ ] **`Recipe`, `SoftwareApplication`.** Real rich results, narrow audience. Build when a
+      client needs one.
+- [ ] **`HowTo`.** Deliberately not building: Google dropped its rich results in September
+      2023, so it is markup for nobody.
+
+### C. Structural
+
+- [ ] **A registry for the host app's own models**, the same shape as `->sitemap([...])`. A
+      blog resource on its own panel tab can contribute sitemap URLs today but cannot
+      contribute `Article` nodes for the same routes, which is an odd half.
+- [ ] **`ImageGallery` and `ImageObject`** from the gallery and image blocks. Low value on its
+      own, and the mechanism is already there through `structuredData()`.
+- [ ] **`speakable`** on WebPage. Narrow: it was news-only and US English at launch. Check
+      whether that is still true before building.
+- [ ] **`Review` and `AggregateRating` from testimonials.** Still the open question from the
+      original list, and the answer is probably still no: Google ignores reviews a business
+      publishes about itself, and the block has no rating field. Only worth it attached to a
+      Product or Service page, with a rating added to the block.
+
+### D. Proving it
+
+- [ ] **Run a real URL through the Rich Results Test and the Schema.org validator.** Twenty
+      seven tests cover the shape of the graph; neither validator has seen it. This is the
+      only item here that can invalidate the rest.
+
 ## Done when
 
 - Every public page emits one valid `@graph` that passes both validators, with no page
