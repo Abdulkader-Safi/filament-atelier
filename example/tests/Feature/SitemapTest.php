@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\SitemapRegistry;
 
 use function Pest\Laravel\get;
 
@@ -81,3 +82,67 @@ it('emits a robots meta only when it has something to say', function () {
     expect(get('/hidden')->getContent())
         ->toContain('<meta name="robots" content="noindex, nofollow">');
 });
+
+it('includes URLs a host app registers, in every shape', function () {
+    sitemapPage('About', 'about');
+
+    app(SitemapRegistry::class)->add([
+        // The easy case: a bare URL.
+        fn () => ['https://example.test/blog'],
+        // The full case, with a real date object and per-locale alternates.
+        fn () => [[
+            'loc' => 'https://example.test/blog/hello',
+            'lastmod' => new DateTimeImmutable('2026-08-01 10:00:00'),
+            'alternates' => ['ar' => 'https://example.test/ar/blog/hello'],
+        ]],
+    ]);
+
+    $xml = get('/sitemap.xml')->assertOk()->getContent();
+
+    expect($xml)
+        ->toContain('<loc>https://example.test/blog</loc>')
+        ->toContain('<loc>https://example.test/blog/hello</loc>')
+        ->toContain('<lastmod>2026-08-01T10:00:00+00:00</lastmod>')
+        ->toContain('hreflang="ar" href="https://example.test/ar/blog/hello"')
+        // Atelier's own pages are still there.
+        ->toContain('<loc>http://localhost:8000/about</loc>');
+
+    expect(simplexml_load_string($xml))->not->toBeFalse();
+});
+
+it('resolves an invokable class source from the container', function () {
+    app(SitemapRegistry::class)->add(ServiceUrls::class);
+
+    expect(get('/sitemap.xml')->getContent())
+        ->toContain('<loc>https://example.test/services/web-design</loc>');
+});
+
+it('lists a URL once even if a source repeats one Atelier already has', function () {
+    sitemapPage('About', 'about');
+
+    app(SitemapRegistry::class)->add(fn () => ['http://localhost:8000/about']);
+
+    expect(substr_count(get('/sitemap.xml')->getContent(), '<loc>http://localhost:8000/about</loc>'))
+        ->toBe(1);
+});
+
+it('skips an entry with no url rather than emitting an empty loc', function () {
+    app(SitemapRegistry::class)->add(fn () => [
+        ['lastmod' => '2026-08-01'],
+        ['loc' => ''],
+        ['loc' => 'https://example.test/real'],
+    ]);
+
+    $xml = get('/sitemap.xml')->getContent();
+
+    expect(substr_count($xml, '<url>'))->toBe(1)
+        ->and($xml)->toContain('https://example.test/real');
+});
+
+class ServiceUrls
+{
+    public function __invoke(): array
+    {
+        return [['loc' => 'https://example.test/services/web-design']];
+    }
+}

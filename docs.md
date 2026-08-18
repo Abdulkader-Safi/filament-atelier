@@ -252,6 +252,61 @@ real `public/robots.txt`, and a file on disk is served before any route runs**, 
 that file to use this one, or copy the `Sitemap:` line into yours. Set
 `atelier.robots.disallow_panel` to your panel path, or `null` to leave it crawlable.
 
+### Pages Atelier does not own
+
+A real client site is rarely only Atelier pages. There is usually a blog or a services
+resource with its own model, its own panel tab and its own routes, and those URLs belong in
+the sitemap too. Hand them over when you register the plugin:
+
+```php
+use App\Models\Post;
+use Safi\Atelier\AtelierPlugin;
+use Safi\Atelier\Blocks\DefaultBlocks;
+
+->plugins([
+    AtelierPlugin::make()
+        ->blocks(DefaultBlocks::all())
+        ->sitemap([
+            fn () => Post::published()->get()->map(fn (Post $post) => [
+                'loc' => route('blog.show', $post),
+                'lastmod' => $post->updated_at,
+            ]),
+        ]),
+])
+```
+
+A source is a closure, or the name of an invokable class resolved from the container, which
+is the better home once it needs its own query:
+
+```php
+->sitemap([App\Sitemap\ServiceUrls::class])
+```
+
+Each source returns an iterable of URLs. The short form is a plain string:
+
+```php
+fn () => ['https://example.com/pricing', 'https://example.com/contact']
+```
+
+The long form takes `lastmod` (a string or any `DateTimeInterface`) and `alternates` keyed
+by locale:
+
+```php
+fn () => [[
+    'loc' => route('blog.show', $post),
+    'lastmod' => $post->updated_at,
+    'alternates' => ['ar' => route('blog.show', [$post, 'locale' => 'ar'])],
+]]
+```
+
+Sources are called when the sitemap is requested, never at boot, so they are free to query.
+URLs are deduplicated on `loc`, so listing something Atelier already knows about is
+harmless. A source that throws takes the sitemap down with it on purpose: a sitemap quietly
+missing half a site is worse than one that fails where somebody notices.
+
+Entries from your own sources are listed as given. Atelier does not check whether they are
+published, indexable or reachable, because only your model knows that. Filter in the source.
+
 ### Renaming a slug
 
 Changing a published page's slug writes a 301 from the old URL, and the public route

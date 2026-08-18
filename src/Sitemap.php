@@ -17,11 +17,33 @@ use Safi\Atelier\Models\Page;
  * Everything is decided per locale, not per page. An English page can be
  * indexable while its Arabic translation is not, so each URL is judged on its
  * own and only lists alternates that are themselves indexable.
+ *
+ * A client site is rarely only Atelier pages. Anything else with its own
+ * model and its own routes, a blog or a services resource on its own panel
+ * tab, contributes through `SitemapRegistry`.
  */
 class Sitemap
 {
-    /** @return Collection<int, array{loc: string, lastmod: ?string, alternates: array<string, string>}> */
+    public function __construct(protected SitemapRegistry $registry) {}
+
+    /**
+     * Atelier's pages, then whatever the host app registered.
+     *
+     * Deduped on the URL, first one wins, so an app that also lists a page
+     * Atelier already knows about does not get it twice.
+     *
+     * @return Collection<int, array{loc: string, lastmod: ?string, alternates: array<string, string>}>
+     */
     public function urls(): Collection
+    {
+        return $this->pageUrls()
+            ->concat($this->registry->urls())
+            ->unique('loc')
+            ->values();
+    }
+
+    /** @return Collection<int, array{loc: string, lastmod: ?string, alternates: array<string, string>}> */
+    protected function pageUrls(): Collection
     {
         $locales = array_keys(config('atelier.locales', []));
 

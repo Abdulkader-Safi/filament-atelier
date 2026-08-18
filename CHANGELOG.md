@@ -14,6 +14,12 @@ breaks is called out under **Breaking** with what to do about it.
   `lastmod` from `published_at`, which the table already stored and nothing read. Drafts and
   noindexed pages are excluded. Written rather than pulled in: `spatie/laravel-sitemap`
   exists to crawl a site and discover URLs, and Atelier already knows every URL it has.
+- **Sitemap sources for pages Atelier does not own.** A client site usually has a blog or a
+  services resource with its own model, panel tab and routes, and those URLs belong in the
+  same sitemap. `AtelierPlugin::make()->sitemap([...])` takes closures or invokable class
+  names, the same shape as `->blocks()`. Each returns URL strings, or arrays with `lastmod`
+  and per-locale `alternates`. Sources run at request time, entries dedupe on `loc`, and a
+  source that throws fails the sitemap rather than silently shrinking it.
 - **A `robots.txt`** pointing at the sitemap and disallowing the preview route and the panel.
   Note that Laravel ships a real `public/robots.txt`, and the web server answers that before
   any route runs, so delete it or copy the `Sitemap:` line into it.

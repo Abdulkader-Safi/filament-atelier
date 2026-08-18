@@ -29,6 +29,19 @@ class AtelierPlugin implements Plugin
         return $this;
     }
 
+    /**
+     * Extra sitemap URLs from outside Atelier: a blog, a services resource,
+     * anything with its own model and routes.
+     *
+     * @param  \Closure|string|array<int, \Closure|string>  $sources
+     */
+    public function sitemap(\Closure|string|array $sources): static
+    {
+        app(SitemapRegistry::class)->add($sources);
+
+        return $this;
+    }
+
     public function register(Panel $panel): void
     {
         $panel

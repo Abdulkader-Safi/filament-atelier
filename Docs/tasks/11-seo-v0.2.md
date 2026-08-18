@@ -110,6 +110,12 @@ Panel-level, in a settings page or config:
       URLs, and we already know every URL we have. `Safi\Atelier\Sitemap` is the forty lines
       that were left.
 - [x] `/sitemap.xml` route, both locales, with `xhtml:link` hreflang alternates per entry.
+- [x] URLs from outside Atelier. Added 18 Aug 2026, and not in the original plan: a client
+      site is rarely only Atelier pages, and a blog or services resource on its own panel
+      tab has URLs that belong in the same sitemap. `SitemapRegistry` takes closures or
+      invokable class names through `AtelierPlugin::sitemap()`, the same shape as
+      `->blocks()`. Sources run at request time, entries dedupe on `loc`, and a source that
+      throws fails the sitemap rather than silently shrinking it.
 - [x] `lastmod` from `published_at`, which the table already stores and nothing reads.
 - [x] Drafts, noindexed pages and preview URLs excluded.
 - [~] `robots.txt` published as a stub pointing at the sitemap, and disallowing the panel
