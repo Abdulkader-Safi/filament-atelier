@@ -75,4 +75,15 @@
     @if ($description)
         <meta name="twitter:description" content="{{ $description }}">
     @endif
+
+    {{-- Structured data. Never in the preview: it is noindex, so a graph
+         there is noise. Encoded to be safe inside a script block, which is
+         where the escaping in Graph::toJson() earns its place. --}}
+    @php
+        $graph = app(\Safi\Atelier\Schema\StructuredData::class)->forPage($page, $locale);
+    @endphp
+
+    @unless ($graph->isEmpty())
+        <script type="application/ld+json">{!! $graph->toJson() !!}</script>
+    @endunless
 @endif

@@ -18,8 +18,23 @@ breaks is called out under **Breaking** with what to do about it.
   decisions and belong in a file. An address is client-owned data that changes without a
   deploy, and the person who knows it does not have a text editor open.
 
-  Nothing renders it into a page yet. It is the foundation the structured data work needs.
   **Needs `vendor:publish --tag=filament-atelier-migrations` and `migrate`.**
+- **JSON-LD on every public page.** One `<script type="application/ld+json">` holding a
+  single `@graph`: the `Organization` (or whichever LocalBusiness subtype was picked, with
+  its address, geo, telephone and areas served), the `WebSite`, this `WebPage` with its
+  dates and language, a `BreadcrumbList` derived from nested slugs, and `ImageObject` nodes
+  for the logo and share image. Nodes reference each other by `@id` rather than repeating
+  the organisation, and nothing is stored: the graph is a projection of the tree, built at
+  render.
+
+  Empty values never appear, so a client who fills in nothing still gets a valid graph
+  rather than a node full of nulls. The Arabic page describes the same organisation in
+  Arabic with `inLanguage: ar`, pointing at the same `@id`. Previews emit nothing, since
+  they are `noindex` anyway.
+
+  The encoding is a security boundary, not formatting: a client typing `</script>` into a
+  meta title cannot close the block, and Arabic stays readable rather than becoming
+  `\uXXXX` escapes.
 
 ## [0.2.0] - 2026-08-18
 

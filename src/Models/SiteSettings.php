@@ -25,12 +25,29 @@ class SiteSettings extends Model
     /**
      * The single row, created on first read.
      *
-     * Cached per request because the structured data on every page reads it,
-     * and a settings lookup per node would be several queries for one row.
+     * Resolved through the container as a scoped binding rather than memoised
+     * in a static: the structured data on every page reads this several times
+     * and should not query for each, but a long-running worker or an Octane
+     * process must not hold yesterday's address forever. Scoped bindings are
+     * flushed between requests; a static is not.
      */
     public static function current(): static
     {
-        return once(fn () => static::query()->firstOrCreate([], ['data' => []]));
+        return app()->has(static::class)
+            ? app(static::class)
+            : tap(static::query()->firstOrCreate([], ['data' => []]), fn (self $settings) => app()->instance(static::class, $settings));
+    }
+
+    /** Drop the resolved row, so the next read goes back to the database. */
+    public static function forget(): void
+    {
+        app()->forgetInstance(static::class);
+    }
+
+    /** Keep the container's copy in step with what was just written. */
+    protected static function booted(): void
+    {
+        static::saved(fn (self $settings) => app()->instance(static::class, $settings));
     }
 
     /**

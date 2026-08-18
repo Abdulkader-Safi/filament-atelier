@@ -239,19 +239,21 @@ to the best of what is known now, and it is exactly the kind of thing that chang
 
 ### Foundation, and nothing works without it
 
-- [ ] A **Site details** settings screen, panel-level, holding the organisation. Every tier 1
+- [x] A **Site details** settings screen, panel-level, holding the organisation. Every tier 1
       node depends on it, and the package currently has nowhere to put a site-wide setting.
-- [ ] `Schema` builder: an object that assembles `@graph`, deduplicates by `@id`, drops empty
-      values, and encodes safely.
-- [ ] Emit from `atelier::partials.meta` so a custom layout gets it with the head it already
+- [x] `Schema` builder: an object that assembles `@graph`, deduplicates by `@id`, drops empty
+      values, and encodes safely. `Schema\Graph` merges nodes sharing an `@id` rather than
+      duplicating them, so two FAQ blocks will land in one `FAQPage`, and `Graph::node()`
+      drops anything carrying only its own `@type`.
+- [x] Emit from `atelier::partials.meta` so a custom layout gets it with the head it already
       includes.
-- [ ] `Organization`, with the `LocalBusiness` subtype and its address, hours and geo.
-- [ ] `WebSite`, linked to Organization by `@id`.
-- [ ] `WebPage` per page and locale, with dates from `published_at` and `updated_at`.
-- [ ] `BreadcrumbList` derived from the slug path.
-- [ ] `ImageObject` for the logo and the page's primary image.
-- [ ] Never emit in the preview.
-- [ ] Validate the graph against the Rich Results Test and the Schema.org validator, both.
+- [~] `Organization`, with the `LocalBusiness` subtype and its address, hours and geo. Address, geo, telephone, email, price range and areas served are in. Opening hours are not: `openingHoursSpecification` needs a day-and-time repeater and is worth its own pass.
+- [x] `WebSite`, linked to Organization by `@id`.
+- [x] `WebPage` per page and locale, with dates from `published_at` and `updated_at`.
+- [x] `BreadcrumbList` derived from the slug path. A flat slug gets none: Home → Page is a trail nobody needed.
+- [x] `ImageObject` for the logo and the page's primary image, referenced by `@id` rather than repeated inline.
+- [x] Never emit in the preview.
+- [ ] Validate the graph against the Rich Results Test and the Schema.org validator, both. Nine tests cover the shape; neither validator has been run against a real URL yet.
 
 ### The page type select
 
