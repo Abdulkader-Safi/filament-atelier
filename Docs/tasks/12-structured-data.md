@@ -19,7 +19,7 @@ Three sources feed it, and the split matters more than the schema list:
 
 ## Why we're building it
 
-Meta tags tell a crawler what a page says. Structured data tells it what the page *is*, and
+Meta tags tell a crawler what a page says. Structured data tells it what the page _is_, and
 it is the only part of the head an answer engine can consume without guessing. A client site
 selling services in the GCC that never says it is a `LocalBusiness` with an address and
 opening hours is invisible to the queries that convert.
@@ -119,13 +119,13 @@ a field anywhere.
 
 The foundation. None of it is optional and none of it is a client decision.
 
-| Schema | Where it comes from | Notes |
-|---|---|---|
-| `Organization` | Site details | The publisher identity every other node points at. Subtype to `LocalBusiness` and below when the client has premises. |
-| `WebSite` | Site details plus config | `name`, `url`, `inLanguage`, `publisher` → Organization. |
-| `WebPage` | The page | `@id`, `url`, `name`, `description`, `isPartOf` → WebSite, `inLanguage`, `datePublished`, `dateModified`, `primaryImageOfPage`. |
-| `BreadcrumbList` | The slug path | `services/web-design` already gives Home → Services → Web design. Nested slugs shipped in v0.1.2, so this needs no new hierarchy. |
-| `ImageObject` | Logo, share image, hero image | Referenced by `@id` rather than repeated inline. |
+| Schema           | Where it comes from           | Notes                                                                                                                             |
+| ---------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `Organization`   | Site details                  | The publisher identity every other node points at. Subtype to `LocalBusiness` and below when the client has premises.             |
+| `WebSite`        | Site details plus config      | `name`, `url`, `inLanguage`, `publisher` → Organization.                                                                          |
+| `WebPage`        | The page                      | `@id`, `url`, `name`, `description`, `isPartOf` → WebSite, `inLanguage`, `datePublished`, `dateModified`, `primaryImageOfPage`.   |
+| `BreadcrumbList` | The slug path                 | `services/web-design` already gives Home → Services → Web design. Nested slugs shipped in v0.1.2, so this needs no new hierarchy. |
+| `ImageObject`    | Logo, share image, hero image | Referenced by `@id` rather than repeated inline.                                                                                  |
 
 `LocalBusiness` deserves its own row because of who this is for: `address` (PostalAddress),
 `geo`, `telephone`, `openingHoursSpecification`, `priceRange`, `areaServed`, `currenciesAccepted`.
@@ -138,32 +138,32 @@ One choice per page, driving which node the `WebPage` sits alongside.
 
 **Page-shaped types** (they replace or refine WebPage):
 
-| Type | Fields it needs | Still earns rich results |
-|---|---|---|
-| `WebPage` | Nothing beyond tier 1 | Not a rich result, but the correct default |
-| `AboutPage` | Nothing | No |
-| `ContactPage` | Nothing | No |
-| `CollectionPage` | Nothing | No |
-| `FAQPage` | Generated from the FAQ block | **Restricted**, see the note below |
-| `QAPage` | A single question with answers | Yes, for genuine Q&A pages |
-| `ProfilePage` | About a Person | No, supports Person results |
+| Type             | Fields it needs                | Still earns rich results                   |
+| ---------------- | ------------------------------ | ------------------------------------------ |
+| `WebPage`        | Nothing beyond tier 1          | Not a rich result, but the correct default |
+| `AboutPage`      | Nothing                        | No                                         |
+| `ContactPage`    | Nothing                        | No                                         |
+| `CollectionPage` | Nothing                        | No                                         |
+| `FAQPage`        | Generated from the FAQ block   | **Restricted**, see the note below         |
+| `QAPage`         | A single question with answers | Yes, for genuine Q&A pages                 |
+| `ProfilePage`    | About a Person                 | No, supports Person results                |
 
 **Thing-shaped types** (the page is about a thing):
 
-| Type | Fields it needs | Still earns rich results |
-|---|---|---|
-| `Article` / `BlogPosting` / `NewsArticle` | headline, author, datePublished, dateModified, image | Yes, limited |
-| `Product` | name, image, description, sku, brand, `Offer` (price, currency, availability), `AggregateRating` | **Yes, the highest value one** |
-| `Service` | name, provider, areaServed, serviceType, `Offer` | Indirect, feeds knowledge panels |
-| `Event` | name, startDate, endDate, location, `Offer`, performer | Yes |
-| `Person` | name, jobTitle, image, sameAs, worksFor | Supports knowledge panels |
-| `LocalBusiness` | As tier 1, on the page rather than site-wide | Yes |
-| `JobPosting` | title, datePosted, hiringOrganization, jobLocation, baseSalary | Yes |
-| `Course` | name, provider, offers, hasCourseInstance | Yes |
-| `Recipe` | name, image, ingredients, instructions, cookTime | Yes |
-| `SoftwareApplication` | name, operatingSystem, applicationCategory, offers | Yes |
-| `VideoObject` | name, description, thumbnailUrl, uploadDate, duration | **Yes, and undervalued** |
-| `HowTo` | steps, supplies, tools | **No longer**, see below |
+| Type                                      | Fields it needs                                                                                  | Still earns rich results         |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------- |
+| `Article` / `BlogPosting` / `NewsArticle` | headline, author, datePublished, dateModified, image                                             | Yes, limited                     |
+| `Product`                                 | name, image, description, sku, brand, `Offer` (price, currency, availability), `AggregateRating` | **Yes, the highest value one**   |
+| `Service`                                 | name, provider, areaServed, serviceType, `Offer`                                                 | Indirect, feeds knowledge panels |
+| `Event`                                   | name, startDate, endDate, location, `Offer`, performer                                           | Yes                              |
+| `Person`                                  | name, jobTitle, image, sameAs, worksFor                                                          | Supports knowledge panels        |
+| `LocalBusiness`                           | As tier 1, on the page rather than site-wide                                                     | Yes                              |
+| `JobPosting`                              | title, datePosted, hiringOrganization, jobLocation, baseSalary                                   | Yes                              |
+| `Course`                                  | name, provider, offers, hasCourseInstance                                                        | Yes                              |
+| `Recipe`                                  | name, image, ingredients, instructions, cookTime                                                 | Yes                              |
+| `SoftwareApplication`                     | name, operatingSystem, applicationCategory, offers                                               | Yes                              |
+| `VideoObject`                             | name, description, thumbnailUrl, uploadDate, duration                                            | **Yes, and undervalued**         |
+| `HowTo`                                   | steps, supplies, tools                                                                           | **No longer**, see below         |
 
 Not every one of these belongs in v1 of this feature. The tiering below says which.
 
@@ -171,16 +171,16 @@ Not every one of these belongs in v1 of this feature. The tiering below says whi
 
 This is the part no other builder does well, and it is where the leverage is.
 
-| Block | Schema it produces | Confidence |
-|---|---|---|
-| `FaqBlock` | `FAQPage` with `mainEntity` of `Question` and `acceptedAnswer` | Direct. The repeater is already the right shape. |
-| `GalleryBlock` | `ImageGallery` with `ImageObject` entries, alt text as `caption` | Direct |
-| `ImageBlock` | `ImageObject`, and `primaryImageOfPage` when it is the first | Direct |
-| `HeroBlock` | `headline`, `description` and `primaryImageOfPage` on the WebPage | Direct |
-| `TestimonialsBlock` | `Review` with `author` → Person | **Needs care**, see below |
-| `FeaturesBlock` | `ItemList` of the feature titles | Low value, probably skip |
-| `LogoWallBlock` | Nothing worth emitting | Skip |
-| A future video block | `VideoObject` | Direct, and worth building the block for |
+| Block                | Schema it produces                                                | Confidence                                       |
+| -------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |
+| `FaqBlock`           | `FAQPage` with `mainEntity` of `Question` and `acceptedAnswer`    | Direct. The repeater is already the right shape. |
+| `GalleryBlock`       | `ImageGallery` with `ImageObject` entries, alt text as `caption`  | Direct                                           |
+| `ImageBlock`         | `ImageObject`, and `primaryImageOfPage` when it is the first      | Direct                                           |
+| `HeroBlock`          | `headline`, `description` and `primaryImageOfPage` on the WebPage | Direct                                           |
+| `TestimonialsBlock`  | `Review` with `author` → Person                                   | **Needs care**, see below                        |
+| `FeaturesBlock`      | `ItemList` of the feature titles                                  | Low value, probably skip                         |
+| `LogoWallBlock`      | Nothing worth emitting                                            | Skip                                             |
+| A future video block | `VideoObject`                                                     | Direct, and worth building the block for         |
 
 **Testimonials need care.** Google does not show review rich results for reviews a business
 publishes about itself, so emitting `Review` nodes pointing at the site's own Organization
@@ -264,22 +264,30 @@ to the best of what is known now, and it is exactly the kind of thing that chang
       it describes the business, which is the Site details screen, not a page.
 
       Page-shaped types refine the `WebPage` node itself, because an About page *is* a web
-      page. Thing-shaped types get their own node linked through `mainEntity`, because a page
-      about a product is not a product. That distinction is the whole modelling decision.
+          page. Thing-shaped types get their own node linked through `mainEntity`, because a page
+          about a product is not a product. That distinction is the whole modelling decision.
+
 - [ ] Second set, once the first is proven: `CollectionPage`, `QAPage`, `ProfilePage`,
       `JobPosting`, `Course`, `SoftwareApplication`, `VideoObject`.
 - [ ] An **exclude from structured data** toggle for the page that should say nothing.
 
 ### Generated from blocks
 
-- [ ] A way for a block class to contribute nodes, declared on the block the way `supports()`
+- [x] A way for a block class to contribute nodes, declared on the block the way `supports()`
       and `translatable()` are. Adding a block that contributes schema must not mean editing
-      a file inside the plugin.
-- [ ] `FaqBlock` → `FAQPage`.
-- [ ] `HeroBlock` → headline, description, `primaryImageOfPage`.
+      a file inside the plugin. `structuredData($attributes, $locale, $url)` on `BaseBlock`,
+      returning nodes. It receives the attributes already collapsed to the locale and with
+      tokens resolved, through the same `Renderer::attributesFor()` the view goes through, so
+      the schema cannot describe something different from what rendered.
+- [x] `FaqBlock` → `FAQPage`. A question with no answer is dropped, because Google says so explicitly and a half-filled repeater row is the normal way that happens.
+- [~] `HeroBlock` → headline, description, `primaryImageOfPage`. Not built, and worth
+      questioning: the WebPage already takes its name and description from the meta fields,
+      so a hero would only be overwriting them with something less deliberate. The one part
+      with real value is the hero image standing in as `primaryImageOfPage` when no share
+      image is set.
 - [ ] `ImageBlock` and `GalleryBlock` → `ImageObject` and `ImageGallery`.
 - [ ] Decide the testimonials question above before writing any of it.
-- [ ] Two FAQ blocks on one page merge into one `FAQPage`, rather than emitting two.
+- [x] Two FAQ blocks on one page merge into one `FAQPage`, rather than emitting two. The node is keyed on the page rather than the block, so the graph's own merge does it.
 
 ### For pages Atelier does not own
 

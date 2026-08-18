@@ -7,6 +7,8 @@ namespace Safi\Atelier\Blocks;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Safi\Atelier\Schema\Graph;
+use Safi\Atelier\Schema\StructuredData;
 
 class FaqBlock extends BaseBlock
 {
@@ -43,6 +45,44 @@ class FaqBlock extends BaseBlock
                 ['question' => 'How long does it take?', 'answer' => 'Depends on the scope. Usually weeks, not months.'],
             ]],
         ];
+    }
+
+    /**
+     * The questions the client already typed, as `FAQPage`.
+     *
+     * The `@id` is the page rather than this block, so two FAQ blocks on one
+     * page merge into a single FAQPage with all the questions, which is what
+     * a crawler expects. Two FAQPage nodes on one page is a validation
+     * warning and a coin toss over which one is read.
+     */
+    public static function structuredData(array $attributes, string $locale, string $url): array
+    {
+        $questions = collect($attributes['items'] ?? [])
+            ->map(fn (array $item) => Graph::node([
+                '@type' => 'Question',
+                'name' => trim(strip_tags((string) ($item['question'] ?? ''))),
+                'acceptedAnswer' => Graph::node([
+                    '@type' => 'Answer',
+                    'text' => trim(strip_tags((string) ($item['answer'] ?? ''))),
+                ]),
+            ]))
+            ->filter()
+            // A question with no answer is not an FAQ entry, and Google says
+            // so explicitly.
+            ->filter(fn (array $question) => isset($question['acceptedAnswer'], $question['name']))
+            ->values()
+            ->all();
+
+        if ($questions === []) {
+            return [];
+        }
+
+        return [[
+            '@type' => 'FAQPage',
+            '@id' => StructuredData::id($url, 'faq'),
+            'inLanguage' => $locale,
+            'mainEntity' => $questions,
+        ]];
     }
 
     public function schema(): array

@@ -65,11 +65,7 @@ class Renderer
                 : '';
         }
 
-        $attributes = $this->resolveTokens($this->localise(
-            $node['attributes'] ?? [],
-            $block::translatable(),
-            $locale,
-        ));
+        $attributes = $this->attributesFor($block, $node, $locale);
 
         $children = $node['children'] ?? [];
 
@@ -87,6 +83,26 @@ class Renderer
             'locale' => $locale,
             'editing' => $editing,
         ])->render();
+    }
+
+    /**
+     * A node's attributes as a view would receive them: collapsed to one
+     * locale and with token references resolved.
+     *
+     * Public because the structured data walks the same tree and has to see
+     * exactly what was rendered. Two walks of a small array is cheaper than
+     * two implementations of this that drift apart.
+     *
+     * @param  array<string, mixed>  $node
+     * @return array<string, mixed>
+     */
+    public function attributesFor(Block $block, array $node, string $locale): array
+    {
+        return $this->resolveTokens($this->localise(
+            $node['attributes'] ?? [],
+            $block::translatable(),
+            $locale,
+        ));
     }
 
     /**

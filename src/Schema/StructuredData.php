@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Safi\Atelier\Schema;
 
 use Illuminate\Support\Str;
+use Safi\Atelier\Block;
+use Safi\Atelier\BlockRegistry;
 use Safi\Atelier\Media;
 use Safi\Atelier\Models\Page;
 use Safi\Atelier\Models\SiteSettings;
+use Safi\Atelier\Renderer;
 
 /**
  * Builds the JSON-LD graph for a page.
@@ -21,7 +24,11 @@ use Safi\Atelier\Models\SiteSettings;
  */
 class StructuredData
 {
-    public function __construct(protected Graph $graph = new Graph) {}
+    public function __construct(
+        protected BlockRegistry $blocks,
+        protected Renderer $renderer,
+        protected Graph $graph = new Graph,
+    ) {}
 
     /** Every `@id` is derived, never stored, so the scheme is fixed here once. */
     public static function id(string $url, string $fragment): string
@@ -47,9 +54,44 @@ class StructuredData
             ->website($locale)
             ->webPage($page, $locale, $url)
             ->breadcrumbs($page, $locale, $url)
-            ->mainEntity($page, $locale, $url);
+            ->mainEntity($page, $locale, $url)
+            ->fromBlocks($page, $locale, $url);
 
         return $this->graph;
+    }
+
+    /**
+     * Whatever the blocks on the page contribute.
+     *
+     * The published tree, not the draft, and the same localisation the
+     * renderer used, so the schema says exactly what the page shows. A block
+     * that says nothing costs one method call.
+     *
+     * Hidden sections are skipped: they are not on the page, so claiming them
+     * in the schema would be describing something a visitor cannot see, which
+     * is the definition of the thing Google penalises.
+     */
+    public function fromBlocks(Page $page, string $locale, string $url): static
+    {
+        foreach ($page->published() as $node) {
+            if ($node['hidden'] ?? false) {
+                continue;
+            }
+
+            $block = $this->blocks->resolve($node['type'] ?? '');
+
+            if (! $block instanceof Block) {
+                continue;
+            }
+
+            $attributes = $this->renderer->attributesFor($block, $node, $locale);
+
+            foreach ($block::structuredData($attributes, $locale, $url) as $contributed) {
+                $this->graph->add($contributed);
+            }
+        }
+
+        return $this;
     }
 
     /**

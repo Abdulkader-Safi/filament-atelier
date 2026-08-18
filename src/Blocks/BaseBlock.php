@@ -49,4 +49,23 @@ abstract class BaseBlock implements Block
     {
         return [];
     }
+
+    /**
+     * JSON-LD nodes this block contributes to the page's graph.
+     *
+     * The point of putting this on the block is that the data already exists:
+     * an FAQ block holds questions and answers, so its schema is a transform
+     * of what the client typed once, not a second thing to type.
+     *
+     * Return a list of nodes. A node carrying an `@id` already in the graph
+     * merges into it, which is how two FAQ blocks on one page contribute to
+     * one `FAQPage` rather than emitting two.
+     *
+     * @param  array<string, mixed>  $attributes  collapsed to $locale, tokens resolved
+     * @return array<int, array<string, mixed>>
+     */
+    public static function structuredData(array $attributes, string $locale, string $url): array
+    {
+        return [];
+    }
 }

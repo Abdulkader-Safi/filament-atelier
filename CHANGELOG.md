@@ -35,6 +35,16 @@ breaks is called out under **Breaking** with what to do about it.
   The encoding is a security boundary, not formatting: a client typing `</script>` into a
   meta title cannot close the block, and Arabic stays readable rather than becoming
   `\uXXXX` escapes.
+- **FAQ schema, generated from the FAQ block.** A page with an FAQ block emits `FAQPage`
+  with every question and answer, in both locales, with nothing typed twice. Two FAQ blocks
+  on one page merge into a single `FAQPage` rather than emitting two, a question with no
+  answer is dropped, and a hidden section contributes nothing, because describing a section
+  a visitor cannot see is the thing search engines penalise.
+- **Blocks can contribute JSON-LD.** `structuredData($attributes, $locale, $url)` on a block
+  returns nodes for the page's graph, and a node whose `@id` is already in the graph merges
+  into it. The attributes arrive already collapsed to the locale with tokens resolved, the
+  same way the view receives them, so the schema cannot describe something different from
+  what rendered. Adding a block that contributes schema needs no change inside the plugin.
 - **A Page type select**, on the page settings screen next to Layout: standard page, about,
   contact, listing, article, service, product, event or person. Choosing one reveals the few
   fields that type needs and nothing else, and none of them duplicate a field the page

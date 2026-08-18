@@ -265,3 +265,107 @@ it('keeps the type when the page is translated', function () {
     // The type is one fact about the page, so Arabic says the same thing.
     expect(graphOf('/ar/about-ar'))->toHaveKey('Service');
 });
+
+function faqPage(array $items, ?array $second = null): Page
+{
+    $tree = [[
+        'id' => 'b_faq',
+        'type' => 'faq',
+        'attributes' => ['heading' => ['en' => 'Questions'], 'items' => ['en' => $items]],
+        'children' => [],
+    ]];
+
+    if ($second !== null) {
+        $tree[] = [
+            'id' => 'b_faq_two',
+            'type' => 'faq',
+            'attributes' => ['heading' => ['en' => 'More'], 'items' => ['en' => $second]],
+            'children' => [],
+        ];
+    }
+
+    $page = Page::create(['title' => 'Help', 'draft_content' => $tree]);
+    $page->setSlugs(['en' => 'help', 'ar' => 'help-ar']);
+    $page->publish();
+
+    return $page;
+}
+
+it('generates FAQ schema from what the client typed into the block', function () {
+    faqPage([
+        ['question' => 'How long does it take?', 'answer' => 'Weeks, not months.'],
+        ['question' => 'Do you host it?', 'answer' => 'We can.'],
+    ]);
+
+    $graph = graphOf('/help');
+    $faq = $graph['FAQPage'];
+
+    expect($faq['mainEntity'])->toHaveCount(2)
+        ->and($faq['mainEntity'][0]['@type'])->toBe('Question')
+        ->and($faq['mainEntity'][0]['name'])->toBe('How long does it take?')
+        ->and($faq['mainEntity'][0]['acceptedAnswer']['text'])->toBe('Weeks, not months.')
+        ->and($faq['inLanguage'])->toBe('en');
+});
+
+it('merges two FAQ blocks into one FAQPage', function () {
+    faqPage(
+        [['question' => 'First?', 'answer' => 'Yes.']],
+        [['question' => 'Second?', 'answer' => 'Also yes.']],
+    );
+
+    $decoded = json_decode(
+        preg_replace('#.*<script type="application/ld\+json">(.*?)</script>.*#s', '$1', get('/help')->getContent()),
+        true,
+    );
+
+    $faqNodes = collect($decoded['@graph'])->where('@type', 'FAQPage');
+
+    // One node, both questions. Two FAQPage nodes on a page is a coin toss
+    // over which one gets read.
+    expect($faqNodes)->toHaveCount(1)
+        ->and($faqNodes->first()['mainEntity'])->toHaveCount(2);
+});
+
+it('drops a question with no answer', function () {
+    faqPage([
+        ['question' => 'Answered?', 'answer' => 'Yes.'],
+        ['question' => 'Unanswered?', 'answer' => ''],
+        ['question' => '', 'answer' => 'Orphan answer.'],
+    ]);
+
+    expect(graphOf('/help')['FAQPage']['mainEntity'])->toHaveCount(1);
+});
+
+it('says nothing when the FAQ block is empty', function () {
+    faqPage([]);
+
+    expect(graphOf('/help'))->not->toHaveKey('FAQPage');
+});
+
+it('leaves a hidden FAQ block out of the schema', function () {
+    $page = faqPage([['question' => 'Shown?', 'answer' => 'No.']]);
+
+    $tree = $page->draft();
+    $tree[0]['hidden'] = true;
+    $page->update(['draft_content' => $tree]);
+    $page->publish();
+
+    // The section is not on the page, so claiming it in the schema would
+    // describe something a visitor cannot see.
+    expect(graphOf('/help'))->not->toHaveKey('FAQPage');
+});
+
+it('describes the FAQ in Arabic on the Arabic page', function () {
+    $page = faqPage([['question' => 'English?', 'answer' => 'Yes.']]);
+
+    $tree = $page->draft();
+    $tree[0]['attributes']['items']['ar'] = [['question' => 'بالعربية؟', 'answer' => 'نعم.']];
+    $page->update(['draft_content' => $tree]);
+    $page->publish();
+
+    $faq = graphOf('/ar/help-ar')['FAQPage'];
+
+    expect($faq['inLanguage'])->toBe('ar')
+        ->and($faq['mainEntity'][0]['name'])->toBe('بالعربية؟')
+        ->and($faq['mainEntity'][0]['acceptedAnswer']['text'])->toBe('نعم.');
+});
