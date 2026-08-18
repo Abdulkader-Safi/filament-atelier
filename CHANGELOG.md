@@ -35,6 +35,18 @@ breaks is called out under **Breaking** with what to do about it.
   The encoding is a security boundary, not formatting: a client typing `</script>` into a
   meta title cannot close the block, and Arabic stays readable rather than becoming
   `\uXXXX` escapes.
+- **A schema editor on the page settings screen**, under Structured data, with a tab per
+  schema type. It does not depend on the page's blocks: FAQ questions and a breadcrumb trail
+  can be typed directly, per locale, on a page built from anything at all.
+
+  Useful when the content is on the page but not in a shape anything can derive from, an FAQ
+  answered inside a rich text section being the common one. Note that Google expects FAQ data
+  to correspond to something a visitor can see, so this is for content that is there in
+  another form, not for questions that appear nowhere.
+
+  Typed entries win over derived ones, so typing a question a block already provides replaces
+  it rather than listing it twice. Breadcrumbs take a mode: from the slug path (the default),
+  typed by hand for a page whose slug is not its hierarchy, or off.
 - **FAQ schema, generated from the FAQ block.** A page with an FAQ block emits `FAQPage`
   with every question and answer, in both locales, with nothing typed twice. Two FAQ blocks
   on one page merge into a single `FAQPage` rather than emitting two, a question with no

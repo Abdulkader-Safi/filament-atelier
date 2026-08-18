@@ -30,6 +30,18 @@ class StructuredData
         protected Graph $graph = new Graph,
     ) {}
 
+    /**
+     * `@id`s that came from the settings screen rather than from a block.
+     *
+     * Blocks skip these, so typing a FAQ by hand replaces the derived one
+     * instead of listing every question twice. Tracked rather than inferred
+     * from the graph, because two FAQ blocks on one page still have to merge
+     * with each other.
+     *
+     * @var array<int, string>
+     */
+    protected array $typed = [];
+
     /** Every `@id` is derived, never stored, so the scheme is fixed here once. */
     public static function id(string $url, string $fragment): string
     {
@@ -55,9 +67,56 @@ class StructuredData
             ->webPage($page, $locale, $url)
             ->breadcrumbs($page, $locale, $url)
             ->mainEntity($page, $locale, $url)
+            ->faq($page, $locale, $url)
             ->fromBlocks($page, $locale, $url);
 
         return $this->graph;
+    }
+
+    /**
+     * FAQ typed on the page settings screen, rather than derived from a block.
+     *
+     * A page can carry FAQ data whatever it is built from, including a page
+     * with no FAQ block at all. Where the questions do appear in a block, the
+     * block generates them and nothing needs typing.
+     *
+     * Google expects FAQ data to correspond to something a visitor can see on
+     * the page. Typing questions here that appear nowhere on it is against
+     * the structured data guidelines, so this is for content that is on the
+     * page in some other form, a rich text section most often.
+     */
+    public function faq(Page $page, string $locale, string $url): static
+    {
+        $questions = collect(data_get($page->schema, "faq.{$locale}", []))
+            ->map(fn (mixed $item) => Graph::node([
+                '@type' => 'Question',
+                'name' => is_array($item) ? trim(strip_tags((string) ($item['question'] ?? ''))) : null,
+                'acceptedAnswer' => Graph::node([
+                    '@type' => 'Answer',
+                    'text' => is_array($item) ? trim(strip_tags((string) ($item['answer'] ?? ''))) : null,
+                ]),
+            ]))
+            ->filter()
+            ->filter(fn (array $question) => isset($question['name'], $question['acceptedAnswer']))
+            ->values()
+            ->all();
+
+        if ($questions === []) {
+            return $this;
+        }
+
+        $id = static::id($url, 'faq');
+
+        $this->graph->add([
+            '@type' => 'FAQPage',
+            '@id' => $id,
+            'inLanguage' => $locale,
+            'mainEntity' => $questions,
+        ]);
+
+        $this->typed[] = $id;
+
+        return $this;
     }
 
     /**
@@ -87,6 +146,14 @@ class StructuredData
             $attributes = $this->renderer->attributesFor($block, $node, $locale);
 
             foreach ($block::structuredData($attributes, $locale, $url) as $contributed) {
+                // Typed wins. Merging the two would list the same question
+                // twice whenever somebody typed what a block already says.
+                // Only what was typed, though: two FAQ blocks on one page
+                // still merge with each other.
+                if (in_array($contributed['@id'] ?? null, $this->typed, true)) {
+                    continue;
+                }
+
                 $this->graph->add($contributed);
             }
         }
@@ -341,6 +408,38 @@ class StructuredData
     }
 
     /**
+     * A trail typed by hand, for a page whose slug is not its hierarchy.
+     *
+     * A step with no URL is treated as the page itself, which is the normal
+     * shape: the last crumb should point at where the visitor already is.
+     */
+    protected function customBreadcrumbs(Page $page, string $locale, string $url): static
+    {
+        $items = collect(data_get($page->schema, "breadcrumbs.items.{$locale}", []))
+            ->filter(fn (mixed $item) => is_array($item) && filled($item['name'] ?? null))
+            ->values()
+            ->map(fn (array $item, int $index) => [
+                '@type' => 'ListItem',
+                'position' => $index + 1,
+                'name' => (string) $item['name'],
+                'item' => filled($item['url'] ?? null) ? (string) $item['url'] : $url,
+            ])
+            ->all();
+
+        if ($items === []) {
+            return $this;
+        }
+
+        $this->graph->add([
+            '@type' => 'BreadcrumbList',
+            '@id' => static::id($url, 'breadcrumb'),
+            'itemListElement' => $items,
+        ]);
+
+        return $this;
+    }
+
+    /**
      * A comma separated list into Place nodes.
      *
      * @return array<int, array<string, string>>|null
@@ -366,6 +465,16 @@ class StructuredData
      */
     public function breadcrumbs(Page $page, string $locale, string $url): static
     {
+        $mode = data_get($page->schema, 'breadcrumbs.mode', 'auto');
+
+        if ($mode === 'none') {
+            return $this;
+        }
+
+        if ($mode === 'custom') {
+            return $this->customBreadcrumbs($page, $locale, $url);
+        }
+
         $slug = $page->slug($locale);
 
         if ($slug === null || ! str_contains($slug, '/')) {

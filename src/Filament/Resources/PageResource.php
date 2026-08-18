@@ -7,6 +7,7 @@ namespace Safi\Atelier\Filament\Resources;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -136,10 +137,95 @@ class PageResource extends Resource
                         ->schema(fn (callable $get) => PageTypes::fields($get('schema.type') ?? 'WebPage'))
                         ->columns(2)
                         ->columnSpanFull(),
+
+                    // Schema typed here rather than derived from the page's
+                    // blocks. A page can carry FAQ or breadcrumb data whatever
+                    // it is built from, including nothing.
+                    Tabs::make('Schema')
+                        ->tabs([
+                            Tab::make('FAQ')
+                                ->badge(fn (callable $get) => self::countFaq($get('schema.faq')) ?: null)
+                                ->schema([self::localeTabs(fn (string $code) => [
+                                    Repeater::make("schema.faq.{$code}")
+                                        ->label('Questions')
+                                        ->schema([
+                                            TextInput::make('question')->required(),
+                                            Textarea::make('answer')->rows(2)->required(),
+                                        ])
+                                        ->itemLabel(fn (array $state) => $state['question'] ?? 'Question')
+                                        ->collapsed()
+                                        ->defaultItems(0)
+                                        ->addActionLabel('Add a question')
+                                        ->columnSpanFull(),
+                                ])])
+                                ->columns(1),
+
+                            Tab::make('Breadcrumbs')
+                                ->schema([
+                                    Select::make('schema.breadcrumbs.mode')
+                                        ->label('Trail')
+                                        ->options([
+                                            'auto' => 'From the slug path',
+                                            'custom' => 'Typed here',
+                                            'none' => 'None',
+                                        ])
+                                        ->default('auto')
+                                        ->native(false)
+                                        ->live()
+                                        ->helperText('From the slug path builds Home › Services › This page for a page at services/this-page.')
+                                        ->columnSpanFull(),
+
+                                    Group::make([self::localeTabs(fn (string $code) => [
+                                        Repeater::make("schema.breadcrumbs.items.{$code}")
+                                            ->label('Trail')
+                                            ->schema([
+                                                TextInput::make('name')->required(),
+                                                TextInput::make('url')
+                                                    ->helperText('Leave the last one empty to use this page.'),
+                                            ])
+                                            ->itemLabel(fn (array $state) => $state['name'] ?? 'Step')
+                                            ->defaultItems(0)
+                                            ->addActionLabel('Add a step')
+                                            ->columnSpanFull(),
+                                    ])])
+                                        ->visible(fn (callable $get) => $get('schema.breadcrumbs.mode') === 'custom')
+                                        ->columnSpanFull(),
+                                ])
+                                ->columns(1),
+                        ])
+                        ->columnSpanFull(),
                 ])
                 ->columns(2)
                 ->columnSpanFull(),
         ]);
+    }
+
+    /**
+     * The same fields once per locale.
+     *
+     * Schema carries text, and text is translated, so anything typed by hand
+     * needs the same per-locale treatment the meta fields get. Nested inside
+     * the schema tabs rather than moved up to the page's own locale tabs,
+     * because the type it belongs to is the thing being edited.
+     *
+     * @param  \Closure(string): array<int, mixed>  $fields
+     */
+    protected static function localeTabs(\Closure $fields): Tabs
+    {
+        return Tabs::make('Locales')
+            ->tabs(collect(config('atelier.locales', []))
+                ->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema($fields($code)))
+                ->all())
+            ->columnSpanFull();
+    }
+
+    /** Total questions across every locale, for the tab badge. */
+    protected static function countFaq(mixed $faq): int
+    {
+        return collect(is_array($faq) ? $faq : [])
+            ->flatten(1)
+            ->filter(fn (mixed $item) => is_array($item) && filled($item['question'] ?? null))
+            ->count();
     }
 
     public static function table(Table $table): Table

@@ -369,3 +369,82 @@ it('describes the FAQ in Arabic on the Arabic page', function () {
         ->and($faq['mainEntity'][0]['name'])->toBe('بالعربية؟')
         ->and($faq['mainEntity'][0]['acceptedAnswer']['text'])->toBe('نعم.');
 });
+
+it('emits FAQ typed on the settings screen, with no FAQ block on the page', function () {
+    $page = schemaPage();
+
+    // The questions are answered in the page's prose, just not in an FAQ
+    // block, so nothing derives them.
+    $page->update(['schema' => ['faq' => ['en' => [
+        ['question' => 'Where do you work?', 'answer' => 'Across the GCC, from Dubai.'],
+        ['question' => 'Do you take retainers?', 'answer' => 'Yes.'],
+    ]]]]);
+
+    $faq = graphOf('/about')['FAQPage'];
+
+    expect($faq['mainEntity'])->toHaveCount(2)
+        ->and($faq['mainEntity'][0]['name'])->toBe('Where do you work?')
+        ->and($faq['mainEntity'][1]['acceptedAnswer']['text'])->toBe('Yes.');
+});
+
+it('lets typed questions replace what a block would have derived', function () {
+    $page = faqPage([['question' => 'From the block', 'answer' => 'Derived.']]);
+
+    $page->update(['schema' => ['faq' => ['en' => [
+        ['question' => 'Typed instead', 'answer' => 'Authored.'],
+    ]]]]);
+
+    $faq = graphOf('/help')['FAQPage'];
+
+    // One node, and the typed one, rather than both sets listed together.
+    expect($faq['mainEntity'])->toHaveCount(1)
+        ->and($faq['mainEntity'][0]['name'])->toBe('Typed instead');
+});
+
+it('keeps typed FAQ per locale', function () {
+    $page = schemaPage();
+
+    $page->update(['schema' => ['faq' => [
+        'en' => [['question' => 'In English?', 'answer' => 'Yes.']],
+        'ar' => [['question' => 'بالعربية؟', 'answer' => 'نعم.']],
+    ]]]);
+
+    expect(graphOf('/about')['FAQPage']['mainEntity'][0]['name'])->toBe('In English?')
+        ->and(graphOf('/ar/about-ar')['FAQPage']['mainEntity'][0]['name'])->toBe('بالعربية؟');
+});
+
+it('takes a breadcrumb trail typed by hand', function () {
+    $page = schemaPage();
+
+    $page->update(['schema' => ['breadcrumbs' => [
+        'mode' => 'custom',
+        'items' => ['en' => [
+            ['name' => 'Home', 'url' => 'http://localhost:8000'],
+            ['name' => 'Company', 'url' => 'http://localhost:8000/company'],
+            // No URL on the last step, so it points at this page.
+            ['name' => 'About us', 'url' => ''],
+        ]],
+    ]]]);
+
+    $crumbs = graphOf('/about')['BreadcrumbList']['itemListElement'];
+
+    expect($crumbs)->toHaveCount(3)
+        ->and($crumbs[1]['name'])->toBe('Company')
+        ->and($crumbs[2]['item'])->toBe('http://localhost:8000/about')
+        ->and($crumbs[2]['position'])->toBe(3);
+});
+
+it('emits no trail when breadcrumbs are turned off', function () {
+    $page = schemaPage('Web design', 'services/web-design');
+
+    // The slug would otherwise produce one.
+    $page->update(['schema' => ['breadcrumbs' => ['mode' => 'none']]]);
+
+    expect(graphOf('/services/web-design'))->not->toHaveKey('BreadcrumbList');
+});
+
+it('still builds a trail from the slug when nothing is chosen', function () {
+    schemaPage('Web design', 'services/web-design');
+
+    expect(graphOf('/services/web-design')['BreadcrumbList']['itemListElement'])->toHaveCount(3);
+});
