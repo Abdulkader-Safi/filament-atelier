@@ -20,6 +20,7 @@ Route::middleware(['web', 'signed:relative'])
 // before Laravel is reached at all.
 Route::middleware('web')->group(function () {
     Route::get('sitemap.xml', SitemapController::class)->name('atelier.sitemap');
+    Route::get('sitemap.xsl', [SitemapController::class, 'stylesheet'])->name('atelier.sitemap.style');
     Route::get('robots.txt', RobotsController::class)->name('atelier.robots');
 });
 

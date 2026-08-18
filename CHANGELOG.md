@@ -8,6 +8,13 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Added
+
+- A stylesheet on the sitemap. Opening `/sitemap.xml` in a browser used to show a wall of
+  unlabelled URLs and timestamps, which reads as broken. It now renders as a table of URLs,
+  dates and locale alternates. Crawlers ignore the instruction that points at it, so
+  nothing about the machine-readable side changes.
+
 ## [0.1.5] - 2026-08-18
 
 The SEO release: a sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes.

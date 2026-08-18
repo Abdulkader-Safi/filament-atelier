@@ -90,6 +90,10 @@ class Sitemap
 
         return implode("\n", array_filter([
             '<?xml version="1.0" encoding="UTF-8"?>',
+            // Browsers render the stylesheet; crawlers ignore the instruction
+            // entirely. Without it a sitemap opens as a raw node tree, which
+            // reads as broken to everyone who is not a crawler.
+            '<?xml-stylesheet type="text/xsl" href="'.e(url('sitemap.xsl')).'"?>',
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"'
                 .' xmlns:xhtml="http://www.w3.org/1999/xhtml">',
             $urls ?: null,

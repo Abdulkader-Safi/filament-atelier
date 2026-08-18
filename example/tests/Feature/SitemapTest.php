@@ -146,3 +146,19 @@ class ServiceUrls
         return [['loc' => 'https://example.test/services/web-design']];
     }
 }
+
+it('points at a stylesheet so a browser shows a table, not a node tree', function () {
+    sitemapPage('About', 'about');
+
+    $xml = get('/sitemap.xml')->getContent();
+
+    // The instruction sits between the declaration and the root, which is the
+    // only place it is allowed.
+    expect($xml)->toContain('<?xml-stylesheet type="text/xsl" href="http://localhost:8000/sitemap.xsl"?>')
+        ->and(simplexml_load_string($xml))->not->toBeFalse();
+
+    get('/sitemap.xsl')
+        ->assertOk()
+        ->assertHeader('Content-Type', 'text/xsl; charset=UTF-8')
+        ->assertSee('xsl:stylesheet', escape: false);
+});
