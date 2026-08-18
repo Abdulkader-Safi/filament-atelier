@@ -18,7 +18,10 @@ class AtelierServiceProvider extends PackageServiceProvider
             ->hasConfigFile('atelier')
             ->hasViews('atelier')
             ->hasRoute('web')
-            ->hasMigration('create_atelier_tables');
+            ->hasMigrations([
+                'create_atelier_tables',
+                'create_atelier_page_revisions_table',
+            ]);
     }
 
     public function packageRegistered(): void

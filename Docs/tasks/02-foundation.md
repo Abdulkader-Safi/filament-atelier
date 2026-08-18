@@ -1,8 +1,8 @@
 # 02. Foundation
 
-> **Status, 18 Aug 2026.** Mostly shipped. Open: the install command, `page_revisions`,
-> per-page layout resolution, `schema_version`, and design tokens, which nothing in the
-> codebase implements.
+> **Status, 18 Aug 2026.** Mostly shipped. Open: the install command, per-page layout
+> resolution, registerable layouts, and `schema_version`. Design tokens and
+> `page_revisions` landed on 18 Aug.
 
 ## What it is
 
@@ -40,7 +40,7 @@ A "Pages" resource appears in the panel nav after install: list, create, delete,
 
 - [~] `pages`: title, status, `draft_content` json, `published_content` json, layout, `preview_token`, `published_at`, timestamps. All present except `preview_token`, plus a `seo` json column. `layout` is stored and never read.
 - [x] `page_slugs`: `page_id`, locale, slug, unique on (locale, slug).
-- [ ] `page_revisions`: `page_id`, content json, `created_by`, label, `created_at`. Not built. Feature 06 depends on it.
+- [x] `page_revisions`: `page_id`, content json, `created_by`, label, `created_at`. Shipped 18 Aug 2026 as its own migration, so an existing install adds it by publishing migrations again rather than by editing one that already ran.
 - [x] `Page` model with the slug relationship and casts.
 
 ### Routing and page resolution

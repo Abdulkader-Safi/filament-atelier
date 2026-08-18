@@ -22,6 +22,15 @@ breaks is called out under **Breaking** with what to do about it.
   space ship now. Every control emits an inline style built from tokens, never a utility
   class, because a class written in PHP is a class the host app's Tailwind never scans.
   Leaving a control unset keeps the block's own styling.
+- Page revisions. Every publish snapshots the tree that went live into
+  `atelier_page_revisions` with who published it, pruned to `atelier.revisions.keep`
+  (20 by default). `Page::restoreRevision()` copies one back into the draft, deliberately
+  not into the live page, so restoring is an undo the editor reviews and publishes.
+  No panel UI yet. **Existing installs need `php artisan vendor:publish
+  --tag=filament-atelier-migrations` and `php artisan migrate`**; the table ships as its
+  own migration rather than as a change to one that already ran.
+- An Unpublish action on the page settings screen. `Page::unpublish()` existed and nothing
+  called it, so taking a page down meant editing the database.
 - `Docs/tasks/11-seo-v0.2.md`, the SEO work planned for v0.2.0: sitemap, `robots.txt`,
   JSON-LD, per-page indexing control, slug redirects, and the head markup fixes.
 

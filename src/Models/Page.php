@@ -52,6 +52,8 @@ class Page extends Model
             'status' => 'published',
             'published_at' => now(),
         ])->save();
+
+        $this->snapshot();
     }
 
     public function unpublish(): void
@@ -67,6 +69,61 @@ class Page extends Model
     public function hasUnpublishedChanges(): bool
     {
         return $this->isPublished() && $this->draft() !== $this->published();
+    }
+
+    // Revisions ------------------------------------------------------------
+
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(PageRevision::class, 'page_id')->latest('id');
+    }
+
+    /**
+     * Freeze what was just published, then prune.
+     *
+     * Snapshotting the published tree rather than the draft means a revision
+     * is always something that was once live, which is what "put it back"
+     * means to the person asking for it.
+     */
+    public function snapshot(?string $label = null): PageRevision
+    {
+        $revision = $this->revisions()->create([
+            'content' => $this->published(),
+            'created_by' => auth()->id(),
+            'label' => $label,
+        ]);
+
+        $this->pruneRevisions();
+
+        return $revision;
+    }
+
+    /** Keep the newest N. Without this the table grows for the life of the site. */
+    protected function pruneRevisions(): void
+    {
+        $keep = (int) config('atelier.revisions.keep', 20);
+
+        if ($keep < 1) {
+            return;
+        }
+
+        $oldest = $this->revisions()->skip($keep)->take(PHP_INT_MAX)->pluck('id');
+
+        if ($oldest->isNotEmpty()) {
+            PageRevision::whereKey($oldest)->delete();
+        }
+    }
+
+    /**
+     * Copy a revision back into the draft.
+     *
+     * Deliberately the draft and not the published column: restoring is an
+     * undo the editor then looks at and publishes, not a silent change to the
+     * live site.
+     */
+    public function restoreRevision(PageRevision $revision): void
+    {
+        $this->forceFill(['draft_content' => $revision->content ?? []])->save();
     }
 
     // Slugs ----------------------------------------------------------------

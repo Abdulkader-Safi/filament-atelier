@@ -1,9 +1,8 @@
 # 06. Draft, publish, preview links
 
-> **Status, 18 Aug 2026.** The two-column flow is done and is the part that matters.
-> Revisions are not built at all, including the table, so a deleted section is gone.
-> Unpublish exists on the model with no button, and the housekeeping items are blocked
-> on features that do not exist yet.
+> **Status, 18 Aug 2026.** Done, apart from a stable preview token and the two
+> housekeeping items, which are blocked on features that do not exist yet. Revisions and
+> the unpublish button landed on 18 Aug.
 
 ## What it is
 
@@ -42,19 +41,17 @@ Revisions in v1 are stored but not browsable. The UI for restore and diff is v2,
 - [x] Public route reads `published_content` only, never the draft.
 - [x] Unpublished page returns 404 on the public route. Covered by a test.
 - [x] Status badge, including the "published with unpublished changes" state (compare the two columns). In the editor toolbar and in the resource table.
-- [~] Unpublish, returning the page to draft without losing content. `Page::unpublish()` exists and is correct. Nothing in the panel calls it, so taking a page down means editing the database.
+- [x] Unpublish, returning the page to draft without losing content. A confirmed action on the page settings screen, shown only while the page is published.
 
 ### Revisions
 
-**None of this exists**, starting with the table (02). Publishing overwrites
-`published_content` with no snapshot, so there is no way back to last week's page and
-no way back from a deleted section. The editor's delete confirm says the action is not
-reversible, and it is telling the truth.
+Built 18 Aug 2026. `atelier_page_revisions` ships as its own migration rather than as a
+change to the first one, so an existing install picks it up by publishing migrations again.
 
-- [ ] Snapshot the full tree into `page_revisions` on every publish.
-- [ ] Record who published and when.
-- [ ] Keep the last N, configurable, with a default that won't grow the table forever. `atelier.revisions.keep` is in the config file and read by nothing.
-- [ ] A restore method on the model, copying a revision's content back into `draft_content`. No UI yet, but the method should exist and be tested.
+- [x] Snapshot the full tree into `page_revisions` on every publish. The published tree, not the draft, so a revision is always something that was once live. That is what "put it back" means to the person asking.
+- [x] Record who published and when. `created_by` is nullable, because a seeder or a tinker publish has no user and should not fail.
+- [x] Keep the last N, configurable, with a default that won't grow the table forever. `atelier.revisions.keep` is now read, defaulting to 20, pruned on every publish.
+- [x] A restore method on the model, copying a revision's content back into `draft_content`. No UI yet, but the method should exist and be tested. `Page::restoreRevision()`, deliberately writing the draft and not the published column: restoring is an undo the editor then looks at and publishes, not a silent change to the live site.
 
 ### Preview links
 

@@ -54,6 +54,15 @@ class EditPageSettings extends EditRecord
                 ->action(fn () => $record->publish())
                 ->visible(fn () => ! $record->isPublished() || $record->hasUnpublishedChanges()),
 
+            Action::make('unpublish')
+                ->label('Unpublish')
+                ->icon('heroicon-m-eye-slash')
+                ->color('gray')
+                ->requiresConfirmation()
+                ->modalDescription('The page will 404 on the public site. Its content is kept.')
+                ->action(fn () => $record->unpublish())
+                ->visible(fn () => $record->isPublished()),
+
             DeleteAction::make(),
         ];
     }
