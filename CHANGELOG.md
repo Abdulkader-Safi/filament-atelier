@@ -12,6 +12,18 @@ breaks is called out under **Breaking** with what to do about it.
 
 - `SECURITY.md`, and GitHub private vulnerability reporting enabled on the repository, so
   a researcher has somewhere to send a report that is not a public issue.
+- CI. The suite runs on PHP 8.3 and 8.4 against the example app on every push and pull
+  request, and Pint checks formatting. Third-party actions are pinned to full commit SHAs
+  rather than tags, because a tag can be re-pointed at malicious code by whoever controls
+  the action.
+- `.github/dependabot.yml`, covering the workflows with a seven-day cooldown, so an update
+  is never merged the moment it is published.
+
+### Changed
+
+- The test suite no longer needs a built front end. Tests assert on rendered HTML, never on
+  the asset bundle, so `withoutVite()` lets the suite run on a clean checkout instead of
+  failing on a missing Vite manifest.
 
 ## [0.1.2] - 2026-08-18
 

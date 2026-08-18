@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege. Nothing here writes to the repository.
+permissions:
+  contents: read
+
+# A second push to the same branch makes the first run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Tests, PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floor the package claims, and the current stable.
+        php: ['8.3', '8.4']
+
+    steps:
+      # Third-party actions are pinned to a full commit SHA, never a tag. A tag
+      # can be re-pointed at malicious code by whoever controls the action's
+      # repository, which is how tj-actions/changed-files leaked CI secrets out
+      # of thousands of repositories in March 2025. The comment records which
+      # release each SHA is, because the SHA alone tells a reader nothing.
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      # The suite lives in example/, a host app that installs the package
+      # through a path repository. Testing the package in a real Laravel app is
+      # the point: it catches what a standalone test harness cannot.
+      #
+      # These run from inside example/ rather than with --working-dir, because
+      # `artisan test` spawns Pest at a path relative to the current directory
+      # and cannot find it from anywhere else.
+      - name: Install dependencies
+        working-directory: example
+        run: composer install --no-interaction --no-progress
+
+      - name: Prepare the app
+        working-directory: example
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Run the suite
+        working-directory: example
+        run: php artisan test
+
+  lint:
+    name: Pint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      # Pint comes from the example app's dependencies rather than a second
+      # install at the root, because one install is enough.
+      - name: Install dependencies
+        working-directory: example
+        run: composer install --no-interaction --no-progress
+
+      - name: Check formatting
+        run: example/vendor/bin/pint --test src

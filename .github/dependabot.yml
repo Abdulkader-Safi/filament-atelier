@@ -1,0 +1,19 @@
+version: 2
+
+updates:
+  # The workflows above are the only thing here an updater can maintain. No
+  # lockfile is committed, deliberately: a library's composer.lock changes
+  # nothing for consumers and only adds noise to their security scanners.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    # Updating the moment a release lands is exactly when a malicious one gets
+    # pulled in; the xz-utils backdoor was caught in that window. A week of
+    # sitting still costs nothing here and lets someone else find the problem.
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+    labels:
+      - dependencies
