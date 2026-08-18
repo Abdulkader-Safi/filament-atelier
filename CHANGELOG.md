@@ -8,11 +8,36 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-08-18
+
+The head no longer disappears when an app supplies its own layout, and the README stops
+promising features that do not exist. No migration.
+
+**If you point `atelier.layout` at your own Blade view, this release needs two lines from
+you.** Nothing breaks without them, which is the problem: add them or your pages keep
+rendering with no title, description, canonical, hreflang or Open Graph tags.
+
+```blade
+<head>
+    @include('atelier::partials.meta')
+
+    @vite(['resources/css/app.css'])
+
+    {{-- After your stylesheet, so the tokens win. --}}
+    @include('atelier::partials.tokens')
+</head>
+```
+
+Apps on the stock layout need no change.
+
 ### Added
 
 - `atelier::partials.meta` and `atelier::partials.tokens`. A host app that points
   `atelier.layout` at its own Blade view keeps the full head with two `@include` lines,
-  documented in the README, `Docs/installation.md` and the wiki.
+  documented in the README, `Docs/installation.md` and the
+  [wiki](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation). Tokens are
+  a second include rather than part of the first, because they have to sit after the host
+  app's stylesheet while the meta does not care where it goes.
 
 ### Fixed
 
@@ -29,6 +54,10 @@ breaks is called out under **Breaking** with what to do about it.
   per-block asset loading, and header, footer, contact form and raw HTML blocks. It also
   said Filament v4 while the package requires `^5.0`. It now lists what ships and,
   separately, what does not.
+- The README points at the [wiki](https://github.com/Abdulkader-Safi/filament-atelier/wiki)
+  for documentation. `Docs/` is export-ignored, so nobody installing the package could read
+  it, and it was never written for using Atelier: it is the PRD, the task breakdown and the
+  research behind the decisions.
 - **Animation is no longer a plugin feature.** It belongs to whoever writes the block: a
   block is already your PHP class and your Blade view, so it animates however you like and
   Atelier ships no GSAP dependency and no preset contract. The cost, stated plainly, is
@@ -217,7 +246,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.3...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.0...v0.1.1
