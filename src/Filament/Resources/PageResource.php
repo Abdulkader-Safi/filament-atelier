@@ -72,6 +72,10 @@ class PageResource extends Resource
                         ->image()
                         ->disk(config('atelier.media.disk'))
                         ->directory(config('atelier.media.directory').'/og')
+                        // A share image a crawler cannot read is not a share
+                        // image. Without this it works on a local disk and
+                        // 403s on S3, which is the worst way for it to break.
+                        ->visibility('public')
                         ->helperText('1200 by 630 is the safe size.'),
 
                     TextInput::make("seo.{$code}.canonical")

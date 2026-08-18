@@ -25,7 +25,7 @@ carries a dated banner saying what its own gaps are.
 | [05](05-bilingual.md)      | Bilingual and RTL             | Mostly done    | Per-locale attributes, `/ar/{slug}`, `dir="rtl"`, hreflang.                     |
 | [06](06-draft-publish.md)  | Draft, publish, preview links | Half done      | Editing must never touch the live page.                                         |
 | [07](07-seo-sitemap.md)    | SEO and sitemap               | Half done      | Per-locale meta, JSON-LD, sitemap across both locales.                          |
-| [08](08-animation.md)      | Animation                     | Not started    | GSAP presets picked from a dropdown, Livewire-safe.                             |
+| [08](08-animation.md)      | Animation                     | Dropped        | Animation lives in each block's own view. Nothing was built.                    |
 | [09](09-performance.md)    | Performance                   | Barely started | Conditional assets, CSS cache, Core Web Vitals.                                 |
 | [10](10-verification.md)   | Verification                  | Not started    | The runs that prove the success criteria, not a vibe check.                     |
 | [11](11-seo-v0.2.md)       | SEO depth (v0.2.0)            | Not started    | The half of 07 that never shipped: sitemap, JSON-LD, redirects, robots.         |
@@ -34,19 +34,23 @@ carries a dated banner saying what its own gaps are.
 
 Four gaps hold up more than their own feature:
 
-- **`supports()` is declared and read by nothing** (03). Feature 08's animation controls
-  and 09's per-element styles both attach through it. Neither can start until it exists.
-- **Design tokens do not exist** (02). 05's Arabic font stack and 09's styling story both
-  assume them, and the PRD's argument that the preview stays honest rests on them.
-- **`page_revisions` was never created** (02), so all of 06's revision work is blocked and
-  the editor's delete really is permanent.
+- ~~**`supports()` is declared and read by nothing** (03).~~ Built 18 Aug 2026 with
+  background and padding. 09's per-element styles attach through it when they arrive.
+- ~~**Design tokens do not exist** (02).~~ Built 18 Aug 2026, emitted to both the preview
+  and the public page from the shared layout.
+- ~~**`page_revisions` was never created** (02).~~ Built 18 Aug 2026. A browsing and
+  restore UI is still not built, but the data is kept.
 - **No sitemap** (07), so 06's regenerate-on-publish is blocked.
 
-### The one bug worth fixing before anything else
+### Fixed since this audit
 
-`/services/web-design` returns 200 and renders the `services` page. `PageController`
-discards every path segment after the first. A nested slug is unreachable and the URL
-serves the wrong page rather than a 404. Written up in 02 under routing.
+`/services/web-design` returned 200 and rendered the `services` page, because
+`PageController` discarded every path segment after the first. Fixed 18 Aug 2026: a slug
+is the whole path after the locale.
+
+The meta tags were trapped inside `atelier::layouts.site`, so pointing `atelier.layout` at
+a host app's own view lost the entire head. Fixed 18 Aug 2026 with
+`atelier::partials.meta` and `atelier::partials.tokens`.
 
 01 is a spike. If it doesn't feel live on a page with 12 sections, stop and redesign rather than continuing down the list.
 

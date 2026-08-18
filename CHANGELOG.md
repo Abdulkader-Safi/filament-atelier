@@ -8,6 +8,33 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Added
+
+- `atelier::partials.meta` and `atelier::partials.tokens`. A host app that points
+  `atelier.layout` at its own Blade view keeps the full head with two `@include` lines,
+  documented in the README, `Docs/installation.md` and the wiki.
+
+### Fixed
+
+- **Replacing the layout silently lost every meta tag.** Title, description, canonical,
+  hreflang and Open Graph lived inside `atelier::layouts.site`, so any app with its own
+  shell rendered pages with none of them, and previews stopped being `noindex`. Three
+  tests, one of which asserts the stock layout and a host app's layout emit the same head.
+- The social share image upload was missing `->visibility('public')`. It worked on a local
+  disk and 403'd on S3, so the tag pointed at an image no crawler could read.
+
+### Changed
+
+- The README described features that do not exist: GSAP animations, a sitemap, JSON-LD,
+  per-block asset loading, and header, footer, contact form and raw HTML blocks. It also
+  said Filament v4 while the package requires `^5.0`. It now lists what ships and,
+  separately, what does not.
+- **Animation is no longer a plugin feature.** It belongs to whoever writes the block: a
+  block is already your PHP class and your Blade view, so it animates however you like and
+  Atelier ships no GSAP dependency and no preset contract. The cost, stated plainly, is
+  that there is no animation dropdown for the client. `Docs/tasks/08-animation.md` is
+  marked dropped and keeps its Livewire guidance, which is still right for a block author.
+
 ## [0.1.3] - 2026-08-18
 
 Repository hygiene, not package code. Nothing in `src/` changed, so there is no migration

@@ -57,19 +57,22 @@ Panel-level, in a settings page or config:
 
 ### Head markup, and getting it out of the layout
 
-- [ ] Extract the head block from `resources/views/layouts/site.blade.php` into
+- [x] Extract the head block from `resources/views/layouts/site.blade.php` into
       `atelier::partials.meta` and include it from the layout. A custom layout then gets
-      the full head with one `@include`.
-- [ ] Document the include in `Docs/installation.md`, next to `atelier.layout`.
+      the full head with one `@include`. Done 18 Aug 2026, with a second
+      `atelier::partials.tokens` for the design tokens, because those have to sit after
+      the host app's stylesheet and the meta does not care where it goes. Three tests,
+      including one asserting the stock layout and a host app's layout emit the same head.
+- [x] Document the include in `Docs/installation.md`, next to `atelier.layout`. Also in the wiki.
 - [ ] `og:site_name`, `og:locale` and `og:locale:alternate` from the configured locales.
 - [ ] `og:image:width`, `og:image:height` and `og:image:alt`. Read the dimensions off the
       stored file rather than asking the client for them.
 - [ ] `og:type` follows the structured data type instead of being hardcoded `website`.
 - [ ] `hreflang="x-default"` pointing at the default locale.
 - [ ] `twitter:image`, `twitter:site` and `twitter:creator`.
-- [ ] `->visibility('public')` on the og_image upload in `PageResource`. It is missing
+- [x] `->visibility('public')` on the og_image upload in `PageResource`. It is missing
       there and present in `Media::upload()`, so the field breaks on S3 and works locally,
-      which is the worst way for it to break.
+      which is the worst way for it to break. Fixed 18 Aug 2026.
 
 ### Fallbacks
 

@@ -50,7 +50,7 @@ Developers never see a UI for this. Registration is code.
 - [x] Renderer that walks the JSON tree and resolves each node through the registry.
 - [x] Recursive rendering for `children`, for blocks that nest. No shipped block nests yet, so the path is untested by a real block.
 - [x] Unknown block type renders nothing on the public site and shows a clear placeholder in the preview, rather than throwing.
-- [~] `supports()` handling: shared background, padding and animation controls injected into the settings pane and applied by the renderer, so each block doesn't reimplement them. Built 18 Aug 2026 as `SharedControls`, with background and padding. Animation is the third and belongs to 08, which now has somewhere to attach.
+- [~] `supports()` handling: shared background, padding and animation controls injected into the settings pane and applied by the renderer, so each block doesn't reimplement them. Built 18 Aug 2026 as `SharedControls`, with background and padding. Animation was going to be the third; it was dropped on 18 Aug and now lives in each block's own view (see 08).
 
   Every control emits an inline style built from design tokens, never a utility class. A class written in PHP is a class Tailwind never scans, so it would compile in the example app and silently vanish on a client site. Leaving a control unset keeps the block's own styling, because there is no inline style to beat the utility class.
 

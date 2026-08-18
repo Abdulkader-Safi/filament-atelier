@@ -64,6 +64,42 @@ In `resources/css/app.css`:
 
 Then `npm run build`. If you write your own blocks, their views are in your app and Tailwind already scans those.
 
+## Using your own layout
+
+`atelier.layout` points at the Blade view wrapping the rendered blocks, and pointing it at
+your own is the normal way to give a client site its own shell. Your layout receives
+`$blocks` (the rendered HTML), `$locale`, `$page`, `$title` and `$preview`. Include the two
+partials, or you lose what they carry:
+
+```blade
+<!DOCTYPE html>
+<html lang="{{ $locale }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {{-- Title, description, canonical, hreflang, Open Graph, Twitter, and
+         noindex on previews. Emits its own <title>, so don't write one. --}}
+    @include('atelier::partials.meta')
+
+    @vite(['resources/css/app.css'])
+
+    {{-- Design tokens. After your stylesheet, so they win. --}}
+    @include('atelier::partials.tokens')
+</head>
+<body>
+    <header>Your navigation</header>
+    <main>{!! $blocks !!}</main>
+    <footer>Your footer</footer>
+</body>
+</html>
+```
+
+⚠️ **Both failures are silent.** Without `partials.meta` the page renders perfectly and has
+no title, description, canonical, hreflang or Open Graph tags, and previews stop being
+`noindex`. Without `partials.tokens` every `var(--atelier-*)` resolves to nothing, so the
+background and spacing controls do nothing and Arabic loses its font stack.
+
 ## 4. Decide what owns `/`
 
 Atelier registers a catch-all for `/{slug}` and `/{locale}/{slug}`. Your app's own routes are matched first, so nothing you already have breaks. A fresh Laravel app has a welcome route on `/`; remove it if you want the CMS to own the home page.

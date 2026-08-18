@@ -1,10 +1,17 @@
 # 08. Animation
 
-> **Status, 18 Aug 2026. Not started.** No GSAP dependency, no preset map, no `data-anim`
-> attribute anywhere in `src/` or `resources/`. It is also blocked in a way this file did
-> not anticipate: animation was meant to arrive through `supports()`, and nothing reads
-> `supports()` yet (03). Build that first or every block grows its own animation fields,
-> which is the outcome this feature exists to avoid.
+> **Dropped, 18 Aug 2026.** Animation belongs to whoever writes the block, not to Atelier.
+> A block is already one PHP class and one Blade view owned by the developer, so it
+> animates in its own view with whatever it likes, and the plugin ships no GSAP dependency,
+> no preset map and no `data-anim` contract.
+>
+> What that trades away is the client-facing part: there is no animation dropdown in the
+> settings pane, so changing an entrance means changing code. That is the accepted cost.
+> Everything below is kept because it is still the right advice for a developer writing an
+> animated block, particularly the Livewire traps, which are real bugs waiting in any block
+> that initialises GSAP inside the editor.
+>
+> Nothing was built before this was dropped.
 
 ## What it is
 
