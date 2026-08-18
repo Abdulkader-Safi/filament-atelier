@@ -34,8 +34,7 @@ php artisan migrate
 fails late rather than loudly: the panel loads and the missing table surfaces as
 `no such table: atelier_...` the first time someone uses the feature that needs it.
 
-`CHANGELOG.md` says which releases need it. The unreleased one does, for
-`atelier_page_revisions`.
+`CHANGELOG.md` says which releases need it. v0.1.2 does, for `atelier_page_revisions`.
 
 ## 2. Register the plugin
 

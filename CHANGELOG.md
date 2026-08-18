@@ -8,6 +8,15 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-08-18
+
+Design tokens, shared section controls and page revisions. Three of the four gaps that
+were holding up other features, plus one routing bug that served the wrong page.
+
+**This release adds a table.** Run
+`php artisan vendor:publish --tag=filament-atelier-migrations` and `php artisan migrate`
+after updating, or `atelier_page_revisions` is missing and publishing a page fails.
+
 ### Added
 
 - Design tokens. Colour, font, spacing and width are emitted as CSS custom properties into
@@ -26,9 +35,8 @@ breaks is called out under **Breaking** with what to do about it.
   `atelier_page_revisions` with who published it, pruned to `atelier.revisions.keep`
   (20 by default). `Page::restoreRevision()` copies one back into the draft, deliberately
   not into the live page, so restoring is an undo the editor reviews and publishes.
-  No panel UI yet. **Existing installs need `php artisan vendor:publish
-  --tag=filament-atelier-migrations` and `php artisan migrate`**; the table ships as its
-  own migration rather than as a change to one that already ran.
+  No panel UI yet. The table ships as its own migration rather than as a change to one
+  that already ran, so it needs the publish and migrate above.
 - An Unpublish action on the page settings screen. `Page::unpublish()` existed and nothing
   called it, so taking a page down meant editing the database.
 - `Docs/tasks/11-seo-v0.2.md`, the SEO work planned for v0.2.0: sitemap, `robots.txt`,
@@ -43,6 +51,11 @@ breaks is called out under **Breaking** with what to do about it.
 - Every file in `Docs/tasks/` audited against the code and marked with what is actually
   built. `Docs/tasks/README.md` carries the status of each feature and the gaps that block
   more than their own feature.
+- The contact form block is settled as presentational: it posts to a route the developer
+  wires per site. Atelier owns no submissions table, so it never quietly becomes a data
+  processor on a client site.
+- Upgrading is documented in the README, `Docs/installation.md` and the wiki, because a
+  missed `vendor:publish` fails late rather than loudly.
 
 ### Fixed
 
@@ -153,6 +166,7 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.1...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Abdulkader-Safi/filament-atelier/releases/tag/v0.1.0

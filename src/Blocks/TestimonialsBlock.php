@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Safi\Atelier\Blocks;
 
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Safi\Atelier\Media;
 
 class TestimonialsBlock extends BaseBlock

@@ -15,9 +15,9 @@ class BlockRegistry
     public function register(string|array $block): static
     {
         foreach ((array) $block as $class) {
-            if (!is_subclass_of($class, Block::class)) {
+            if (! is_subclass_of($class, Block::class)) {
                 throw new InvalidArgumentException(
-                    "{$class} must implement " . Block::class,
+                    "{$class} must implement ".Block::class,
                 );
             }
 
