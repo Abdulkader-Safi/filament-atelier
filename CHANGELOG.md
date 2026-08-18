@@ -8,6 +8,11 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-08-18
+
+Repository hygiene, not package code. Nothing in `src/` changed, so there is no migration
+and no upgrade step beyond `composer update`.
+
 ### Added
 
 - `SECURITY.md`, and GitHub private vulnerability reporting enabled on the repository, so
@@ -185,7 +190,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.2...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/Abdulkader-Safi/filament-atelier/releases/tag/v0.1.0
