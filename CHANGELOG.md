@@ -8,6 +8,19 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Added
+
+- **A Site details screen**, under a Settings group in the panel: the organisation behind the
+  site, its logo, its social profiles and, for a business with premises, its address, geo and
+  price range. Name and description are translatable; a phone number is not.
+
+  It is a screen rather than config on purpose. Tokens, locales and layouts are a developer's
+  decisions and belong in a file. An address is client-owned data that changes without a
+  deploy, and the person who knows it does not have a text editor open.
+
+  Nothing renders it into a page yet. It is the foundation the structured data work needs.
+  **Needs `vendor:publish --tag=filament-atelier-migrations` and `migrate`.**
+
 ## [0.2.0] - 2026-08-18
 
 Multiple layouts, picked per page. A minor rather than a patch because it adds a real

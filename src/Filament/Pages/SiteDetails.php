@@ -1,0 +1,184 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Safi\Atelier\Filament\Pages;
+
+use Filament\Actions\Action;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page as FilamentPage;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Safi\Atelier\Media;
+use Safi\Atelier\Models\SiteSettings;
+
+/**
+ * Who publishes this site, and how to reach them.
+ *
+ * Everything here feeds the structured data on every page, which is why it is
+ * a screen rather than config: an address or a phone number changes without a
+ * deploy, and the person who knows it is the client, not the developer.
+ */
+class SiteDetails extends FilamentPage
+{
+    protected string $view = 'atelier::filament.pages.site-details';
+
+    protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
+
+    protected static ?string $navigationLabel = 'Site details';
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+
+    protected static ?int $navigationSort = 90;
+
+    public ?array $data = [];
+
+    public function mount(): void
+    {
+        $this->form->fill(SiteSettings::current()->data ?? []);
+    }
+
+    public function getTitle(): string
+    {
+        return 'Site details';
+    }
+
+    public function getSubheading(): ?string
+    {
+        return 'The organisation behind the site. Used in the structured data on every page.';
+    }
+
+    public function form(Schema $schema): Schema
+    {
+        $locales = config('atelier.locales', []);
+
+        return $schema
+            ->components([
+                Section::make('Identity')
+                    ->description('Who the site belongs to. Leave the type as Organization unless the client has premises a customer can visit.')
+                    ->schema([
+                        Tabs::make('Names')
+                            ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
+                                TextInput::make("name.{$code}")
+                                    ->label('Name')
+                                    ->maxLength(255),
+
+                                Textarea::make("description.{$code}")
+                                    ->label('Description')
+                                    ->rows(2)
+                                    ->maxLength(500),
+                            ]))->all())
+                            ->columnSpanFull(),
+
+                        TextInput::make('legal_name')
+                            ->label('Legal name')
+                            ->helperText('Only if it differs from the trading name.')
+                            ->maxLength(255),
+
+                        Select::make('type')
+                            ->label('Type')
+                            ->options(self::types())
+                            ->default('Organization')
+                            ->native(false)
+                            ->live()
+                            ->helperText('A LocalBusiness type unlocks the contact details below, and is what puts a client on the map.'),
+
+                        Media::upload('logo', 'Logo')
+                            ->helperText('Square or wide, at least 112px tall. Used as the organisation logo in search results.'),
+                    ])->columns(2),
+
+                Section::make('Profiles')
+                    ->description('Social and directory URLs. They become sameAs, which is how a search engine ties this site to accounts it already knows.')
+                    ->schema([
+                        Repeater::make('same_as')
+                            ->label('Profile URLs')
+                            ->simple(
+                                TextInput::make('url')
+                                    ->url()
+                                    ->placeholder('https://www.linkedin.com/company/...')
+                                    ->required(),
+                            )
+                            ->addActionLabel('Add a profile')
+                            ->reorderable(false)
+                            ->defaultItems(0),
+                    ]),
+
+                Section::make('Contact')
+                    ->description('Shown to search engines, not on the site. Nothing here is rendered into a page.')
+                    ->schema([
+                        TextInput::make('telephone')->label('Telephone')->tel(),
+                        TextInput::make('email')->label('Email')->email(),
+
+                        TextInput::make('address.street')->label('Street address'),
+                        TextInput::make('address.locality')->label('City'),
+                        TextInput::make('address.region')->label('Region or emirate'),
+                        TextInput::make('address.postal_code')->label('Postal code'),
+                        TextInput::make('address.country')
+                            ->label('Country code')
+                            ->helperText('Two letters, e.g. AE, SA, LB.')
+                            ->maxLength(2),
+
+                        TextInput::make('geo.latitude')->label('Latitude')->numeric(),
+                        TextInput::make('geo.longitude')->label('Longitude')->numeric(),
+
+                        TextInput::make('price_range')
+                            ->label('Price range')
+                            ->helperText('Free text, e.g. $$ or 500 to 5000 AED.'),
+
+                        TextInput::make('area_served')
+                            ->label('Areas served')
+                            ->helperText('Comma separated, e.g. Dubai, Abu Dhabi.'),
+                    ])
+                    ->columns(2)
+                    ->visible(fn (callable $get) => $get('type') !== 'Organization'),
+            ])
+            ->statePath('data');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('save')
+                ->label('Save changes')
+                ->action('save'),
+        ];
+    }
+
+    public function save(): void
+    {
+        SiteSettings::current()->update(['data' => $this->form->getState()]);
+
+        Notification::make()->title('Saved')->success()->send();
+    }
+
+    /**
+     * The subset of schema.org types worth offering.
+     *
+     * Not the full list, which runs to hundreds and would be a worse question
+     * than no question. LocalBusiness and the subtypes a client site actually
+     * is.
+     *
+     * @return array<string, string>
+     */
+    public static function types(): array
+    {
+        return [
+            'Organization' => 'Organization (no physical premises)',
+            'LocalBusiness' => 'Local business',
+            'ProfessionalService' => 'Professional service',
+            'Store' => 'Shop',
+            'Restaurant' => 'Restaurant or cafe',
+            'MedicalBusiness' => 'Clinic or medical practice',
+            'RealEstateAgent' => 'Real estate agency',
+            'AutoRepair' => 'Garage or auto repair',
+            'HomeAndConstructionBusiness' => 'Construction or trades',
+            'EducationalOrganization' => 'School or training provider',
+        ];
+    }
+}
