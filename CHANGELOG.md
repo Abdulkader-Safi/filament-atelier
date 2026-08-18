@@ -8,6 +8,10 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-08-18
+
+Makes the sitemap readable in a browser. No migration, no API change.
+
 ### Added
 
 - A stylesheet on the sitemap. Opening `/sitemap.xml` in a browser used to show a wall of
@@ -287,7 +291,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.5...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.2...v0.1.3
