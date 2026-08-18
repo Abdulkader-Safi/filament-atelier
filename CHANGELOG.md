@@ -8,6 +8,38 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Added
+
+- **Multiple layouts, chosen per page.** A site is rarely one shell: marketing pages want a
+  navbar and footer, documentation wants a sidebar, a landing page often wants neither. The
+  blocks are the same either way, so the shell is now a per-page choice. Register them where
+  you register blocks:
+
+  ```php
+  AtelierPlugin::make()
+      ->blocks(DefaultBlocks::all())
+      ->layouts([
+          'site' => ['label' => 'Navbar and footer', 'view' => 'layouts.site'],
+          'docs' => ['label' => 'Sidebar', 'view' => 'layouts.docs'],
+      ]);
+  ```
+
+  A **Layout** select appears on the page settings screen, hidden entirely when no layouts
+  are registered. A layout is a key, a label and a view rather than a class, because a class
+  holding three strings is ceremony. The choice is page-level, not per locale: a layout is
+  structure, and both locales share one structure by design. The `layout` column already
+  existed, so there is no migration.
+
+  An unset layout falls back to `config('atelier.layout')`, and so does a key nobody
+  registered, because a page keeps its key after a developer removes that layout and every
+  public page 500ing is a bad way to find out.
+
+### Fixed
+
+- The preview never passed `$page` to the layout, so a custom layout reading it worked on
+  the live site and 500'd in the preview. Found by the test asserting a preview renders
+  through the same layout as the public page.
+
 ## [0.1.6] - 2026-08-18
 
 Makes the sitemap readable in a browser. No migration, no API change.

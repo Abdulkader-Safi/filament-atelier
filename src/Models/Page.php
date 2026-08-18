@@ -7,12 +7,14 @@ namespace Safi\Atelier\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
+use Safi\Atelier\LayoutRegistry;
 
 /**
  * @property string $title
  * @property string $status
  * @property array|null $draft_content
  * @property array|null $published_content
+ * @property string|null $layout
  * @property array|null $seo
  */
 class Page extends Model
@@ -75,6 +77,20 @@ class Page extends Model
     public function hasUnpublishedChanges(): bool
     {
         return $this->isPublished() && $this->draft() !== $this->published();
+    }
+
+    /**
+     * The Blade view wrapping this page's blocks.
+     *
+     * Falls back to the configured layout when the page has none, and also
+     * when it names one nobody registered: a page keeps its key after a
+     * developer removes that layout from the panel provider, and every public
+     * page 500ing is a bad way to find that out.
+     */
+    public function layoutView(): string
+    {
+        return app(LayoutRegistry::class)->view($this->layout)
+            ?? config('atelier.layout');
     }
 
     // Revisions ------------------------------------------------------------

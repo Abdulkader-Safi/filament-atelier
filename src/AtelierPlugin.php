@@ -30,6 +30,18 @@ class AtelierPlugin implements Plugin
     }
 
     /**
+     * The layouts a page can be wrapped in.
+     *
+     * @param  array<string, string|array{label?: string, view: string, description?: string}>  $layouts
+     */
+    public function layouts(array $layouts): static
+    {
+        app(LayoutRegistry::class)->register($layouts);
+
+        return $this;
+    }
+
+    /**
      * Extra sitemap URLs from outside Atelier: a blog, a services resource,
      * anything with its own model and routes.
      *

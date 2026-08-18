@@ -72,8 +72,12 @@ Previously Fabricator's job. Ours now.
 - [x] Slug resolution against `page_slugs`, returning 404 on a miss.
 - [x] Nested slugs (`/services/web-design`) decided one way or the other now, not retrofitted. **Decided: supported.** A slug is the whole path after the locale, stored as one string in `page_slugs`, so `services/web-design` is a row like any other and needs no parent relationship. Until 18 Aug 2026 the controller read the first segment as a locale and discarded the rest, which served `/services` with a 200 rather than a 404. Fixed, with two tests.
 - [x] Public controller reads `published_content` only, never the draft.
-- [ ] Layout resolution: the page's `layout` value picks the Blade layout wrapping the blocks. The column exists, nothing reads it. Both controllers use the single `config('atelier.layout')`.
-- [ ] Layouts are registerable by the host app, the same way blocks are, so a client site defines its own shell. There is no layout registry. Swapping `atelier.layout` is the only lever, and doing so loses the whole SEO head, which is why 11 pulls the head into a partial.
+- [x] Layout resolution: the page's `layout` value picks the Blade layout wrapping the blocks. Done 18 Aug 2026. `Page::layoutView()` resolves it, and both controllers go through that one method so the preview cannot drift onto a different shell. An unset value falls back to `config('atelier.layout')`, and so does a key nobody registered: a page keeps its layout key after a developer removes that layout, and every public page 500ing is a bad way to find out.
+- [x] Layouts are registerable by the host app, the same way blocks are, so a client site defines its own shell. `LayoutRegistry`, registered through `AtelierPlugin::make()->layouts([...])`, and a select on the page settings screen listing them.
+
+      A layout is a key, a label and a view, so it is a map rather than a class per layout. Blocks earn a class because they carry a schema, an icon, a category and translatable keys; a layout carries none of that, and a class holding three strings is ceremony. The select hides itself when the app registered no layouts, because a question with one answer is not a question.
+
+      The layout is page-level, not per locale: it is structure, and both locales share one structure by design.
 - [x] A stock `PageResource` for list, create and delete, plus a settings screen for title, slugs and SEO.
 - [x] Route caching works. Test with `route:cache`, since a catch-all plus a database lookup is where this usually breaks. Verified 18 Aug 2026.
 

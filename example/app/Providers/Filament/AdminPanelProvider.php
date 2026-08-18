@@ -56,7 +56,19 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 AtelierPlugin::make()
-                    ->blocks(DefaultBlocks::all()),
+                    ->blocks(DefaultBlocks::all())
+                    ->layouts([
+                        'site' => [
+                            'label' => 'Navbar and footer',
+                            'view' => 'atelier::layouts.site',
+                            'description' => 'The marketing shell. Full-width sections.',
+                        ],
+                        'docs' => [
+                            'label' => 'Sidebar',
+                            'view' => 'layouts.docs',
+                            'description' => 'Documentation shell, with a page list beside the content.',
+                        ],
+                    ]),
             ])
             ->authMiddleware([
                 Authenticate::class,

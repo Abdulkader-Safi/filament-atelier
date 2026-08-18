@@ -7,6 +7,7 @@ namespace Safi\Atelier\Filament\Resources;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -20,6 +21,7 @@ use Filament\Tables\Table;
 use Safi\Atelier\Filament\Pages\PageEditor;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\ListPages;
+use Safi\Atelier\LayoutRegistry;
 use Safi\Atelier\Models\Page;
 
 /**
@@ -47,6 +49,21 @@ class PageResource extends Resource
                     ->required()
                     ->maxLength(255)
                     ->helperText('Internal name, and the fallback for the meta title.'),
+
+                // The shell around the blocks: a navbar and footer, a docs
+                // sidebar, or nothing at all. Page-level rather than per
+                // locale, because the layout is structure and both locales
+                // share one structure.
+                //
+                // Hidden entirely when the app registered no layouts, since a
+                // select with one option is a question with one answer.
+                Select::make('layout')
+                    ->label('Layout')
+                    ->options(fn () => app(LayoutRegistry::class)->options())
+                    ->placeholder('Default')
+                    ->helperText('The shell wrapped around this page. Leave as Default to use the site-wide one.')
+                    ->native(false)
+                    ->visible(fn () => app(LayoutRegistry::class)->options() !== []),
             ]),
 
             Tabs::make('Locales')

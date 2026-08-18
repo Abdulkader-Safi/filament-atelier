@@ -24,8 +24,14 @@ class PreviewController
 
         app()->setLocale($locale);
 
-        $html = view(config('atelier.layout'), [
+        // The same layout the public page will use, or the preview lies.
+        $html = view($page->layoutView(), [
             'locale' => $locale,
+            // The same variables the public render gets. A layout that reads
+            // $page works on the live site and 500s in the preview otherwise,
+            // which is the exact failure the shared render path exists to
+            // prevent.
+            'page' => $page,
             'title' => $page->title,
             'preview' => true,
             'blocks' => $this->renderer->render($page->draft(), $locale, editing: true),

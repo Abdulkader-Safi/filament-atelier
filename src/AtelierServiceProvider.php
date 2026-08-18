@@ -29,6 +29,7 @@ class AtelierServiceProvider extends PackageServiceProvider
     {
         $this->app->singleton(BlockRegistry::class);
         $this->app->singleton(SitemapRegistry::class);
+        $this->app->singleton(LayoutRegistry::class);
     }
 
     public function packageBooted(): void

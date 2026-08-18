@@ -48,7 +48,7 @@ class PageController
 
         app()->setLocale($locale);
 
-        return response()->view(config('atelier.layout'), [
+        return response()->view($page->layoutView(), [
             'locale' => $locale,
             'page' => $page,
             'title' => $page->metaTitle($locale),
