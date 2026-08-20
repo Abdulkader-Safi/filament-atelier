@@ -5,11 +5,14 @@ declare(strict_types=1);
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 use Safi\Atelier\Blocks\HeroBlock;
 use Safi\Atelier\Blocks\RichTextBlock;
 use Safi\Atelier\Filament\Pages\PageEditor;
+use Safi\Atelier\Media;
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\Renderer;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\get;
@@ -31,7 +34,7 @@ beforeEach(function () {
     ]);
 });
 
-function editor(Page $page): \Livewire\Features\SupportTesting\Testable
+function editor(Page $page): Testable
 {
     return Livewire::test(PageEditor::class, ['record' => $page->getKey()]);
 }
@@ -143,7 +146,7 @@ it('hides hidden sections from the public render but keeps them in the editor', 
         'children' => [],
     ]]]);
 
-    $renderer = app(Safi\Atelier\Renderer::class);
+    $renderer = app(Renderer::class);
 
     expect($renderer->render($this->page->draft(), 'en'))->not->toContain('Visible to nobody')
         ->and($renderer->render($this->page->draft(), 'en', editing: true))->toContain('Visible to nobody');
@@ -151,7 +154,7 @@ it('hides hidden sections from the public render but keeps them in the editor', 
 
 it('renders an unknown block type as nothing publicly and a warning in the editor', function () {
     $tree = [['id' => 'b_x', 'type' => 'does-not-exist', 'attributes' => [], 'children' => []]];
-    $renderer = app(Safi\Atelier\Renderer::class);
+    $renderer = app(Renderer::class);
 
     expect(trim($renderer->render($tree, 'en')))->toBe('')
         ->and($renderer->render($tree, 'en', editing: true))->toContain('Unknown block type');
@@ -217,4 +220,45 @@ it('renders an uploaded image on the published page', function () {
     $path = $page->draft()[1]['attributes']['image'];
 
     get('/with-image')->assertOk()->assertSee(basename($path));
+});
+
+/**
+ * Add an image block, upload a file, then remove it the way the panel does.
+ * Removal runs BaseFileUpload::deleteUploadedFile(), which is renderless and
+ * writes component state directly, so Livewire's updated hook never fires.
+ */
+function removeUploadedImage(Page $page): array
+{
+    $component = editor($page)
+        ->call('addBlock', 'image')
+        ->set('data.image', [UploadedFile::fake()->image('photo.jpg', 800, 600)]);
+
+    $stored = $page->fresh()->draft()[1]['attributes']['image'];
+
+    $component->call('callSchemaComponentMethod', 'form.image', 'deleteUploadedFile', ['0']);
+
+    return [$component, $stored];
+}
+
+it('clears the path from the tree when an image is removed', function () {
+    Storage::fake('public');
+
+    [$component] = removeUploadedImage($this->page);
+
+    // The tree kept the old path, so the preview still showed the image and
+    // publishing put it back on the live page.
+    expect(Media::url($this->page->fresh()->draft()[1]['attributes']['image']))->toBeNull();
+
+    // Renderless skips the HTML diff, not the dispatch, so the preview reloads.
+    $component->assertDispatched('atelier-refresh');
+});
+
+it('deletes the removed image from the disk', function () {
+    Storage::fake('public');
+
+    [, $stored] = removeUploadedImage($this->page);
+
+    // Filament only deletes the stored file when deleteUploadedFileUsing is
+    // set. Without it every removed or replaced image stayed on the disk.
+    expect(Storage::disk('public')->exists($stored))->toBeFalse();
 });
