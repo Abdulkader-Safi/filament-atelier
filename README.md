@@ -4,7 +4,7 @@ A visual page builder for Laravel, built as a Filament plugin.
 
 [![Watch the demo: Laravel + FilamentPHP, my new page builder project](https://img.youtube.com/vi/vBIgCQhKWfc/maxresdefault.jpg)](https://www.youtube.com/watch?v=vBIgCQhKWfc)
 
-A developer defines the sections in code. The client builds pages from them in a full-screen editor, and sees the real page render as they type. The public site stays server-rendered Blade, bilingual, and fast.
+A developer defines the sections in code. The client builds pages from them in a full-screen editor, and sees the real page render as they type. The public site stays server-rendered Blade, multi-language, and fast.
 
 ## Status
 
@@ -52,7 +52,7 @@ php artisan migrate
 - **Shared section controls.** A block declares `supports()` and gets background and vertical space in its settings pane, built once rather than per block.
 - **[Multiple layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts), picked per page.** Register a navbar-and-footer shell, a docs sidebar and anything else; the client chooses one from a dropdown in page settings.
 - **Design tokens.** Colour, font, spacing and width as CSS custom properties, read by the editor preview and the public page from the same layout, so the two cannot drift.
-- **English and Arabic on every page,** with `dir="rtl"`, hreflang, and an Arabic font stack that follows `dir` rather than a locale code.
+- **Any number of languages on every page,** LTR or RTL, declared in config. One locale is fine. Each carries `lang`, `dir`, hreflang, its own slug and its own SEO, and the RTL font stack follows `dir` rather than a locale code.
 - **Draft and published as separate columns,** so editing never touches the live page. Every publish leaves a revision snapshot behind, and preview links are signed and expiring.
 - **Per-locale SEO fields:** meta title, description, social share image and canonical, rendered into the head with Open Graph and Twitter tags.
 - **A sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes,** so renaming a page doesn't 404 its inbound links.
@@ -74,7 +74,7 @@ Block types are defined in code, and that is the design rather than a stopgap. C
 
 Server-rendered Blade is the reason the architecture is shaped this way, so this part isn't an afterthought.
 
-Every page emits a title, description, canonical, `hreflang` between locales, Open Graph and Twitter tags, all editable per locale in page settings. Two toggles per locale control indexing: hiding a page from search engines adds `noindex` **and** drops it from the sitemap, decided per locale so an English page can be listed while its Arabic translation isn't.
+Every page emits a title, description, canonical, `hreflang` between locales, Open Graph and Twitter tags, all editable per locale in page settings. Two toggles per locale control indexing: hiding a page from search engines adds `noindex` **and** drops it from the sitemap, decided per locale so a page can be listed in one language while its translation isn't.
 
 `/sitemap.xml` lists every published, indexable page in every locale with alternates and `lastmod`, generated per request with no cache to clear. Open it in a browser and a stylesheet renders it as a table. `/robots.txt` points at it and keeps crawlers out of the panel and the preview route.
 
@@ -154,7 +154,7 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 - **[Blocks](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Blocks)** — writing your own section types, shared controls, and the five things that bite
 - **[Layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts)** — several shells, picked per page
 - **[Design tokens](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Design-tokens)** — colour, type and spacing read by the editor and the site alike
-- **[Bilingual and RTL](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Bilingual-and-RTL)** — two languages in one tree, and mirroring properly
+- **[Multi-language and RTL](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Multi-language-and-RTL)** — any number of locales in one tree, and mirroring properly
 
 **Running it**
 

@@ -1,6 +1,6 @@
 A visual page builder for Laravel, built as a Filament plugin.
 
-A developer defines the sections in code. The client builds pages from them in a full-screen editor and watches the real page update as they type. The public site stays server-rendered Blade, bilingual, and fast.
+A developer defines the sections in code. The client builds pages from them in a full-screen editor and watches the real page update as they type. The public site stays server-rendered Blade, multi-language, and fast.
 
 A page is stored as a JSON tree of typed blocks and rendered by Blade at request time. A block type is one PHP class plus one Blade view, and the class returns a Filament schema which becomes its settings form. The preview renders the real page through the public layout and the public stylesheet, so what you see is what ships.
 
@@ -66,7 +66,9 @@ In `config/atelier.php`:
 ],
 ```
 
-The first locale is the default and lives at `/{slug}`. Every other locale lives at `/{locale}/{slug}`. Decide this before you create pages: changing it later means migrating the per-locale maps inside every block tree on every page. If the site is English only, delete the Arabic line now.
+The set is yours. One locale is fine and the language switcher hides itself; add as many as the site needs, in any language. The two above are a starting point, not a requirement, and `dir` is `ltr` or `rtl` per locale.
+
+The first locale is the default and lives at `/{slug}`. Every other locale lives at `/{locale}/{slug}`. Decide this before you create pages: changing it later means migrating the per-locale maps inside every block tree on every page.
 
 ## Using your own layout
 
@@ -98,7 +100,7 @@ Include the two partials:
 </html>
 ```
 
-**Both failures are silent.** Without `partials.meta` the page renders perfectly and carries no title, description, canonical, hreflang or Open Graph tags, and previews stop being `noindex`. Without `partials.tokens` every `var(--atelier-*)` resolves to nothing, so the background and spacing controls quietly do nothing and Arabic loses its font stack.
+**Both failures are silent.** Without `partials.meta` the page renders perfectly and carries no title, description, canonical, hreflang or Open Graph tags, and previews stop being `noindex`. Without `partials.tokens` every `var(--atelier-*)` resolves to nothing, so the background and spacing controls quietly do nothing and RTL locales lose their font stack.
 
 ## The editor
 
@@ -265,7 +267,7 @@ Defaults live in `Safi\Atelier\Tokens` and `atelier.tokens` overrides them key b
 ],
 ```
 
-The Arabic font swap rides on a `[dir="rtl"]` rule rather than a locale code, so a third RTL language gets it for free.
+The font swap rides on a `[dir="rtl"]` rule rather than a locale code, so every RTL locale gets it for free. The token is named `arabic` after the stack it ships with; point it at whatever face your RTL language needs.
 
 ## SEO
 
@@ -399,17 +401,17 @@ consults those before it 404s. The redirect stores the page rather than a target
 page renamed twice sends both old URLs to wherever it lives now, with no chain to follow.
 An unpublished target 404s instead: sending someone to a 404 is worse than the 404 itself.
 
-## Bilingual pages
+## Multi-language pages
 
-Translatable attributes hold a per-locale map inside one tree, so both languages share one section order. A missing translation falls back to the default locale rather than rendering a hole.
+Translatable attributes hold a per-locale map inside one tree, so every language shares one section order. A missing translation falls back to the default locale rather than rendering a hole.
 
-Each locale has its own slug row, its own SEO fields and its own URL, with `hreflang` pointing between them and `dir="rtl"` on the Arabic side. The accepted cost of one tree is that Arabic cannot have a different section order from English.
+Each locale has its own slug row, its own SEO fields and its own URL, with `hreflang` pointing between them and `dir="rtl"` on any locale that declares it. The accepted cost of one tree is that a translation cannot have a different section order from the default locale.
 
 ## Configuration
 
 | Key | What it does |
 |---|---|
-| `locales` | Which languages exist. The first is the default and has no URL prefix. |
+| `locales` | Which languages exist, and the `dir` of each. Any number, one is fine. The first is the default and has no URL prefix. |
 | `layout` | The Blade layout wrapping rendered blocks. Both the preview and the public page use it. |
 | `tokens` | Design token overrides. Anything omitted falls back to the shipped set. |
 | `preview.debounce` | Milliseconds after typing stops before the preview refreshes. |
@@ -440,7 +442,7 @@ Worth knowing before you promise anything to a client:
 - **Reordering is arrow buttons, not drag,** and new sections are added at the end.
 - **No revisions UI.** Snapshots are written and restore works from code.
 - **No header, footer, contact form or raw HTML block** in the shipped set yet.
-- **Arabic shares the section order with English.** One tree, translated text, by design.
+- **Translations share the section order with the default locale.** One tree, translated text, by design.
 - **Not multi-tenant.** One install, one site.
 
 ## Links
