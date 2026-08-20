@@ -8,6 +8,11 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-08-20
+
+A bug fix. No migration, no config change, no new table. `composer update
+safi/filament-atelier` is the whole upgrade.
+
 ### Fixed
 
 - **Removing an image in the page editor did not save the removal.** The field cleared, but
@@ -473,7 +478,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.0...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.6...v0.2.0
 [0.1.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.5...v0.1.6
