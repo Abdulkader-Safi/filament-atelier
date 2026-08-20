@@ -8,6 +8,22 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Fixed
+
+- **Removing an image in the page editor did not save the removal.** The field cleared, but
+  the block tree kept the old path, so the preview still showed the image and publishing put
+  it back on the live page. Filament removes a file through a renderless method that writes
+  component state directly, so the editor's `updatedData()` hook never ran and the cleared
+  value never reached the tree. The upload field now hooks the removal itself.
+
+  If a page already has an image you thought you deleted, open the section, remove it again
+  and it will stick this time.
+
+- **Removed and replaced images were never deleted from the disk.** Filament only deletes a
+  stored file when `deleteUploadedFileUsing` is set, and it was not, so every image you
+  removed or replaced stayed on the disk with nothing referencing it. New removals now delete
+  the file. Files orphaned before this release are still there and need clearing by hand.
+
 ## [0.3.0] - 2026-08-18
 
 Structured data. Every page now emits a JSON-LD graph describing the site, the page and what
