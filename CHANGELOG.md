@@ -8,6 +8,26 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-08-25
+
+A bug fix. No migration, no config change, no new table. `composer update
+safi/filament-atelier` is the whole upgrade.
+
+### Fixed
+
+- **The preview iframe kept showing the old locale after switching languages.** Its refresh
+  fetch read a preview URL cached in the Alpine component at page load rather than the
+  iframe's current `src`. Livewire moves the iframe's `src` to the new locale on every
+  render; the cached copy never followed, so each refresh re-fetched the old locale and
+  painted it back over the iframe. The fetch now reads the iframe's own `src`.
+
+- **The same locale switch could also fail the preview request outright, independent of the
+  fix above.** `setLocale()` called `persist()`, which writes the block tree, unchanged,
+  there is nothing to save, and dispatches `atelier-refresh`, firing a second fetch at the
+  exact preview URL the iframe's `src` change was already navigating to. Both requests carry
+  the same session cookie and race each other, and the loser can fail. `setLocale()` no
+  longer calls `persist()`; the iframe's own navigation is enough.
+
 ## [0.3.1] - 2026-08-20
 
 A bug fix. No migration, no config change, no new table. `composer update
@@ -478,7 +498,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.1...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.1.6...v0.2.0
