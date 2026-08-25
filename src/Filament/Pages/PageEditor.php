@@ -225,7 +225,11 @@ class PageEditor extends FilamentPage
         // Re-flatten the settings pane onto the new locale's values.
         $this->selectBlock($this->selectedId);
 
-        $this->persist();
+        // No persist() here: the tree hasn't changed, so there's nothing to
+        // save. persist() also dispatches atelier-refresh, which fires a JS
+        // fetch() at the same preview URL the iframe's src is already
+        // navigating to (previewUrl includes the locale), a redundant
+        // request that races the iframe's own load and can lose it.
     }
 
     public function setWidth(string $width): void

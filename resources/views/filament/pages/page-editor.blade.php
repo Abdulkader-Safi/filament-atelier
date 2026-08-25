@@ -6,7 +6,7 @@
 
 <div
     class="atelier flex h-dvh w-full flex-col overflow-hidden bg-gray-100 dark:bg-gray-950"
-    x-data="atelierEditor(@js($this->previewUrl))"
+    x-data="atelierEditor()"
 >
     {{-- ── Toolbar ─────────────────────────────────────────────────── --}}
     <header class="flex h-12 shrink-0 items-center gap-2 border-b border-gray-200 bg-white px-3 dark:border-white/10 dark:bg-gray-900">
@@ -258,9 +258,7 @@
 
 @script
 <script>
-    Alpine.data('atelierEditor', (previewUrl) => ({
-        url: previewUrl,
-
+    Alpine.data('atelierEditor', () => ({
         init() {
             // Livewire says the draft changed. Fetch the preview and swap only
             // the canvas, so scroll position and the stylesheet survive.
@@ -279,7 +277,9 @@
             const current = frame.contentDocument.querySelector('[data-atelier-canvas]');
             if (!current) return frame.contentWindow.location.reload();
 
-            const html = await (await fetch(this.url, { headers: { 'X-Atelier-Preview': '1' } })).text();
+            // Read the iframe's own src, not a cached URL. Livewire already
+            // morphed it to the current locale by the time this event fires.
+            const html = await (await fetch(frame.src, { headers: { 'X-Atelier-Preview': '1' } })).text();
             const next = new DOMParser()
                 .parseFromString(html, 'text/html')
                 .querySelector('[data-atelier-canvas]');
