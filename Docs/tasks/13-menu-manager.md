@@ -53,14 +53,14 @@ For the developer: a location is declared in the panel provider with a name, a l
 
 ### Editor
 
-- [ ] Filament page, not a resource, one per panel, same `Page` plus `InteractsWithSchemas` pattern as the visual builder (02, 04).
-- [ ] Location switcher, loads that location's tree.
-- [ ] Drag-and-drop reorder and one-level nesting, matching the section-list interaction in 04.
-- [ ] Button-based reorder (indent/outdent/up/down) alongside drag-and-drop.
-- [ ] Add-item flow: custom link vs. model picker, opens the same kind of settings pane the block editor uses.
-- [ ] Autosave, no explicit save button, matching the rest of the editor (04, 06).
-- [ ] Depth enforcement: nesting beyond a location's configured max is refused in the UI, not silently allowed and broken on render.
-- [ ] EN/AR label editing behind the same toolbar toggle as the page editor, sharing the fallback-to-default-locale rule from 05 rather than inventing a second one.
+- [x] Filament page, not a resource, one per panel. Follows `SiteDetails`'s plainer shape (a bare `Filament\Pages\Page` with a `form()` method) rather than `PageEditor`'s explicit `HasSchemas`, since a menu needs one schema, not several.
+- [x] Location switcher, loads that location's tree.
+- [x] Drag-and-drop reorder and one-level nesting. Built on Filament's own `Repeater` rather than a bespoke canvas, see "Built" below.
+- [!] Button-based reorder (indent/outdent/up/down) alongside drag-and-drop. Not built. The Repeater's drag handle is already keyboard-operable, and the page editor (04) itself has no drag at all, so this isn't a regression against what exists. Revisit if a real accessibility gap turns up.
+- [x] Add-item flow: custom link vs. model picker. A custom link is the Repeater's own "Add a custom link" button; a model pick is a header action per registered `MenuSource`, a small form with one Select, not the block editor's settings pane, because there's nothing else to configure on a model pick.
+- [x] Autosave, no explicit save button. `updatedData()` persists on every change, reading the form's dehydrated state rather than the raw property, which matters because a `Repeater` re-keys its rows once hydrated.
+- [x] Depth enforcement, for the one-level case the editor and renderer support: a location with `depth` 1 gets no children field in the schema at all, so nesting past one level is structurally impossible rather than merely discouraged. A `depth` set above 2 is accepted by the registry but not yet honoured by the schema, which only ever builds one level of nesting; known limit, not a bug, until something needs deeper menus.
+- [x] EN/AR label editing. Not the page editor's toolbar toggle: each item's label is a `Tabs` field, one tab per locale, the same pattern `SiteDetails` uses for the site name. Simpler for a form with no live preview to keep in sync, and there's no missing-translation fallback question to answer, since both languages are just visible at once.
 
 ### Rendering
 

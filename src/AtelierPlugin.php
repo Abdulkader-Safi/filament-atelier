@@ -6,6 +6,7 @@ namespace Safi\Atelier;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Safi\Atelier\Filament\Pages\MenuManager;
 use Safi\Atelier\Filament\Pages\PageEditor;
 use Safi\Atelier\Filament\Pages\SiteDetails;
 use Safi\Atelier\Filament\Resources\PageResource;
@@ -89,6 +90,7 @@ class AtelierPlugin implements Plugin
             ->pages([
                 PageEditor::class,
                 SiteDetails::class,
+                MenuManager::class,
             ]);
     }
 

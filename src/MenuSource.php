@@ -27,6 +27,9 @@ interface MenuSource
     /** @return array<int|string, string> id to label, for the picker. */
     public static function menuSourceOptions(): array;
 
+    /** One instance by the id a {@see menuSourceOptions} key gave back, or null if it's gone. */
+    public static function menuSourceFind(int|string $id): ?static;
+
     /** The label copied into the menu item when this instance is picked. */
     public function getMenuLabel(): string;
 
