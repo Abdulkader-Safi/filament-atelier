@@ -12,18 +12,15 @@
     the DOM, and a location nobody registered should not 500 a page that
     merely names it, the same reasoning `LayoutRegistry::view()` already
     applies to a missing layout.
+
+    Building your own markup instead of overriding this file? Skip the
+    partial and call `Safi\Atelier\Models\Menu::treeFor($location)` directly
+    from a controller, a Livewire component, or any other Blade view. It's
+    the same call this file makes.
 --}}
 @php
     $menuLocale = $locale ?? app()->getLocale();
-
-    // A location nobody registered shouldn't write a stray row every time a
-    // page renders. Menu::forLocation() creates on first read, which is
-    // right for the editor (its location came from the registry-built
-    // select) and wrong here, where $location is whatever a Blade file
-    // happens to pass.
-    $menuTree = app(\Safi\Atelier\MenuRegistry::class)->has($location)
-        ? \Safi\Atelier\Models\Menu::forLocation($location)->tree()
-        : [];
+    $menuTree = \Safi\Atelier\Models\Menu::treeFor($location);
 @endphp
 @if (! empty($menuTree))
     <nav>

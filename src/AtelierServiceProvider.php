@@ -32,7 +32,15 @@ class AtelierServiceProvider extends PackageServiceProvider
         $this->app->singleton(BlockRegistry::class);
         $this->app->singleton(SitemapRegistry::class);
         $this->app->singleton(LayoutRegistry::class);
-        $this->app->singleton(MenuRegistry::class);
+
+        // Seeded from config('atelier.menus'), the same source `locales`
+        // reads from. AtelierPlugin::menuLocations() still works after
+        // this: it calls ->locations() again on the same singleton, adding
+        // to what config already registered rather than replacing it.
+        $this->app->singleton(
+            MenuRegistry::class,
+            fn () => (new MenuRegistry)->locations(config('atelier.menus', [])),
+        );
     }
 
     public function packageBooted(): void

@@ -58,15 +58,11 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 AtelierPlugin::make()
                     ->blocks(DefaultBlocks::all())
-                    ->menuLocations([
-                        'primary' => 'Primary',
-                        'footer' => 'Footer',
-                        // Adding a menu is exactly this: one more line, no
-                        // UI, no migration, the same shape as registering a
-                        // block type. What's editable from the panel is a
-                        // location's items, not the set of locations.
-                        'sidebar' => 'Sidebar',
-                    ])
+                    // The locations themselves (primary, footer, sidebar)
+                    // live in config/atelier.php now, next to `locales`.
+                    // ->menuLocations([...]) still works here too, additive
+                    // rather than a replacement, for a location that only
+                    // makes sense inside this one panel.
                     ->menuSources([
                         AtelierPage::class,
                     ])

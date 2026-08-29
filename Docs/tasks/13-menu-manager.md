@@ -118,3 +118,23 @@ registered so far, got no nesting UI at all. Off-by-one, fixed to `depth() > 0`.
 
 Both verified by hand in the running example app: typing into a fresh item and reloading
 keeps it, and "Services" now nests "Website services" under it and keeps that too.
+
+## Changed, 29 Aug 2026: config is now where locations live
+
+Locations moved from being `menuLocations()`-only to `config('atelier.menus')`, the same
+place `locales` lives, seeded onto the `MenuRegistry` singleton in
+`AtelierServiceProvider::packageRegistered()`. `menuLocations()` on the plugin still works,
+additive rather than a replacement, for a location that only makes sense inside one panel.
+Reasoning: a location is a key and a label, no classes involved, the same shape as a locale;
+`menuSources()` stays plugin-only because it lists Eloquent model classes, the same shape as
+`blocks()`. `example/config/atelier.php` now carries `primary`, `footer` and `sidebar`; the
+panel provider's own call is gone.
+
+Also added: `Menu::treeFor($location)` and `Menu::label($item, $locale)`, both static and
+callable from anywhere, not only Blade. `atelier::partials.menu` now calls the first rather
+than duplicating the registry-check-then-fetch logic inline, and `atelier::partials.menu-items`
+calls the second rather than duplicating the per-locale fallback. This is the actual answer
+to "expose a way to design it": overriding the shipped partial's file is one option, calling
+`Menu::treeFor()` from a controller, a Livewire component, or a hand-rolled view that never
+touches the shipped partial is the other, and now there's one canonical place either path
+goes through.

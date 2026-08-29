@@ -10,8 +10,7 @@
 <ul class="flex flex-wrap items-center gap-6">
     @foreach ($items as $item)
         @php
-            $label = data_get($item, "label.{$menuLocale}")
-                ?: data_get($item, 'label.'.array_key_first(config('atelier.locales', [])));
+            $label = \Safi\Atelier\Models\Menu::label($item, $menuLocale);
             $url = $item['url'] ?? null;
             $itemPath = $url ? '/'.trim((string) parse_url($url, PHP_URL_PATH), '/') : null;
             $isCurrent = $itemPath !== null && $itemPath === $currentPath;
