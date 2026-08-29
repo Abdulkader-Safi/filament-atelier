@@ -61,6 +61,11 @@ class AdminPanelProvider extends PanelProvider
                     ->menuLocations([
                         'primary' => 'Primary',
                         'footer' => 'Footer',
+                        // Adding a menu is exactly this: one more line, no
+                        // UI, no migration, the same shape as registering a
+                        // block type. What's editable from the panel is a
+                        // location's items, not the set of locations.
+                        'sidebar' => 'Sidebar',
                     ])
                     ->menuSources([
                         AtelierPage::class,
