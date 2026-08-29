@@ -8,8 +8,6 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
-use Safi\Atelier\AtelierPlugin;
-use Safi\Atelier\Blocks\DefaultBlocks;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
@@ -20,6 +18,9 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Safi\Atelier\AtelierPlugin;
+use Safi\Atelier\Blocks\DefaultBlocks;
+use Safi\Atelier\Models\Page as AtelierPage;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -60,6 +61,9 @@ class AdminPanelProvider extends PanelProvider
                     ->menuLocations([
                         'primary' => 'Primary',
                         'footer' => 'Footer',
+                    ])
+                    ->menuSources([
+                        AtelierPage::class,
                     ])
                     ->layouts([
                         'site' => [

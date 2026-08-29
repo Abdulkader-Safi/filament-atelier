@@ -1,8 +1,11 @@
 # 13. Menu manager
 
-> **Status, 29 Aug 2026. Build starting.** Research first, see
+> **Status, 29 Aug 2026. Built on a branch, not released.** Research first, see
 > [`Docs/research/menu-manager-prior-art.md`](../research/menu-manager-prior-art.md), then
-> `prd.md` was updated the same day: success criterion 12 and an `In (v1)` scope line.
+> `prd.md`: success criterion 12 and an `In (v1)` scope line. Data, editor, public
+> rendering and the quality-bar items all landed the same day. What's left is the one item
+> this file always said was someone else's: header and footer blocks (03) calling the
+> renderer instead of a developer wiring their own layout, which is still not built.
 
 ## What it is
 
@@ -72,9 +75,9 @@ For the developer: a location is declared in the panel provider with a name, a l
 
 ### Quality bar
 
-- [ ] Deleting a model referenced by a menu item doesn't 500 the public page. Decide whether the item drops silently or falls back to its stored label with no link, and be consistent about it.
-- [ ] A location with no items renders nothing, not an empty `<ul>` or a console error.
-- [ ] Header and footer blocks (03, still unbuilt) read from this rather than shipping their own nav markup, once both exist.
+- [x] Deleting a model referenced by a menu item doesn't 500 the public page. Stronger than "doesn't 500": a picked item is a label-and-URL snapshot copied in once, not a foreign key, by the `MenuSource` decision at the top of this file, so a deleted source model changes nothing about the item. `MenuSourceTest` deletes the page after adding it and asserts the public render is untouched.
+- [x] A location with no items renders nothing, not an empty `<ul>` or a console error. Covered in `MenuRenderTest`.
+- [!] Header and footer blocks (03, still unbuilt) read from this rather than shipping their own nav markup, once both exist. Still blocked on 03. `Safi\Atelier\Models\Page` implements `MenuSource` now, so a client can already pick an existing page as an item without retyping it, the case the task file itself flagged as "pages first."
 
 ## Done when
 

@@ -29,7 +29,7 @@ the documentation surface) has no feature file of its own and is tracked at the 
 | [10](10-verification.md)   | Verification                  | Not started    | The runs that prove the success criteria, not a vibe check.                     |
 | [11](11-seo-v0.2.md)       | SEO depth (v0.2.0)            | Mostly done    | Sitemap shipped. Robots, redirects, noindex too. JSON-LD moved to 12.           |
 | [12](12-structured-data.md)| Structured data (JSON-LD)     | Planned        | The full schema list, three sources, and the site settings screen it needs.     |
-| [13](13-menu-manager.md)   | Menu manager                  | Not started    | Navigation editable from the panel. Research only so far, not yet in the PRD.   |
+| [13](13-menu-manager.md)   | Menu manager                  | Mostly done    | Navigation editable from the panel. On a branch; blocked on 03 for a nav block. |
 
 ### What blocks what
 
