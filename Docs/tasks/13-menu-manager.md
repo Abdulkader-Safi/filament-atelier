@@ -64,11 +64,11 @@ For the developer: a location is declared in the panel provider with a name, a l
 
 ### Rendering
 
-- [ ] A `menu()` helper or Blade component that resolves a location's tree for the current locale. `atelier::partials.menu` as the default view, overridable by the host app the same way block views are.
-- [ ] Recursive partial for nested items, capped at the location's configured depth so a bad tree can't render infinitely.
-- [ ] `dir="rtl"`-safe markup: logical properties, no `ml-`/`mr-`/`left`/`right`, matching the rule already enforced on every block view (03).
-- [ ] Active-item detection: exact match and descendant match, so a parent item highlights when a child page is current.
-- [ ] Cache the resolved tree per location and locale, invalidated on save. Can wait for 09's page cache to land first and copy the pattern.
+- [x] An include, not a Blade component: `@include('atelier::partials.menu', ['location' => 'primary', 'locale' => $locale])`. Every other shared partial in the package (`meta`, `tokens`, `schema`) is an include, not a class-based or anonymous component, so this follows that rather than adding a second convention. Overridable the same way a block view is: a host app's own `atelier::partials.menu` in its view namespace wins.
+- [x] Recursive partial (`atelier::partials.menu-items`) for nested items. Capped at one level by construction, since the editor (04) never writes a `children` array on a grandchild; nothing in the partial itself stops a hand-edited row going deeper; it just stops recursing whenever `children` is empty.
+- [x] `dir="rtl"`-safe markup: flex row with `gap`, no `ml-`/`mr-`/`left`/`right`/`text-left`/`text-right`, verified in `MenuRenderTest`. Row-direction flexbox reverses under `dir="rtl"` on its own, so this needed no logical-property overrides.
+- [x] Active-item detection: `aria-current="page"` on an exact path match, a `font-semibold` class on an exact match or an ancestor match.
+- [ ] Cache the resolved tree per location and locale, invalidated on save. Still waiting on 09's page cache, unchanged from the original plan.
 
 ### Quality bar
 

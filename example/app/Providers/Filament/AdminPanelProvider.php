@@ -72,6 +72,11 @@ class AdminPanelProvider extends PanelProvider
                             'view' => 'layouts.docs',
                             'description' => 'Documentation shell, with a page list beside the content.',
                         ],
+                        'marketing' => [
+                            'label' => 'Navbar and footer menus',
+                            'view' => 'layouts.marketing',
+                            'description' => 'Same shell as "site", with the primary and footer menus wired up.',
+                        ],
                     ]),
             ])
             ->authMiddleware([
