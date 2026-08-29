@@ -98,3 +98,23 @@ it. No separate up/down/indent/outdent buttons were built on top: the page edito
 doesn't have drag either, arrow buttons only, so this is the more-built of the two
 interactions, not the less-accessible one, and a button fallback can be added later if a
 real accessibility gap shows up rather than a hypothetical one.
+
+## Fixed, 29 Aug 2026: two bugs found by hand-testing the built editor
+
+Both found by actually typing into the panel rather than trusting the Livewire test helper,
+which drives `$this->data` directly through `set()` and so never exercises either bug.
+
+**Nothing typed was saving.** Every Filament field defers its state to the server by
+default; the value only reaches `$this->data` on some other network round-trip. Nothing on
+this page forced one, so `updatedData()` never ran for ordinary typing; the tests still
+passed because `Livewire::test()->set('data.items', [...])` writes the property directly,
+which isn't what a browser does. Fixed by adding `->live(onBlur: true)` to the label and URL
+fields, `->live()` to the target select.
+
+**No "Add a sub-item" button ever appeared.** `itemSchema()` built the nested Repeater only
+when `depth() > 1`, but `depth()` defaults to 1 and the docblock on it says "Default 1: one
+level of children," so a location with no explicit depth override, meaning every location
+registered so far, got no nesting UI at all. Off-by-one, fixed to `depth() > 0`.
+
+Both verified by hand in the running example app: typing into a fresh item and reloading
+keeps it, and "Services" now nests "Website services" under it and keeps that too.

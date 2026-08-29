@@ -95,7 +95,7 @@ class MenuManager extends FilamentPage
                 Repeater::make('items')
                     ->label('')
                     ->hiddenLabel()
-                    ->schema($this->itemSchema(nested: $this->depth() > 1))
+                    ->schema($this->itemSchema(nested: $this->depth() > 0))
                     ->reorderable()
                     ->collapsible()
                     ->addActionLabel('Add a custom link')
@@ -119,7 +119,14 @@ class MenuManager extends FilamentPage
 
             Tabs::make('Label')
                 ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
-                    TextInput::make("label.{$code}")->label('Label')->maxLength(255),
+                    // A Filament field defers its state to the server by
+                    // default: it only actually reaches $this->data on some
+                    // other network round-trip, which for this page was
+                    // never guaranteed to happen. live(onBlur: true) is what
+                    // makes updatedData() fire at all, autosave's whole
+                    // premise. No live preview here to justify per-keystroke
+                    // syncing, so blur is enough.
+                    TextInput::make("label.{$code}")->label('Label')->maxLength(255)->live(onBlur: true),
                 ]))->all())
                 ->columnSpanFull(),
 
@@ -127,6 +134,7 @@ class MenuManager extends FilamentPage
                 ->label('URL')
                 ->helperText('A path like /about, or a full https:// URL.')
                 ->maxLength(2048)
+                ->live(onBlur: true)
                 ->columnSpan(1),
 
             Select::make('target')
@@ -134,6 +142,7 @@ class MenuManager extends FilamentPage
                 ->options(['_self' => 'Same tab', '_blank' => 'New tab'])
                 ->default('_self')
                 ->native(false)
+                ->live()
                 ->columnSpan(1),
         ];
 
