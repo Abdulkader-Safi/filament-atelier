@@ -1,8 +1,8 @@
 # 13. Menu manager
 
-> **Status, 29 Aug 2026. Not started.** Research only so far, see
-> [`Docs/research/menu-manager-prior-art.md`](../research/menu-manager-prior-art.md). Not
-> yet in `prd.md`'s success-criteria list, added here ahead of the PRD catching up.
+> **Status, 29 Aug 2026. Build starting.** Research first, see
+> [`Docs/research/menu-manager-prior-art.md`](../research/menu-manager-prior-art.md), then
+> `prd.md` was updated the same day: success criterion 12 and an `In (v1)` scope line.
 
 ## What it is
 
@@ -79,8 +79,19 @@ For the developer: a location is declared in the panel provider with a name, a l
 ## Done when
 
 - A developer registers a menu location with one call on the plugin class and it appears in the Menus page with no other file touched.
-- A client adds, reorders, nests one level and deletes items in a location, drag-and-drop and buttons both work, and the change is live on the public page with no publish step.
-- The same menu renders correctly in English and Arabic, RTL-correct, from the same tree.
+- A client adds, reorders, nests one level and deletes items in a location, and the change is live on the public page with no publish step (PRD criterion 12).
+- The same menu renders correctly in English and Arabic, RTL-correct, from the same tree (PRD criterion 12).
 - A model implementing `MenuSource` can be added as an item and its label and URL come from the model, not retyped.
 
-This isn't tied to a PRD criterion yet, since menus aren't in `prd.md`'s success-criteria list. If this gets built, that list needs a line added, and this file's "Done when" should cite it by number the way every other task file does.
+## Built, 29 Aug 2026: Repeater over custom drag-and-drop
+
+The editor tasks above describe a bespoke drag-and-drop interaction. Built instead on
+Filament's own `Repeater`, `->reorderable()`, nested one level deep for children. It already
+does drag-to-reorder, it is what the rest of the panel uses for a list of things, and it
+means no SortableJS wiring and no custom Livewire properties to keep in step with the tree.
+The one-level nesting comes from a fixed inner `Repeater` on each item rather than a
+recursive one, which matches the location's own one-level depth limit rather than fighting
+it. No separate up/down/indent/outdent buttons were built on top: the page editor (04)
+doesn't have drag either, arrow buttons only, so this is the more-built of the two
+interactions, not the less-accessible one, and a button fallback can be added later if a
+real accessibility gap shows up rather than a hypothetical one.

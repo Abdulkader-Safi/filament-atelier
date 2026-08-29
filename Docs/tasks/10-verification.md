@@ -82,12 +82,7 @@ Blocked. JSON-LD and the sitemap are not built. See 11.
 
 ### Run 8: animation
 
-Blocked. Feature 08 is not started.
-
-- [ ] Preset applied from the dropdown works on the public page.
-- [ ] It survives Livewire SPA navigation between pages, both directions.
-- [ ] Reduced-motion setting disables it.
-- [ ] Covers PRD criterion 10.
+Dropped along with feature 08. Animation lives in each block's own view, not in Atelier, so there's nothing here to verify. PRD criterion 10 was retired for the same reason on 29 Aug 2026.
 
 ### Run 9: performance
 
