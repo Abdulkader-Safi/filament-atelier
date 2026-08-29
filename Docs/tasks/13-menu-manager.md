@@ -45,11 +45,11 @@ For the developer: a location is declared in the panel provider with a name, a l
 
 ### Data
 
-- [ ] `menus` table: `id`, `location` (unique string key), `tree` (json), timestamps. One row per location, no items table.
-- [ ] `Menu` model, `tree` cast to array.
-- [ ] Item shape: `id`, `label` (per-locale map), `url`, `target`, `children` (recursive, same shape).
-- [ ] Location registry declared on the plugin class (`addMenuLocation(key, label, maxDepth)`), read by the editor page and the front-end helper. No hardcoded locations inside the plugin.
-- [ ] A model becomes a menu item source through a small interface (`MenuSource`: `getMenuLabel()`, `getMenuUrl()`), not a hardcoded per-model panel. Registered on the plugin class the same way `modelSources()` works in the research brief.
+- [x] `atelier_menus` table: `id`, `location` (unique string key), `items` (json), timestamps. One row per location, no items table.
+- [x] `Menu` model, `items` cast to array, `forLocation()` to fetch-or-create the row.
+- [x] Item shape: `id`, `label` (per-locale map), `url`, `target`, `children` (one level, same shape). Enforced by the editor (04) rather than the column; the JSON cast doesn't validate shape.
+- [x] Location registry declared on the plugin class (`menuLocations(key => label|['label', 'depth'])`), read by the editor page and the front-end helper. No hardcoded locations inside the plugin. `depth` defaults to 1, matching the one-level-of-children the editor and renderer are built for.
+- [x] A model becomes a menu item source through a small interface (`MenuSource`: `menuSourceLabel()`, `menuSourceOptions()`, `getMenuLabel()`, `getMenuUrl()`), not a hardcoded per-model panel. Registered on the plugin class via `menuSources()`.
 
 ### Editor
 

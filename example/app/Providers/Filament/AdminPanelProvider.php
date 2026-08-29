@@ -57,6 +57,10 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 AtelierPlugin::make()
                     ->blocks(DefaultBlocks::all())
+                    ->menuLocations([
+                        'primary' => 'Primary',
+                        'footer' => 'Footer',
+                    ])
                     ->layouts([
                         'site' => [
                             'label' => 'Navbar and footer',

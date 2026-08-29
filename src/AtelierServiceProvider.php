@@ -23,6 +23,7 @@ class AtelierServiceProvider extends PackageServiceProvider
                 'create_atelier_page_redirects_table',
                 'create_atelier_settings_table',
                 'add_schema_to_atelier_pages_table',
+                'create_atelier_menus_table',
             ]);
     }
 
@@ -31,6 +32,7 @@ class AtelierServiceProvider extends PackageServiceProvider
         $this->app->singleton(BlockRegistry::class);
         $this->app->singleton(SitemapRegistry::class);
         $this->app->singleton(LayoutRegistry::class);
+        $this->app->singleton(MenuRegistry::class);
     }
 
     public function packageBooted(): void

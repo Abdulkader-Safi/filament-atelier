@@ -55,6 +55,31 @@ class AtelierPlugin implements Plugin
         return $this;
     }
 
+    /**
+     * The named menu locations a client can build (primary, footer, and so on).
+     *
+     * @param  array<string, string|array{label?: string, depth?: int}>  $locations
+     */
+    public function menuLocations(array $locations): static
+    {
+        app(MenuRegistry::class)->locations($locations);
+
+        return $this;
+    }
+
+    /**
+     * Eloquent models that can be picked as menu items. Each must implement
+     * {@see MenuSource}.
+     *
+     * @param  class-string<MenuSource>|array<int, class-string<MenuSource>>  $sources
+     */
+    public function menuSources(string|array $sources): static
+    {
+        app(MenuRegistry::class)->sources($sources);
+
+        return $this;
+    }
+
     public function register(Panel $panel): void
     {
         $panel
