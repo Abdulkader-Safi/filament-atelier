@@ -2,25 +2,14 @@
 
 declare(strict_types=1);
 
+use Illuminate\Http\Request;
 use Safi\Atelier\Models\Menu;
-use Safi\Atelier\Models\Page;
 
-use function Pest\Laravel\get;
-
-function marketingPage(): Page
-{
-    $page = Page::create(['title' => 'Home', 'layout' => 'marketing', 'draft_content' => [[
-        'id' => 'b_one',
-        'type' => 'hero',
-        'attributes' => ['heading' => ['en' => 'Home heading']],
-        'children' => [],
-    ]]]);
-
-    $page->setSlugs(['en' => 'home', 'ar' => 'home-ar']);
-    $page->publish();
-
-    return $page;
-}
+// These test atelier::partials.menu directly, the package's own shipped
+// view, rather than through a page and a layout. A layout is meant to be
+// swappable, example/'s marketing layout writes its own nav rather than
+// using this partial, and this file's job is the package's contract, not
+// whatever any one layout happens to do with it.
 
 it('renders a menu location with its items, including one level of children', function () {
     Menu::forLocation('primary')->update(['items' => [
@@ -29,14 +18,12 @@ it('renders a menu location with its items, including one level of children', fu
         ]],
     ]]);
 
-    marketingPage();
+    $html = view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'en'])->render();
 
-    get('/home')
-        ->assertOk()
-        ->assertSee('About')
-        ->assertSee('Team')
-        ->assertSee('href="/about"', escape: false)
-        ->assertSee('href="/about/team"', escape: false);
+    expect($html)->toContain('About')
+        ->and($html)->toContain('Team')
+        ->and($html)->toContain('href="/about"')
+        ->and($html)->toContain('href="/about/team"');
 });
 
 it('marks the current page aria-current, and its ancestor bold, without marking an unrelated item', function () {
@@ -47,13 +34,13 @@ it('marks the current page aria-current, and its ancestor bold, without marking 
         ['id' => 'm_contact', 'label' => ['en' => 'Contact'], 'url' => '/contact', 'target' => '_self', 'children' => []],
     ]]);
 
-    $team = Page::create(['title' => 'Team', 'layout' => 'marketing', 'draft_content' => []]);
-    $team->setSlugs(['en' => 'about/team', 'ar' => 'about/team-ar']);
-    $team->publish();
+    // The partial reads the current path off the request, so fake one
+    // rather than needing a real page and route for this.
+    app()->instance('request', Request::create('/about/team'));
 
     // Blade wraps the <a> tag's attributes onto their own lines, so collapse
     // whitespace rather than matching the markup's exact formatting.
-    $html = preg_replace('/\s+/', ' ', get('/about/team')->assertOk()->getContent());
+    $html = preg_replace('/\s+/', ' ', view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'en'])->render());
 
     // The current item itself.
     expect($html)->toContain('aria-current="page"')
@@ -64,11 +51,9 @@ it('marks the current page aria-current, and its ancestor bold, without marking 
 });
 
 it('renders nothing for a location with no items yet', function () {
-    marketingPage();
+    $html = view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'en'])->render();
 
-    $html = get('/home')->assertOk()->getContent();
-
-    expect(substr_count($html, '<nav>'))->toBe(0);
+    expect(trim($html))->toBe('');
 });
 
 it('renders nothing for a location nobody registered, and never touches the database for it', function () {
@@ -83,11 +68,7 @@ it('is RTL-safe: no left/right utility leaks into the menu markup', function () 
         ['id' => 'm_about', 'label' => ['ar' => 'من نحن', 'en' => 'About'], 'url' => '/about', 'target' => '_self', 'children' => []],
     ]]);
 
-    $page = Page::create(['title' => 'Home', 'layout' => 'marketing', 'draft_content' => []]);
-    $page->setSlugs(['en' => 'ar-home', 'ar' => 'ar-home-ar']);
-    $page->publish();
-
-    $html = get('/ar/ar-home-ar')->assertOk()->getContent();
+    $html = view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'ar'])->render();
 
     expect($html)->toContain('من نحن')
         ->and($html)->not->toContain('ml-')

@@ -138,3 +138,36 @@ to "expose a way to design it": overriding the shipped partial's file is one opt
 `Menu::treeFor()` from a controller, a Livewire component, or a hand-rolled view that never
 touches the shipped partial is the other, and now there's one canonical place either path
 goes through.
+
+## Changed, 30 Aug 2026: styling moved out of the vendor-override path
+
+Built a vendor-override (`resources/views/vendor/atelier/partials/menu.blade.php`) first,
+the documented Laravel way to restyle a package view. Reasonable feedback: nobody actually
+reaches for that path, it is not where a developer looks when they want to change how
+something on their own site looks. Deleted it. `example/resources/views/partials/nav.blade.php`
+replaces it: a normal view in the app, calling `Menu::treeFor()` and `Menu::label()` directly,
+included from `layouts/marketing.blade.php` like any other partial. First pass had a
+hover dropdown, an SVG chevron and ancestor-highlight logic, in short exactly the "not that
+much code" problem it was supposed to solve; cut down to labels, `aria-current`, and one
+level of children shown inline, about a third the size.
+
+## Fixed, 30 Aug 2026: reorder, add, delete never saved either
+
+Reported as "resorting the menu doesn't work." Root cause is a level up from the
+`live(onBlur: true)` fix earlier in this file: reorder, add, delete are not field
+updates at all, they are Filament Actions built into the Repeater (`getReorderAction()`,
+`getAddAction()`, `getDeleteAction()`), each one mutating the Repeater's own state and
+calling `callAfterStateUpdated()`, which never touches this page's `$this->data` and so
+never reaches `updatedData()`. A drag reorder proved this by hand in the browser (no visual
+change even after simulating real pointer events via JS, so the drop was never reaching the
+DOM order, let alone the server) and by a Livewire test that calls `reorder` directly with
+the exact arguments Filament's own JS sends, `array_reverse($itemKeys)`, and finds the old
+order still there after.
+
+Fixed with `->after()`, Filament's own post-action hook, wired onto `addAction()`,
+`deleteAction()` and `reorderAction()` for both the top-level `items` Repeater and the
+nested `children` one, each calling `$this->persist()`. Four new tests exercise the exact
+action-call shape the real UI sends (`Livewire::test()->callFormComponentAction(...)`)
+rather than `set('data.items', ...)`, which was passing throughout and never would have
+caught any of this: it writes the property directly and skips the very Action-call path the
+bug lived in.

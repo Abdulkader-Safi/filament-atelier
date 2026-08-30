@@ -1,7 +1,8 @@
 {{-- A third shell, to show the menu manager's render side. Same blocks as
-     every other layout; only the header differs, and the header is nothing
-     Atelier put there for you: it's the package's new menu partial, wired up
-     the way a host app's own layout would wire it. --}}
+     every other layout; only the header and footer differ. The nav is
+     partials.nav, a normal view in this app, styled here rather than in a
+     vendor-override file, which is what most developers will actually
+     reach for. --}}
 @php
     $locales = config('atelier.locales', []);
     $dir = $locales[$locale]['dir'] ?? 'ltr';
@@ -21,7 +22,7 @@
 </head>
 <body class="bg-white text-neutral-900 antialiased">
     <header class="border-b border-neutral-200 px-6 py-4">
-        @include('atelier::partials.menu', ['location' => 'primary', 'locale' => $locale])
+        @include('partials.nav', ['location' => 'primary', 'locale' => $locale])
     </header>
 
     <main data-atelier-canvas>
@@ -29,7 +30,7 @@
     </main>
 
     <footer class="border-t border-neutral-200 px-6 py-4">
-        @include('atelier::partials.menu', ['location' => 'footer', 'locale' => $locale])
+        @include('partials.nav', ['location' => 'footer', 'locale' => $locale])
     </footer>
 
     @if ($preview ?? false)
