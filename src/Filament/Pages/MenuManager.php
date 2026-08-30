@@ -393,7 +393,12 @@ class MenuManager extends FilamentPage
                 ->form([
                     Select::make('id')
                         ->label($class::menuSourceLabel())
-                        ->options($class::menuSourceOptions())
+                        // A closure, not a called value: header actions get
+                        // rebuilt on every render of this page, so a plain
+                        // array here ran menuSourceOptions()'s query, every
+                        // published Page, on every move, hide and location
+                        // switch, not only when someone opens this action.
+                        ->options(fn () => $class::menuSourceOptions())
                         ->searchable()
                         ->required(),
                 ])

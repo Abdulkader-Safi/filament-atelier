@@ -321,3 +321,26 @@ there.
 
 Not built: a bulk "hide all" per location, or hiding a whole location at once. Nothing asked
 for either yet.
+
+## Fixed, 30 Aug 2026: two separate causes of "still feels laggy"
+
+Asked which part, since "laggy" covers a lot of ground and guessing wrong wastes the fix.
+Two different answers, two different causes.
+
+**The drag itself didn't track the cursor.** `Sortable.create()` had no `forceFallback`, so
+the browser's own HTML5 drag API ran the gesture: a static ghost icon under the cursor
+rather than the row following it, standard native-drag behaviour that reads as laggy even
+though nothing is actually slow. `forceFallback: true` makes SortableJS simulate the drag
+itself instead; `fallbackOnBody: true` alongside it keeps the dragged clone positioned
+correctly while it crosses between the top-level list and a children list, which neither
+native drag nor a fallback confined to its own list gets right. Both options are already in
+`notebrainslab/filament-menu-manager`'s own config, for the same reason.
+
+**Switching locations, and every other action, was slower than it needed to be.**
+`getHeaderActions()` runs on every render of this page, and its "Add {source}" action built
+its Select's options eagerly: `->options($class::menuSourceOptions())` calls the method
+right there, not when the action opens. For `Page::menuSourceOptions()` that's every
+published page, queried, on every move, every hide, every location switch, whether or not
+anyone ever opens "Add Page." Changed to `->options(fn () => $class::menuSourceOptions())`,
+a closure Filament only calls when the field actually needs its options, which is when the
+action mounts.

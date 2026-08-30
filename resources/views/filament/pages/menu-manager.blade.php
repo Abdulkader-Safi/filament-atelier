@@ -69,6 +69,20 @@
                         draggable: '[data-item-id]',
                         handle: '[data-sortable-handle]',
                         animation: 150,
+                        // Without these the browser's own HTML5 drag API
+                        // runs the gesture: a static ghost icon under the
+                        // cursor, not the row following it, which reads as
+                        // laggy even though nothing is actually slow.
+                        // forceFallback makes SortableJS simulate the whole
+                        // drag itself instead, the smooth-tracking behaviour
+                        // most drag-and-drop UIs actually want; fallbackOnBody
+                        // keeps the dragged row's clone positioned correctly
+                        // while it crosses between lists, which native drag
+                        // and a fallback confined to its own list both get
+                        // wrong. The plugin this was checked against uses
+                        // both for the same reason.
+                        forceFallback: true,
+                        fallbackOnBody: true,
                         onEnd: () => this.sync(),
                     });
                 });
