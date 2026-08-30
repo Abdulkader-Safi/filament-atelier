@@ -70,6 +70,25 @@ Listed because a page builder is judged on what it does not do:
 
 Block types are defined in code, and that is the design rather than a stopgap. Creating block types from the panel is v2 and deliberately parked.
 
+## Experimental
+
+- **Menu manager.** Named navigation menus, edited from the panel, rendered on the public site with `Menu::treeFor()`. Drag and drop, including nesting a top-level item or promoting one back out, per-locale labels and URLs, hide without deleting. Off by default, since it's still being proven out:
+
+  ```php
+  // config/atelier.php
+  'experimental' => [
+      'menus' => true,
+  ],
+  ```
+
+  Or per panel, which overrides config:
+
+  ```php
+  AtelierPlugin::make()->experimental(['menus' => true])
+  ```
+
+  Leaving it off pulls the page and its route out of the panel entirely, not just the sidebar link. Full details in the [Menus guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Menus).
+
 ## SEO
 
 Server-rendered Blade is the reason the architecture is shaped this way, so this part isn't an afterthought.
@@ -146,28 +165,29 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 
 **Getting started**
 
-- **[Installation](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation)** — install, register the plugin, the three steps that fail silently, and upgrading
-- **[Usage](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Usage)** — the editor, page settings, and the day-to-day flow
+- **[Installation](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation)**: install, register the plugin, the three steps that fail silently, and upgrading
+- **[Usage](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Usage)**: the editor, page settings, and the day-to-day flow
 
 **Building a site**
 
-- **[Blocks](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Blocks)** — writing your own section types, shared controls, and the five things that bite
-- **[Layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts)** — several shells, picked per page
-- **[Design tokens](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Design-tokens)** — colour, type and spacing read by the editor and the site alike
-- **[Multi-language and RTL](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Multi-language-and-RTL)** — any number of locales in one tree, and mirroring properly
+- **[Blocks](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Blocks)**: writing your own section types, shared controls, and the five things that bite
+- **[Layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts)**: several shells, picked per page
+- **[Menus](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Menus)**: named navigation, drag and drop, experimental
+- **[Design tokens](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Design-tokens)**: colour, type and spacing read by the editor and the site alike
+- **[Multi-language and RTL](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Multi-language-and-RTL)**: any number of locales in one tree, and mirroring properly
 
 **Running it**
 
-- **[Publishing](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Publishing)** — drafts, publishing, preview links, revisions
-- **[SEO](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO)** — meta, the sitemap, slug redirects, and adding URLs Atelier doesn't own
-- **[Structured data](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Structured-data)** — the JSON-LD graph, page types, FAQ, and giving your own routes the same graph
-- **[Configuration](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Configuration)** — every key in `config/atelier.php`
-- **[Troubleshooting](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Troubleshooting)** — everything that fails quietly, in the order it catches people
+- **[Publishing](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Publishing)**: drafts, publishing, preview links, revisions
+- **[SEO](https://github.com/Abdulkader-Safi/filament-atelier/wiki/SEO)**: meta, the sitemap, slug redirects, and adding URLs Atelier doesn't own
+- **[Structured data](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Structured-data)**: the JSON-LD graph, page types, FAQ, and giving your own routes the same graph
+- **[Configuration](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Configuration)**: every key in `config/atelier.php`
+- **[Troubleshooting](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Troubleshooting)**: everything that fails quietly, in the order it catches people
 
 **Reference**
 
-- **[How it works](https://github.com/Abdulkader-Safi/filament-atelier/wiki/How-it-works)** — the data model and the reasoning behind it
-- **[Agent quickstart](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Agent-quickstart)** — a copy-pasteable brief for an AI coding agent
+- **[How it works](https://github.com/Abdulkader-Safi/filament-atelier/wiki/How-it-works)**: the data model and the reasoning behind it
+- **[Agent quickstart](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Agent-quickstart)**: a copy-pasteable brief for an AI coding agent
 
 `Docs/` in this repository is the spec and the design history: the PRD, the task breakdown,
 and the research behind the decisions. It's for anyone working on Atelier itself, not for
