@@ -81,17 +81,40 @@ class AtelierPlugin implements Plugin
         return $this;
     }
 
+    /**
+     * Feature flags for anything still being proven out, off by default.
+     * Overrides `config('atelier.experimental')` rather than only adding to
+     * it, so a panel can turn something off that config turned on.
+     *
+     * @param  array<string, bool>  $flags
+     */
+    public function experimental(array $flags): static
+    {
+        app(ExperimentalFeatures::class)->set($flags);
+
+        return $this;
+    }
+
     public function register(Panel $panel): void
     {
+        $pages = [
+            PageEditor::class,
+            SiteDetails::class,
+        ];
+
+        // Registers a real page, in a client's own sidebar, so it stays
+        // gated behind the flag rather than shipping unconditionally like
+        // the other two pages: there is no clean way to un-ship a page a
+        // client has already clicked into.
+        if (app(ExperimentalFeatures::class)->enabled('menus')) {
+            $pages[] = MenuManager::class;
+        }
+
         $panel
             ->resources([
                 PageResource::class,
             ])
-            ->pages([
-                PageEditor::class,
-                SiteDetails::class,
-                MenuManager::class,
-            ]);
+            ->pages($pages);
     }
 
     public function boot(Panel $panel): void

@@ -41,6 +41,12 @@ class AtelierServiceProvider extends PackageServiceProvider
             MenuRegistry::class,
             fn () => (new MenuRegistry)->locations(config('atelier.menus', [])),
         );
+
+        // Same seed-from-config-then-override shape as MenuRegistry above.
+        $this->app->singleton(
+            ExperimentalFeatures::class,
+            fn () => (new ExperimentalFeatures)->set(config('atelier.experimental', [])),
+        );
     }
 
     public function packageBooted(): void

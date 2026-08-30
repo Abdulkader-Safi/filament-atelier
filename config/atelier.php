@@ -99,4 +99,18 @@ return [
         'keep' => 20,
     ],
 
+    /*
+    | Feature flags for anything still being proven out. Off by default: a
+    | flag stays off until you turn it on, here or with
+    | AtelierPlugin::make()->experimental([...]) in a panel provider, which
+    | overrides this rather than only adding to it.
+    |
+    | 'menus' is the menu manager: a real page in the panel, in a client's
+    | sidebar the moment it's on, so it's worth trying in your own project
+    | before you turn it on somewhere a client will see it.
+    */
+    'experimental' => [
+        'menus' => false,
+    ],
+
 ];

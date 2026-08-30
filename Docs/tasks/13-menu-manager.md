@@ -344,3 +344,35 @@ published page, queried, on every move, every hide, every location switch, wheth
 anyone ever opens "Add Page." Changed to `->options(fn () => $class::menuSourceOptions())`,
 a closure Filament only calls when the field actually needs its options, which is when the
 action mounts.
+
+Measured rather than guessed a third time: a Chrome performance trace on a "move" click
+showed 8ms INP (client-side interaction handling) and a `curl`-timed authenticated page load
+came back in 20 to 50ms. Both fine on their own; whatever the remaining feel is, it's the
+full Livewire round trip and DOM morph as a whole, not a specific query or handler either
+number would have caught. No further fix from this pass; the flag below gives a way to move
+on despite it rather than block on chasing it further.
+
+## Added, 30 Aug 2026: an experimental flag, off by default
+
+Requested directly: a way to turn the whole feature off. `Safi\Atelier\ExperimentalFeatures`
+is deliberately not part of `MenuRegistry`, this isn't about menus specifically, `menus` is
+just the first flag in it. `config('atelier.experimental')` seeds it, the same shape
+`menus`/`locales` already use, and `AtelierPlugin::make()->experimental([...])` overrides
+config rather than only adding to it, so a panel can turn something off that config turned
+on as easily as the other way round.
+
+`AtelierPlugin::register()` only puts `MenuManager::class` in the panel's `pages()` array
+when the flag reads true. That matters more than it sounds: a page not in that array has no
+route at all, not a hidden one, so turning the flag off is a real uninstall of the panel
+surface, not a cosmetic one. `example/`'s own `AdminPanelProvider` now carries
+`->experimental(['menus' => true])` to keep using it, which is also the concrete
+demonstration of the API the request asked for.
+
+One test doesn't do what it sounds like it should: flipping the flag mid-test-suite and
+expecting an already-registered route to disappear. Filament builds a panel's page list
+once, from whatever a provider's plugin registration produced at boot, not fresh on every
+request, so that isn't testable the way a first instinct would try it, and it isn't how a
+real running app would behave either: this is a boot-time decision, not a per-request one.
+What's tested instead: the flag class itself (default off, `set()` toggles either way), that
+config seeds it, and that the page the example app's own `->experimental()` call turned on
+is actually reachable.

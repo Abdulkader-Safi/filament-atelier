@@ -58,6 +58,13 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 AtelierPlugin::make()
                     ->blocks(DefaultBlocks::all())
+                    // Off by default in config/atelier.php: the menu
+                    // manager is still being proven out, and this line is
+                    // what turns it on for this one panel. Delete it (or
+                    // flip it to false) to pull the Menus page and its
+                    // route out of the panel entirely, no separate
+                    // uninstall step.
+                    ->experimental(['menus' => true])
                     // The locations themselves (primary, footer, sidebar)
                     // live in config/atelier.php now, next to `locales`.
                     // ->menuLocations([...]) still works here too, additive
