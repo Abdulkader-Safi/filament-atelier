@@ -11,7 +11,7 @@
     @foreach ($items as $item)
         @php
             $label = \Safi\Atelier\Models\Menu::label($item, $menuLocale);
-            $url = $item['url'] ?? null;
+            $url = \Safi\Atelier\Models\Menu::url($item, $menuLocale);
             $itemPath = $url ? '/'.trim((string) parse_url($url, PHP_URL_PATH), '/') : null;
             $isCurrent = $itemPath !== null && $itemPath === $currentPath;
             $isAncestor = ! $isCurrent && $itemPath !== null && $itemPath !== '/'

@@ -11,62 +11,78 @@ use function Pest\Laravel\actingAs;
 
 beforeEach(fn () => actingAs(User::factory()->create()));
 
-function menuItem(string $id, string $label, string $url): array
+function menuManagerItem(string $id, string $label, string $url): array
 {
-    return ['id' => $id, 'label' => ['en' => $label], 'url' => $url, 'target' => '_self', 'children' => []];
+    return ['id' => $id, 'label' => ['en' => $label], 'url' => ['en' => $url], 'target' => '_self', 'children' => []];
 }
 
-it('opens on the first registered location and saves items as they change, with no explicit save call', function () {
+it('opens on the first registered location', function () {
+    Livewire::test(MenuManager::class)->assertSet('location', 'primary');
+});
+
+it('adds a custom link and mounts the edit action for it straight away', function () {
     Livewire::test(MenuManager::class)
-        ->assertSet('location', 'primary')
-        ->set('data.items', [menuItem('m_one', 'About', '/about')]);
+        ->call('addItem')
+        ->assertActionMounted('editItem');
+
+    expect(Menu::forLocation('primary')->tree())->toHaveCount(1);
+});
+
+it('saves label and URL through the edit action, with no explicit save call elsewhere', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_a', 'Old', '/old')]]);
+
+    Livewire::test(MenuManager::class)->callAction('editItem', data: [
+        'label' => ['en' => 'About'],
+        'url' => ['en' => '/about'],
+        'target' => '_self',
+    ], arguments: ['id' => 'm_a']);
 
     $tree = Menu::forLocation('primary')->tree();
 
-    expect($tree)->toHaveCount(1)
-        ->and($tree[0]['label']['en'])->toBe('About')
-        ->and($tree[0]['url'])->toBe('/about');
+    expect($tree[0]['label']['en'])->toBe('About')
+        ->and($tree[0]['url']['en'])->toBe('/about');
 });
 
-it('switches locations and loads that location on its own tree', function () {
-    Menu::forLocation('primary')->update(['items' => [menuItem('m_p', 'Primary item', '/')]]);
-    Menu::forLocation('footer')->update(['items' => [menuItem('m_f', 'Footer item', '/contact')]]);
+it('saves a different URL per locale, not one shared URL', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_a', 'Home', '/home')]]);
 
-    // A Repeater re-keys its rows once the form has hydrated them, so read
-    // the first one positionally rather than assuming the key is 0.
-    $component = Livewire::test(MenuManager::class);
+    Livewire::test(MenuManager::class)->callAction('editItem', data: [
+        'label' => ['en' => 'Home', 'ar' => 'الرئيسية'],
+        'url' => ['en' => '/home', 'ar' => '/ar/home'],
+        'target' => '_self',
+    ], arguments: ['id' => 'm_a']);
 
-    expect(collect($component->get('data')['items'])->first()['label']['en'])->toBe('Primary item');
+    $item = Menu::forLocation('primary')->tree()[0];
 
-    $component->set('location', 'footer');
-
-    expect(collect($component->get('data')['items'])->first()['label']['en'])->toBe('Footer item');
+    expect($item['url']['en'])->toBe('/home')
+        ->and($item['url']['ar'])->toBe('/ar/home');
 });
 
-it('keeps one row per location however often it saves', function () {
-    Livewire::test(MenuManager::class)->set('data.items', [menuItem('m_a', 'A', '/a')]);
-    Livewire::test(MenuManager::class)->set('data.items', [menuItem('m_b', 'B', '/b')]);
+it('prefills the edit action with the item\'s current values', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_a', 'A', '/a')]]);
 
-    expect(Menu::where('location', 'primary')->count())->toBe(1)
-        ->and(Menu::forLocation('primary')->tree()[0]['label']['en'])->toBe('B');
+    Livewire::test(MenuManager::class)
+        ->mountAction('editItem', ['id' => 'm_a'])
+        ->assertActionDataSet(['label' => ['en' => 'A', 'ar' => null], 'url' => ['en' => '/a', 'ar' => null], 'target' => '_self']);
 });
 
-it('persists a drag reorder', function () {
+it('deletes an item through the delete action, with confirmation required', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_a', 'A', '/a')]]);
+
+    Livewire::test(MenuManager::class)
+        ->assertActionExists('deleteItem')
+        ->callAction('deleteItem', arguments: ['id' => 'm_a']);
+
+    expect(Menu::forLocation('primary')->tree())->toBe([]);
+});
+
+it('moves an item up and down among its siblings', function () {
     Menu::forLocation('primary')->update(['items' => [
-        menuItem('m_a', 'A', '/a'),
-        menuItem('m_b', 'B', '/b'),
+        menuManagerItem('m_a', 'A', '/a'),
+        menuManagerItem('m_b', 'B', '/b'),
     ]]);
 
-    $component = Livewire::test(MenuManager::class);
-
-    // The reorder action Filament's JS calls on drop takes the item keys in
-    // their new order, not the tree's own ids. Read the real, hydrated keys
-    // rather than assume 0/1, the same reasoning as the location-switch test.
-    $itemKeys = array_keys($component->get('data')['items']);
-
-    $component->callFormComponentAction('items', 'reorder', arguments: [
-        'items' => array_reverse($itemKeys),
-    ]);
+    Livewire::test(MenuManager::class)->call('move', 'm_a', 1);
 
     $tree = Menu::forLocation('primary')->tree();
 
@@ -74,64 +90,90 @@ it('persists a drag reorder', function () {
         ->and($tree[1]['label']['en'])->toBe('A');
 });
 
-it('persists a delete with no field edited afterward', function () {
+it('refuses to move an item past either end of its siblings', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_a', 'Only one', '/a')]]);
+
+    Livewire::test(MenuManager::class)->call('move', 'm_a', -1)->call('move', 'm_a', 1);
+
+    expect(Menu::forLocation('primary')->tree()[0]['label']['en'])->toBe('Only one');
+});
+
+it('adds a sub-item under a top-level item and keeps it nested', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_parent', 'Services', '/services')]]);
+
+    Livewire::test(MenuManager::class)->call('addItem', 'm_parent');
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree[0]['children'])->toHaveCount(1);
+});
+
+it('edits a child through the same edit action as a top-level item', function () {
     Menu::forLocation('primary')->update(['items' => [
-        menuItem('m_a', 'A', '/a'),
-        menuItem('m_b', 'B', '/b'),
+        [...menuManagerItem('m_parent', 'Services', '/services'), 'children' => [
+            menuManagerItem('m_child', 'Old label', '/old'),
+        ]],
     ]]);
 
-    $component = Livewire::test(MenuManager::class);
-    $itemKeys = array_keys($component->get('data')['items']);
+    Livewire::test(MenuManager::class)->callAction('editItem', data: [
+        'label' => ['en' => 'New label'],
+        'url' => ['en' => '/new'],
+        'target' => '_self',
+    ], arguments: ['id' => 'm_child']);
 
-    $component->callFormComponentAction('items', 'delete', arguments: ['item' => $itemKeys[0]]);
+    $child = Menu::forLocation('primary')->tree()[0]['children'][0];
+
+    expect($child['label']['en'])->toBe('New label')
+        ->and($child['url']['en'])->toBe('/new');
+});
+
+it('moves a child among its own siblings, not its parent\'s', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        [...menuManagerItem('m_parent', 'Services', '/services'), 'children' => [
+            menuManagerItem('m_a', 'A', '/a'),
+            menuManagerItem('m_b', 'B', '/b'),
+        ]],
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('move', 'm_a', 1);
+
+    $children = Menu::forLocation('primary')->tree()[0]['children'];
+
+    expect($children[0]['label']['en'])->toBe('B')
+        ->and($children[1]['label']['en'])->toBe('A');
+});
+
+it('deletes a child without touching its parent or siblings', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        [...menuManagerItem('m_parent', 'Services', '/services'), 'children' => [
+            menuManagerItem('m_keep', 'Keep', '/keep'),
+            menuManagerItem('m_drop', 'Drop', '/drop'),
+        ]],
+    ]]);
+
+    Livewire::test(MenuManager::class)->callAction('deleteItem', arguments: ['id' => 'm_drop']);
 
     $tree = Menu::forLocation('primary')->tree();
 
     expect($tree)->toHaveCount(1)
-        ->and($tree[0]['label']['en'])->toBe('B');
+        ->and($tree[0]['children'])->toHaveCount(1)
+        ->and($tree[0]['children'][0]['label']['en'])->toBe('Keep');
 });
 
-it('persists an added item with no field edited afterward', function () {
-    Menu::forLocation('primary')->update(['items' => [menuItem('m_a', 'A', '/a')]]);
+it('switches locations and loads that location\'s own tree', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_p', 'Primary item', '/')]]);
+    Menu::forLocation('footer')->update(['items' => [menuManagerItem('m_f', 'Footer item', '/contact')]]);
 
-    Livewire::test(MenuManager::class)->callFormComponentAction('items', 'add');
-
-    expect(Menu::forLocation('primary')->tree())->toHaveCount(2);
+    Livewire::test(MenuManager::class)
+        ->assertSet('tree.0.label.en', 'Primary item')
+        ->set('location', 'footer')
+        ->assertSet('tree.0.label.en', 'Footer item');
 });
 
-it('persists a reorder inside a nested Sub-items repeater too', function () {
-    Menu::forLocation('primary')->update(['items' => [
-        [...menuItem('m_parent', 'Parent', '/parent'), 'children' => [
-            menuItem('m_x', 'X', '/x'),
-            menuItem('m_y', 'Y', '/y'),
-        ]],
-    ]]);
+it('keeps one row per location however often it saves', function () {
+    Livewire::test(MenuManager::class)->call('addItem');
+    Livewire::test(MenuManager::class)->call('addItem');
 
-    $component = Livewire::test(MenuManager::class);
-    $parentKey = array_key_first($component->get('data')['items']);
-    $childKeys = array_keys($component->get('data')['items'][$parentKey]['children']);
-
-    $component->callFormComponentAction(
-        "items.{$parentKey}.children",
-        'reorder',
-        arguments: ['items' => array_reverse($childKeys)],
-    );
-
-    $children = Menu::forLocation('primary')->tree()[0]['children'];
-
-    expect($children[0]['label']['en'])->toBe('Y')
-        ->and($children[1]['label']['en'])->toBe('X');
-});
-
-it('nests one level of children under an item', function () {
-    Livewire::test(MenuManager::class)->set('data.items', [
-        [...menuItem('m_parent', 'Parent', '/parent'), 'children' => [
-            menuItem('m_child', 'Child', '/parent/child'),
-        ]],
-    ]);
-
-    $tree = Menu::forLocation('primary')->tree();
-
-    expect($tree[0]['children'])->toHaveCount(1)
-        ->and($tree[0]['children'][0]['label']['en'])->toBe('Child');
+    expect(Menu::where('location', 'primary')->count())->toBe(1)
+        ->and(Menu::forLocation('primary')->tree())->toHaveCount(2);
 });

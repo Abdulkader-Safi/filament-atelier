@@ -33,7 +33,7 @@ it('picks a page as a menu item, with its title and URL copied in, not retyped',
 
     expect($tree)->toHaveCount(1)
         ->and($tree[0]['label']['en'])->toBe('About us')
-        ->and($tree[0]['url'])->toBe('http://localhost:8000/about');
+        ->and($tree[0]['url']['en'])->toBe('http://localhost:8000/about');
 });
 
 it('keeps a picked page menu item working after the page itself is deleted', function () {

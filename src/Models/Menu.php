@@ -76,4 +76,22 @@ class Menu extends Model
 
         return is_string($label) ? $label : '';
     }
+
+    /**
+     * One item's URL for a locale. No fallback to another locale, unlike
+     * {@see label}: English being /about and Arabic being /ar/about is the
+     * whole point of this being per-locale, and a URL borrowed from the
+     * wrong locale is a broken link, not a readable-but-untranslated one.
+     * Matches `Page::url()`, which returns null rather than another
+     * locale's URL when a locale has none.
+     *
+     * @param  array<string, mixed>  $item
+     */
+    public static function url(array $item, ?string $locale = null): ?string
+    {
+        $locale ??= app()->getLocale();
+        $url = data_get($item, "url.{$locale}");
+
+        return is_string($url) && $url !== '' ? $url : null;
+    }
 }

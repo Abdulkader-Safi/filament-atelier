@@ -46,7 +46,7 @@ it('seeds the bound registry from config, the same source locales reads from', f
 
 it('exposes a plain PHP entry point for a location\'s tree, for anything that is not the shipped partial', function () {
     Menu::forLocation('primary')->update(['items' => [
-        ['id' => 'm_x', 'label' => ['en' => 'X'], 'url' => '/x', 'target' => '_self', 'children' => []],
+        ['id' => 'm_x', 'label' => ['en' => 'X'], 'url' => ['en' => '/x'], 'target' => '_self', 'children' => []],
     ]]);
 
     expect(Menu::treeFor('primary'))->toHaveCount(1)
@@ -59,4 +59,14 @@ it('resolves a label for a locale, falling back to the default locale', function
     expect(Menu::label($item, 'en'))->toBe('English only')
         ->and(Menu::label($item, 'ar'))->toBe('English only')
         ->and(Menu::label(['label' => []], 'en'))->toBe('');
+});
+
+it('resolves a URL for a locale with no fallback, unlike a label', function () {
+    $item = ['url' => ['en' => '/about']];
+
+    expect(Menu::url($item, 'en'))->toBe('/about')
+        // No Arabic URL was set. A broken link is worse than a missing one,
+        // so this returns null rather than the English URL.
+        ->and(Menu::url($item, 'ar'))->toBeNull()
+        ->and(Menu::url(['url' => []], 'en'))->toBeNull();
 });

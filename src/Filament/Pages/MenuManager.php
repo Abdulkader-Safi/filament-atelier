@@ -5,29 +5,39 @@ declare(strict_types=1);
 namespace Safi\Atelier\Filament\Pages;
 
 use Filament\Actions\Action;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\Page as FilamentPage;
-use Filament\Schemas\Components\Component;
-use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 use Safi\Atelier\MenuRegistry;
 use Safi\Atelier\MenuSource;
 use Safi\Atelier\Models\Menu;
 
 /**
- * One location's item tree, edited with a native Filament `Repeater`.
+ * One location's item tree: a compact, indented list, editing done in a
+ * Filament action modal rather than an inline form.
  *
- * Reordering is the Repeater's own drag handle rather than a bespoke
- * Livewire+Alpine canvas: it is already keyboard-accessible, it is what the
- * rest of the panel uses for a list of things, and it means no tree-mutation
- * code to keep in step with what Filament already does for a flat-plus-one-
- * level array. See task 13's "Built" note for the fuller reasoning.
+ * Two decisions behind the shape, both taken 30 Aug 2026 after the first cut
+ * read as cluttered and off-theme:
+ *
+ * Owning the tree as a plain array (`addItem`, `deleteItem`, `move`, each
+ * calling `persist()` itself) rather than a Filament `Repeater`, modelled on
+ * `PageEditor`'s own section list. The Repeater version needed `->after()`
+ * hooks bolted onto three separate built-in actions to make add, delete and
+ * reorder actually save (task 13's earlier "Fixed" note), because none of
+ * them are field updates Livewire's own diffing picks up. Owning the array
+ * sidesteps that class of bug entirely.
+ *
+ * Editing in a modal Action rather than an inline expand: a row that turns
+ * into a form reflows everything below it and looks like nothing else in
+ * the panel. A Filament `Action` modal is what "Add a custom link" already
+ * used, is exactly the panel's own theme for free, and is the shape
+ * Shopify's own menu editor uses too, checked on Mobbin. The list itself
+ * stays a drag-free, single-line-per-item list: label, an Edit link, a
+ * Delete link, no URL shown in the row, the same restraint Shopify's list
+ * has.
  */
 class MenuManager extends FilamentPage
 {
@@ -43,8 +53,8 @@ class MenuManager extends FilamentPage
 
     public string $location = '';
 
-    /** @var array{items: array} */
-    public array $data = ['items' => []];
+    /** The working item tree. Mirrors the row's `items` column. */
+    public array $tree = [];
 
     public function mount(): void
     {
@@ -72,12 +82,7 @@ class MenuManager extends FilamentPage
 
     protected function loadLocation(): void
     {
-        $this->data = ['items' => $this->location !== ''
-            ? Menu::forLocation($this->location)->tree()
-            : []];
-
-        unset($this->cachedSchemas['form']);
-        $this->form->fill($this->data);
+        $this->tree = $this->location !== '' ? Menu::forLocation($this->location)->tree() : [];
     }
 
     /** @return array<string, string> */
@@ -86,114 +91,193 @@ class MenuManager extends FilamentPage
         return $this->registry()->options();
     }
 
-    // Schema -------------------------------------------------------------
+    // Tree mutation ----------------------------------------------------
 
-    public function form(Schema $schema): Schema
+    public function addItem(?string $parentId = null): void
     {
-        return $schema
-            ->components([
-                $this->persistOnStructuralChange(
-                    Repeater::make('items')
-                        ->label('')
-                        ->hiddenLabel()
-                        ->schema($this->itemSchema(nested: $this->depth() > 0))
-                        ->reorderable()
-                        ->collapsible()
-                        ->addActionLabel('Add a custom link')
-                        ->itemLabel(fn (array $state) => $this->itemLabel($state))
-                        ->defaultItems(0)
-                        ->columnSpanFull(),
-                ),
-            ])
-            ->statePath('data');
+        $id = 'm_'.Str::lower(Str::random(6));
+
+        $item = ['id' => $id, 'label' => [], 'url' => [], 'target' => '_self', 'children' => []];
+
+        if ($parentId === null) {
+            $this->tree[] = $item;
+        } else {
+            $parentIndex = $this->indexOf($this->tree, $parentId);
+
+            if ($parentIndex === null) {
+                return;
+            }
+
+            $this->tree[$parentIndex]['children'][] = $item;
+        }
+
+        $this->persist();
+        $this->mountAction('editItem', ['id' => $id]);
     }
 
-    /**
-     * Add, delete and reorder all run as Filament Actions built into the
-     * Repeater, none of them field updates, so none of them go through the
-     * wire:model diff that fires updatedData(). Each one mutates the
-     * Repeater's own state and calls callAfterStateUpdated(), which never
-     * reaches this page's $this->data at all: a reorder proved this out by
-     * hand and in a test, both showing the old order surviving a reload.
-     * ->after() is Filament's own hook for "something happened after this
-     * action ran", so it is where persist() has to live instead.
-     */
-    protected function persistOnStructuralChange(Repeater $repeater): Repeater
+    public function move(string $id, int $offset): void
     {
-        $persist = fn (Action $action) => $action->after(fn () => $this->persist());
+        $location = $this->locate($id);
 
-        return $repeater
-            ->addAction($persist)
-            ->deleteAction($persist)
-            ->reorderAction($persist);
+        if (! $location) {
+            return;
+        }
+
+        if ($location['parentIndex'] === null) {
+            $this->swap($this->tree, $location['index'], $location['index'] + $offset);
+        } else {
+            $this->swap($this->tree[$location['parentIndex']]['children'], $location['index'], $location['index'] + $offset);
+        }
+
+        $this->persist();
     }
 
-    /** @return array<int, Component> */
-    protected function itemSchema(bool $nested): array
+    protected function swap(array &$items, int $from, int $to): void
+    {
+        if ($to < 0 || $to >= count($items)) {
+            return;
+        }
+
+        [$items[$from], $items[$to]] = [$items[$to], $items[$from]];
+    }
+
+    protected function indexOf(array $items, string $id): ?int
+    {
+        foreach ($items as $index => $item) {
+            if (($item['id'] ?? null) === $id) {
+                return $index;
+            }
+        }
+
+        return null;
+    }
+
+    /** Where an item lives: its own index, plus its parent's index if it's a child. */
+    protected function locate(string $id): ?array
+    {
+        $topIndex = $this->indexOf($this->tree, $id);
+
+        if ($topIndex !== null) {
+            return ['parentIndex' => null, 'index' => $topIndex];
+        }
+
+        foreach ($this->tree as $parentIndex => $parent) {
+            $childIndex = $this->indexOf($parent['children'] ?? [], $id);
+
+            if ($childIndex !== null) {
+                return ['parentIndex' => $parentIndex, 'index' => $childIndex];
+            }
+        }
+
+        return null;
+    }
+
+    protected function findItem(string $id): ?array
+    {
+        $location = $this->locate($id);
+
+        if (! $location) {
+            return null;
+        }
+
+        return $location['parentIndex'] === null
+            ? $this->tree[$location['index']]
+            : $this->tree[$location['parentIndex']]['children'][$location['index']];
+    }
+
+    // Edit and delete, as Filament actions --------------------------------
+
+    public function editItemAction(): Action
     {
         $locales = config('atelier.locales', []);
 
-        $fields = [
-            // Filament only dehydrates keys a field backs, so without this
-            // the tree's own id, generated once when the item is added,
-            // would be dropped on the first save and replaced by nothing.
-            Hidden::make('id')->default(fn () => 'm_'.Str::lower(Str::random(6))),
+        return Action::make('editItem')
+            ->label('Edit')
+            ->modalHeading('Edit item')
+            ->modalSubmitActionLabel('Save')
+            ->fillForm(fn (array $arguments): array => $this->findItem($arguments['id'] ?? '') ?? [])
+            ->form([
+                Tabs::make('Label')
+                    ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
+                        TextInput::make("label.{$code}")->label('Label')->maxLength(255),
+                        // A URL is content, not configuration: English is
+                        // /about, Arabic is /ar/about, exactly like a page's
+                        // own per-locale slug. One shared URL would mean
+                        // either language linking to the other's path.
+                        TextInput::make("url.{$code}")
+                            ->label('URL')
+                            ->helperText('A path like /about, or a full https:// URL.')
+                            ->maxLength(2048),
+                    ]))->all())
+                    ->columnSpanFull(),
 
-            Tabs::make('Label')
-                ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
-                    // A Filament field defers its state to the server by
-                    // default: it only actually reaches $this->data on some
-                    // other network round-trip, which for this page was
-                    // never guaranteed to happen. live(onBlur: true) is what
-                    // makes updatedData() fire at all, autosave's whole
-                    // premise. No live preview here to justify per-keystroke
-                    // syncing, so blur is enough.
-                    TextInput::make("label.{$code}")->label('Label')->maxLength(255)->live(onBlur: true),
-                ]))->all())
-                ->columnSpanFull(),
-
-            TextInput::make('url')
-                ->label('URL')
-                ->helperText('A path like /about, or a full https:// URL.')
-                ->maxLength(2048)
-                ->live(onBlur: true)
-                ->columnSpan(1),
-
-            Select::make('target')
-                ->label('Opens in')
-                ->options(['_self' => 'Same tab', '_blank' => 'New tab'])
-                ->default('_self')
-                ->native(false)
-                ->live()
-                ->columnSpan(1),
-        ];
-
-        if ($nested) {
-            $fields[] = $this->persistOnStructuralChange(
-                Repeater::make('children')
-                    ->label('Sub-items')
-                    ->schema($this->itemSchema(nested: false))
-                    ->reorderable()
-                    ->collapsible()
-                    ->addActionLabel('Add a sub-item')
-                    ->itemLabel(fn (array $state) => $this->itemLabel($state)),
-            )
-                ->defaultItems(0)
-                ->columnSpanFull();
-        }
-
-        return [
-            Grid::make(2)->schema($fields)->columnSpanFull(),
-        ];
+                Select::make('target')
+                    ->label('Opens in')
+                    ->options(['_self' => 'Same tab', '_blank' => 'New tab'])
+                    ->default('_self')
+                    ->native(false),
+            ])
+            ->action(function (array $data, array $arguments): void {
+                $this->updateItem($arguments['id'], $data);
+            });
     }
 
-    /** Label the row by its own text where it has one, so the list isn't "Item" over and over. */
-    protected function itemLabel(array $state): string
+    public function deleteItemAction(): Action
     {
-        $label = $state['label'] ?? [];
-        $label = is_array($label) ? (reset($label) ?: null) : $label;
+        return Action::make('deleteItem')
+            ->label('Delete')
+            ->color('danger')
+            ->requiresConfirmation()
+            ->modalHeading('Delete this item?')
+            ->action(function (array $arguments): void {
+                $this->deleteItem($arguments['id']);
+            });
+    }
 
-        return is_string($label) && trim($label) !== '' ? $label : ($state['url'] ?? 'Item');
+    protected function updateItem(string $id, array $data): void
+    {
+        $location = $this->locate($id);
+
+        if (! $location) {
+            return;
+        }
+
+        $existingChildren = $location['parentIndex'] === null
+            ? ($this->tree[$location['index']]['children'] ?? [])
+            : [];
+
+        $updated = [
+            'id' => $id,
+            'label' => $data['label'] ?? [],
+            'url' => $data['url'] ?? [],
+            'target' => $data['target'] ?? '_self',
+            'children' => $existingChildren,
+        ];
+
+        if ($location['parentIndex'] === null) {
+            $this->tree[$location['index']] = $updated;
+        } else {
+            $this->tree[$location['parentIndex']]['children'][$location['index']] = $updated;
+        }
+
+        $this->persist();
+    }
+
+    protected function deleteItem(string $id): void
+    {
+        $location = $this->locate($id);
+
+        if (! $location) {
+            return;
+        }
+
+        if ($location['parentIndex'] === null) {
+            array_splice($this->tree, $location['index'], 1);
+        } else {
+            array_splice($this->tree[$location['parentIndex']]['children'], $location['index'], 1);
+        }
+
+        $this->persist();
     }
 
     // Model-sourced items --------------------------------------------------
@@ -227,26 +311,23 @@ class MenuManager extends FilamentPage
             return;
         }
 
-        $this->data['items'][] = [
+        $defaultLocale = array_key_first(config('atelier.locales', []));
+
+        $this->tree[] = [
             'id' => 'm_'.Str::lower(Str::random(6)),
-            'label' => [array_key_first(config('atelier.locales', [])) => $model->getMenuLabel()],
-            'url' => $model->getMenuUrl(),
+            'label' => [$defaultLocale => $model->getMenuLabel()],
+            // Only the default locale is prefilled, same as the label: a
+            // source hands over one string, the other locale's URL is the
+            // editor's to fill in, exactly like an untranslated label.
+            'url' => [$defaultLocale => $model->getMenuUrl()],
             'target' => '_self',
             'children' => [],
         ];
 
-        unset($this->cachedSchemas['form']);
-        $this->form->fill($this->data);
         $this->persist();
     }
 
     // Persistence ----------------------------------------------------------
-
-    /** Called by Livewire on every change under the `data` state path. */
-    public function updatedData(): void
-    {
-        $this->persist();
-    }
 
     protected function persist(): void
     {
@@ -254,29 +335,7 @@ class MenuManager extends FilamentPage
             return;
         }
 
-        Menu::forLocation($this->location)->update(['items' => $this->dehydratedItems()]);
-    }
-
-    /**
-     * The form's dehydrated state, not the raw Livewire property.
-     *
-     * A Repeater tracks its rows by an internal key once the form has
-     * hydrated them, not by the plain 0, 1, 2 the tree is stored under, so
-     * reading `$this->data` straight after a `fill()` (switching location,
-     * adding from a source) would write that internal keying into the
-     * column. Dehydrating runs the Repeater back down to a clean list,
-     * the same reasoning as `PageEditor::dehydratedData()`, without that
-     * method's validation cost, because nothing on a menu item is required.
-     */
-    protected function dehydratedItems(): array
-    {
-        $state = ['data' => $this->data ?? []];
-
-        $this->form->callBeforeStateDehydrated($state);
-        $this->form->dehydrateState($state);
-        $this->form->mutateDehydratedState($state);
-
-        return data_get($state, 'data.items') ?? [];
+        Menu::forLocation($this->location)->update(['items' => $this->tree]);
     }
 
     protected function registry(): MenuRegistry
@@ -284,8 +343,9 @@ class MenuManager extends FilamentPage
         return app(MenuRegistry::class);
     }
 
-    protected function depth(): int
+    /** Whether a top-level item may take children, for the "Add a sub-item" control. */
+    public function canNest(): bool
     {
-        return $this->location !== '' ? $this->registry()->depth($this->location) : 1;
+        return $this->location !== '' && $this->registry()->depth($this->location) > 0;
     }
 }

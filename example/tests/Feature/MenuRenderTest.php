@@ -11,11 +11,20 @@ use Safi\Atelier\Models\Menu;
 // using this partial, and this file's job is the package's contract, not
 // whatever any one layout happens to do with it.
 
+function renderTestItem(string $id, string $en, string $urlEn, array $children = [], ?string $ar = null): array
+{
+    return [
+        'id' => $id,
+        'label' => $ar !== null ? ['en' => $en, 'ar' => $ar] : ['en' => $en],
+        'url' => ['en' => $urlEn],
+        'target' => '_self',
+        'children' => $children,
+    ];
+}
+
 it('renders a menu location with its items, including one level of children', function () {
     Menu::forLocation('primary')->update(['items' => [
-        ['id' => 'm_about', 'label' => ['en' => 'About'], 'url' => '/about', 'target' => '_self', 'children' => [
-            ['id' => 'm_team', 'label' => ['en' => 'Team'], 'url' => '/about/team', 'target' => '_self', 'children' => []],
-        ]],
+        renderTestItem('m_about', 'About', '/about', [renderTestItem('m_team', 'Team', '/about/team')]),
     ]]);
 
     $html = view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'en'])->render();
@@ -28,10 +37,8 @@ it('renders a menu location with its items, including one level of children', fu
 
 it('marks the current page aria-current, and its ancestor bold, without marking an unrelated item', function () {
     Menu::forLocation('primary')->update(['items' => [
-        ['id' => 'm_about', 'label' => ['en' => 'About'], 'url' => '/about', 'target' => '_self', 'children' => [
-            ['id' => 'm_team', 'label' => ['en' => 'Team'], 'url' => '/about/team', 'target' => '_self', 'children' => []],
-        ]],
-        ['id' => 'm_contact', 'label' => ['en' => 'Contact'], 'url' => '/contact', 'target' => '_self', 'children' => []],
+        renderTestItem('m_about', 'About', '/about', [renderTestItem('m_team', 'Team', '/about/team')]),
+        renderTestItem('m_contact', 'Contact', '/contact'),
     ]]);
 
     // The partial reads the current path off the request, so fake one
@@ -63,9 +70,20 @@ it('renders nothing for a location nobody registered, and never touches the data
         ->and(Menu::where('location', 'nobody-registered-this')->exists())->toBeFalse();
 });
 
+it('falls back to # rather than another locale\'s URL when this locale has none', function () {
+    Menu::forLocation('primary')->update(['items' => [renderTestItem('m_about', 'About', '/about')]]);
+
+    $html = view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'ar'])->render();
+
+    // No Arabic URL was ever set, so this must not silently link to the
+    // English one: that would be a broken link dressed up as a working one.
+    expect($html)->toContain('href="#"')
+        ->and($html)->not->toContain('href="/about"');
+});
+
 it('is RTL-safe: no left/right utility leaks into the menu markup', function () {
     Menu::forLocation('primary')->update(['items' => [
-        ['id' => 'm_about', 'label' => ['ar' => 'من نحن', 'en' => 'About'], 'url' => '/about', 'target' => '_self', 'children' => []],
+        renderTestItem('m_about', 'About', '/about', ar: 'من نحن'),
     ]]);
 
     $html = view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'ar'])->render();
