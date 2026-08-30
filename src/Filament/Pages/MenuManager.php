@@ -92,18 +92,40 @@ class MenuManager extends FilamentPage
     {
         return $schema
             ->components([
-                Repeater::make('items')
-                    ->label('')
-                    ->hiddenLabel()
-                    ->schema($this->itemSchema(nested: $this->depth() > 0))
-                    ->reorderable()
-                    ->collapsible()
-                    ->addActionLabel('Add a custom link')
-                    ->itemLabel(fn (array $state) => $this->itemLabel($state))
-                    ->defaultItems(0)
-                    ->columnSpanFull(),
+                $this->persistOnStructuralChange(
+                    Repeater::make('items')
+                        ->label('')
+                        ->hiddenLabel()
+                        ->schema($this->itemSchema(nested: $this->depth() > 0))
+                        ->reorderable()
+                        ->collapsible()
+                        ->addActionLabel('Add a custom link')
+                        ->itemLabel(fn (array $state) => $this->itemLabel($state))
+                        ->defaultItems(0)
+                        ->columnSpanFull(),
+                ),
             ])
             ->statePath('data');
+    }
+
+    /**
+     * Add, delete and reorder all run as Filament Actions built into the
+     * Repeater, none of them field updates, so none of them go through the
+     * wire:model diff that fires updatedData(). Each one mutates the
+     * Repeater's own state and calls callAfterStateUpdated(), which never
+     * reaches this page's $this->data at all: a reorder proved this out by
+     * hand and in a test, both showing the old order surviving a reload.
+     * ->after() is Filament's own hook for "something happened after this
+     * action ran", so it is where persist() has to live instead.
+     */
+    protected function persistOnStructuralChange(Repeater $repeater): Repeater
+    {
+        $persist = fn (Action $action) => $action->after(fn () => $this->persist());
+
+        return $repeater
+            ->addAction($persist)
+            ->deleteAction($persist)
+            ->reorderAction($persist);
     }
 
     /** @return array<int, Component> */
@@ -147,13 +169,15 @@ class MenuManager extends FilamentPage
         ];
 
         if ($nested) {
-            $fields[] = Repeater::make('children')
-                ->label('Sub-items')
-                ->schema($this->itemSchema(nested: false))
-                ->reorderable()
-                ->collapsible()
-                ->addActionLabel('Add a sub-item')
-                ->itemLabel(fn (array $state) => $this->itemLabel($state))
+            $fields[] = $this->persistOnStructuralChange(
+                Repeater::make('children')
+                    ->label('Sub-items')
+                    ->schema($this->itemSchema(nested: false))
+                    ->reorderable()
+                    ->collapsible()
+                    ->addActionLabel('Add a sub-item')
+                    ->itemLabel(fn (array $state) => $this->itemLabel($state)),
+            )
                 ->defaultItems(0)
                 ->columnSpanFull();
         }

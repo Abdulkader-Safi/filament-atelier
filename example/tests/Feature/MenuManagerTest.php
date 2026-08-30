@@ -51,6 +51,78 @@ it('keeps one row per location however often it saves', function () {
         ->and(Menu::forLocation('primary')->tree()[0]['label']['en'])->toBe('B');
 });
 
+it('persists a drag reorder', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        menuItem('m_a', 'A', '/a'),
+        menuItem('m_b', 'B', '/b'),
+    ]]);
+
+    $component = Livewire::test(MenuManager::class);
+
+    // The reorder action Filament's JS calls on drop takes the item keys in
+    // their new order, not the tree's own ids. Read the real, hydrated keys
+    // rather than assume 0/1, the same reasoning as the location-switch test.
+    $itemKeys = array_keys($component->get('data')['items']);
+
+    $component->callFormComponentAction('items', 'reorder', arguments: [
+        'items' => array_reverse($itemKeys),
+    ]);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree[0]['label']['en'])->toBe('B')
+        ->and($tree[1]['label']['en'])->toBe('A');
+});
+
+it('persists a delete with no field edited afterward', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        menuItem('m_a', 'A', '/a'),
+        menuItem('m_b', 'B', '/b'),
+    ]]);
+
+    $component = Livewire::test(MenuManager::class);
+    $itemKeys = array_keys($component->get('data')['items']);
+
+    $component->callFormComponentAction('items', 'delete', arguments: ['item' => $itemKeys[0]]);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree)->toHaveCount(1)
+        ->and($tree[0]['label']['en'])->toBe('B');
+});
+
+it('persists an added item with no field edited afterward', function () {
+    Menu::forLocation('primary')->update(['items' => [menuItem('m_a', 'A', '/a')]]);
+
+    Livewire::test(MenuManager::class)->callFormComponentAction('items', 'add');
+
+    expect(Menu::forLocation('primary')->tree())->toHaveCount(2);
+});
+
+it('persists a reorder inside a nested Sub-items repeater too', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        [...menuItem('m_parent', 'Parent', '/parent'), 'children' => [
+            menuItem('m_x', 'X', '/x'),
+            menuItem('m_y', 'Y', '/y'),
+        ]],
+    ]]);
+
+    $component = Livewire::test(MenuManager::class);
+    $parentKey = array_key_first($component->get('data')['items']);
+    $childKeys = array_keys($component->get('data')['items'][$parentKey]['children']);
+
+    $component->callFormComponentAction(
+        "items.{$parentKey}.children",
+        'reorder',
+        arguments: ['items' => array_reverse($childKeys)],
+    );
+
+    $children = Menu::forLocation('primary')->tree()[0]['children'];
+
+    expect($children[0]['label']['en'])->toBe('Y')
+        ->and($children[1]['label']['en'])->toBe('X');
+});
+
 it('nests one level of children under an item', function () {
     Livewire::test(MenuManager::class)->set('data.items', [
         [...menuItem('m_parent', 'Parent', '/parent'), 'children' => [
