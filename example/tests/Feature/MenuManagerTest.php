@@ -177,3 +177,80 @@ it('keeps one row per location however often it saves', function () {
     expect(Menu::where('location', 'primary')->count())->toBe(1)
         ->and(Menu::forLocation('primary')->tree())->toHaveCount(2);
 });
+
+// reorderTree() is what a drop sends: the browser can't be trusted to have
+// dragged a real gesture, so these call it directly with the same shape the
+// front end's sync() builds, rather than trying to simulate a drag.
+
+it('reorders top-level items via reorderTree, the same shape a drop sends', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        menuManagerItem('m_a', 'A', '/a'),
+        menuManagerItem('m_b', 'B', '/b'),
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_b', 'm_a']);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree[0]['label']['en'])->toBe('B')
+        ->and($tree[1]['label']['en'])->toBe('A');
+});
+
+it('reparents a top-level item as a sub-item by dragging it into another item\'s children', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        menuManagerItem('m_services', 'Services', '/services'),
+        menuManagerItem('m_web', 'Web design', '/web-design'),
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_services'], ['m_services' => ['m_web']]);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree)->toHaveCount(1)
+        ->and($tree[0]['children'])->toHaveCount(1)
+        ->and($tree[0]['children'][0]['label']['en'])->toBe('Web design');
+});
+
+it('promotes a sub-item to top-level by dragging it out of its parent', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        [...menuManagerItem('m_services', 'Services', '/services'), 'children' => [
+            menuManagerItem('m_web', 'Web design', '/web-design'),
+        ]],
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_services', 'm_web']);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree)->toHaveCount(2)
+        ->and($tree[0]['children'])->toBe([])
+        ->and($tree[1]['label']['en'])->toBe('Web design');
+});
+
+it('drops a grandchild rather than let a drag create a second level of nesting', function () {
+    // m_web is dragged under m_services, but m_web itself already had a
+    // child in the pre-drag tree, m_deep. Nothing in the UI offers a place
+    // to drag into a child's own row, so this can only happen from a
+    // tampered request, and the enforcement has to hold regardless.
+    Menu::forLocation('primary')->update(['items' => [
+        menuManagerItem('m_services', 'Services', '/services'),
+        [...menuManagerItem('m_web', 'Web design', '/web-design'), 'children' => [
+            menuManagerItem('m_deep', 'Too deep', '/too-deep'),
+        ]],
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_services'], ['m_services' => ['m_web']]);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree[0]['children'][0]['label']['en'])->toBe('Web design')
+        ->and($tree[0]['children'][0]['children'])->toBe([]);
+});
+
+it('ignores an id reorderTree does not recognise, rather than trust the browser\'s payload', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_a', 'A', '/a')]]);
+
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_a', 'm_made_up']);
+
+    expect(Menu::forLocation('primary')->tree())->toHaveCount(1);
+});

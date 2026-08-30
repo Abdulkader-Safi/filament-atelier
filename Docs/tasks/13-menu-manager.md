@@ -229,3 +229,39 @@ back to `href="#"` the same way they already did for a missing item.
 `MenuSource::getMenuUrl()` is unchanged, still one string: a picked source only prefills the
 default locale's URL, same as it only ever prefilled the default locale's label, and the
 other locale is the editor's to fill in.
+
+## Added, 30 Aug 2026: drag-and-drop, including reparenting
+
+The arrow buttons only ever reorder within a level; there was no way to promote a sub-item to
+top-level or demote a top-level item into another one's children short of deleting and
+retyping it. Added real drag-and-drop for that, built by hand rather than through the
+Repeater's `->reorderable()`, since that path already needed a bug fix once this session
+(the "Fixed" section above) and hand-rolling it here means owning the one mechanism instead
+of two.
+
+`Sortable.create()` runs directly against `window.Sortable`, the copy Filament's own
+`support` package already loads globally, on every `[data-sortable-list]` element: the
+top-level list, and each nestable top-level item's own children list, all sharing one
+`group` so SortableJS allows dragging between them. A `MutationObserver` on the whole
+component re-runs setup after every Livewire-driven DOM change, rather than betting on a
+specific Livewire lifecycle hook name; a WeakMap-style flag on each list element (technically
+`_atelierSortable`) makes that idempotent instead of double-attaching.
+
+On drop, `sync()` reads the current order of every list straight from the DOM, keyed by
+parent id, and sends the whole shape in one call to a new `reorderTree(array $top, array
+$children = [])` method: rebuilds `$this->tree` from that shape, looking every id up against
+the tree as it stood before the drag, silently dropping any id it doesn't recognise rather
+than trusting the browser's payload, and discarding a dragged item's own children if it has
+any, since nothing in the UI offers a place to drag into a child's row and a request that
+claims otherwise is enforcing depth from the wrong side. Six new tests cover the PHP side:
+same-level reorder, promoting a child, demoting a top-level item into another one's
+children, the grandchild-dropping enforcement, and an unrecognised id being ignored.
+
+**What isn't verified: the drag gesture itself.** Every attempt this session to simulate a
+real drag through browser automation, both a native drag synthesis and hand-dispatched
+`pointerdown`/`pointermove`/`pointerup` sequences, produced no DOM change at all, against
+this component and against the Filament Repeater's own drag earlier in this file. Real mouse
+input works fine through the same tooling elsewhere on this page (the move buttons, the edit
+modal), so this reads as a synthetic-event limitation specific to how SortableJS detects a
+drag start, not evidence of a bug, but it means the actual gesture needs a human to try it
+before this is called done. The server-side logic behind it is what the six tests cover.

@@ -141,6 +141,70 @@ class MenuManager extends FilamentPage
         [$items[$from], $items[$to]] = [$items[$to], $items[$from]];
     }
 
+    /**
+     * Rebuilds the whole tree from a drag-and-drop's result: the top-level
+     * order, and each top-level item's own children order. One call rather
+     * than "move" and "reparent" as separate operations, because a single
+     * drop can be both at once, an item dragged out of "Services" and
+     * dropped between two top-level items in the same gesture.
+     *
+     * Every id is looked up against the tree as it stood before the drag,
+     * so the browser only ever tells this method a shape, never new item
+     * content; an id it doesn't recognise (stale state, a tampered request)
+     * is dropped rather than trusted. A dragged-in id's own children are
+     * discarded rather than carried across: the UI never offers a second
+     * level to drag into, so nothing should arrive with one, and dropping
+     * them is what actually enforces that rather than merely assuming it.
+     *
+     * @param  array<int, string>  $top  Item ids, top-level, in their new order.
+     * @param  array<string, array<int, string>>  $children  Item ids per parent id, in their new order.
+     */
+    public function reorderTree(array $top, array $children = []): void
+    {
+        $flat = $this->flatten($this->tree);
+        $newTree = [];
+
+        foreach ($top as $id) {
+            if (! isset($flat[$id])) {
+                continue;
+            }
+
+            $item = $flat[$id];
+            $item['children'] = [];
+
+            foreach ($children[$id] ?? [] as $childId) {
+                if (! isset($flat[$childId]) || $childId === $id) {
+                    continue;
+                }
+
+                $child = $flat[$childId];
+                $child['children'] = [];
+                $item['children'][] = $child;
+            }
+
+            $newTree[] = $item;
+        }
+
+        $this->tree = $newTree;
+        $this->persist();
+    }
+
+    /** @return array<string, array> id to item, one level flattened, `children` left as found. */
+    protected function flatten(array $tree): array
+    {
+        $flat = [];
+
+        foreach ($tree as $item) {
+            $flat[$item['id']] = $item;
+
+            foreach ($item['children'] ?? [] as $child) {
+                $flat[$child['id']] = $child;
+            }
+        }
+
+        return $flat;
+    }
+
     protected function indexOf(array $items, string $id): ?int
     {
         foreach ($items as $index => $item) {
