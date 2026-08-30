@@ -9,6 +9,8 @@
 @endphp
 <ul class="flex flex-wrap items-center gap-6">
     @foreach ($items as $item)
+        @continue($item['hidden'] ?? false)
+
         @php
             $label = \Safi\Atelier\Models\Menu::label($item, $menuLocale);
             $url = \Safi\Atelier\Models\Menu::url($item, $menuLocale);

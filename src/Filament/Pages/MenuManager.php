@@ -97,7 +97,7 @@ class MenuManager extends FilamentPage
     {
         $id = 'm_'.Str::lower(Str::random(6));
 
-        $item = ['id' => $id, 'label' => [], 'url' => [], 'target' => '_self', 'children' => []];
+        $item = ['id' => $id, 'label' => [], 'url' => [], 'target' => '_self', 'hidden' => false, 'children' => []];
 
         if ($parentId === null) {
             $this->tree[] = $item;
@@ -127,6 +127,25 @@ class MenuManager extends FilamentPage
             $this->swap($this->tree, $location['index'], $location['index'] + $offset);
         } else {
             $this->swap($this->tree[$location['parentIndex']]['children'], $location['index'], $location['index'] + $offset);
+        }
+
+        $this->persist();
+    }
+
+    /** Keeps a hidden item in the tree, saved, not rendered, so hiding is reversible without retyping it. */
+    public function toggleHidden(string $id): void
+    {
+        $location = $this->locate($id);
+
+        if (! $location) {
+            return;
+        }
+
+        if ($location['parentIndex'] === null) {
+            $this->tree[$location['index']]['hidden'] = ! ($this->tree[$location['index']]['hidden'] ?? false);
+        } else {
+            $item = &$this->tree[$location['parentIndex']]['children'][$location['index']];
+            $item['hidden'] = ! ($item['hidden'] ?? false);
         }
 
         $this->persist();
@@ -321,16 +340,19 @@ class MenuManager extends FilamentPage
             return;
         }
 
-        $existingChildren = $location['parentIndex'] === null
-            ? ($this->tree[$location['index']]['children'] ?? [])
-            : [];
+        $existing = $location['parentIndex'] === null
+            ? $this->tree[$location['index']]
+            : $this->tree[$location['parentIndex']]['children'][$location['index']];
 
         $updated = [
             'id' => $id,
             'label' => $data['label'] ?? [],
             'url' => $data['url'] ?? [],
             'target' => $data['target'] ?? '_self',
-            'children' => $existingChildren,
+            // Not a form field: the edit modal is content, hiding is a
+            // separate action, so whatever it was stays what it is.
+            'hidden' => $existing['hidden'] ?? false,
+            'children' => $existing['children'] ?? [],
         ];
 
         if ($location['parentIndex'] === null) {
@@ -400,6 +422,7 @@ class MenuManager extends FilamentPage
             // editor's to fill in, exactly like an untranslated label.
             'url' => [$defaultLocale => $model->getMenuUrl()],
             'target' => '_self',
+            'hidden' => false,
             'children' => [],
         ];
 

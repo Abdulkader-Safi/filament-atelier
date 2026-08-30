@@ -18,6 +18,7 @@
         'group flex items-center gap-1 py-1.5 pe-2',
         'bg-gray-50/60 ps-8 dark:bg-white/[0.02]' => $isChild,
         'ps-1' => ! $isChild,
+        'opacity-50' => $item['hidden'] ?? false,
     ])>
         <x-filament::icon
             icon="heroicon-m-bars-2"
@@ -38,6 +39,14 @@
                 <button type="button" wire:click="move('{{ $item['id'] }}', 1)" title="Move down"
                     class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
                     <x-filament::icon icon="heroicon-m-chevron-down" class="h-3.5 w-3.5" />
+                </button>
+                <button type="button" wire:click="toggleHidden('{{ $item['id'] }}')"
+                    title="{{ ($item['hidden'] ?? false) ? 'Show on the public site' : 'Hide from the public site' }}"
+                    class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <x-filament::icon
+                        :icon="($item['hidden'] ?? false) ? 'heroicon-m-eye-slash' : 'heroicon-m-eye'"
+                        class="h-3.5 w-3.5"
+                    />
                 </button>
             </div>
             <button type="button" wire:click="mountAction('editItem', { id: '{{ $item['id'] }}' })"

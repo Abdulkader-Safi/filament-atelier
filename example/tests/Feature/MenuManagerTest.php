@@ -278,3 +278,60 @@ it('ignores an id reorderTree does not recognise, rather than trust the browser\
 
     expect(Menu::forLocation('primary')->tree())->toHaveCount(1);
 });
+
+it('toggles hidden on and back off, without deleting the item', function () {
+    Menu::forLocation('primary')->update(['items' => [menuManagerItem('m_a', 'A', '/a')]]);
+
+    $component = Livewire::test(MenuManager::class);
+
+    $component->call('toggleHidden', 'm_a');
+    expect(Menu::forLocation('primary')->tree()[0]['hidden'])->toBeTrue();
+
+    $component->call('toggleHidden', 'm_a');
+    expect(Menu::forLocation('primary')->tree()[0]['hidden'])->toBeFalse();
+});
+
+it('toggles hidden on a child without touching its parent or siblings', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        [...menuManagerItem('m_parent', 'Services', '/services'), 'children' => [
+            menuManagerItem('m_child', 'Web design', '/web-design'),
+        ]],
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('toggleHidden', 'm_child');
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree[0]['hidden'] ?? false)->toBeFalse()
+        ->and($tree[0]['children'][0]['hidden'])->toBeTrue();
+});
+
+it('keeps hidden as it was through an edit save, since the modal has no field for it', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        [...menuManagerItem('m_a', 'A', '/a'), 'hidden' => true],
+    ]]);
+
+    Livewire::test(MenuManager::class)->callAction('editItem', data: [
+        'label' => ['en' => 'Renamed'],
+        'url' => ['en' => '/a'],
+        'target' => '_self',
+    ], arguments: ['id' => 'm_a']);
+
+    expect(Menu::forLocation('primary')->tree()[0]['hidden'])->toBeTrue();
+});
+
+it('keeps hidden as it was through a drag reorder', function () {
+    Menu::forLocation('primary')->update(['items' => [
+        [...menuManagerItem('m_a', 'A', '/a'), 'hidden' => true],
+        menuManagerItem('m_b', 'B', '/b'),
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_b', 'm_a']);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree[0]['label']['en'])->toBe('B')
+        ->and($tree[0]['hidden'] ?? false)->toBeFalse()
+        ->and($tree[1]['label']['en'])->toBe('A')
+        ->and($tree[1]['hidden'])->toBeTrue();
+});

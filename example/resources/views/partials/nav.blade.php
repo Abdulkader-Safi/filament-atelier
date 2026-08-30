@@ -16,6 +16,8 @@
 @if (! empty($navItems))
     <ul class="flex flex-wrap items-center gap-6 text-sm">
         @foreach ($navItems as $item)
+            @continue($item['hidden'] ?? false)
+
             @php
                 $url = \Safi\Atelier\Models\Menu::url($item, $navLocale);
                 $isCurrent = $url && '/'.trim((string) parse_url($url, PHP_URL_PATH), '/') === $navCurrentPath;
@@ -31,6 +33,8 @@
                 @if (! empty($item['children']))
                     <ul class="mt-1 flex gap-4 ps-4 text-neutral-500">
                         @foreach ($item['children'] as $child)
+                            @continue($child['hidden'] ?? false)
+
                             <li>
                                 <a href="{{ \Safi\Atelier\Models\Menu::url($child, $navLocale) ?: '#' }}" target="{{ $child['target'] ?? '_self' }}">
                                     {{ \Safi\Atelier\Models\Menu::label($child, $navLocale) }}

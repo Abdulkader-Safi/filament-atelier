@@ -301,3 +301,23 @@ itself can never produce, only a tampered request can.
 
 Moved the up/down buttons next to Edit/Delete on the row's end while making both fixes, on
 request: the drag handle now sits alone at the row's start.
+
+## Added, 30 Aug 2026: hide an item without deleting it
+
+Same shape `PageEditor` already has for blocks: a `hidden` flag on the item, an eye/eye-slash
+toggle in the row, `opacity-50` on a hidden row so it's still there and still editable, just
+visually out of the way. `toggleHidden()` mirrors `deleteItem()`'s locate-and-mutate pattern
+rather than adding a third way of finding an item in the tree.
+
+Hiding a top-level item hides its children too, for free: the public partial's `@continue`
+on a hidden item skips its own `<li>` entirely, and the recursive include for `children`
+only happens inside that `<li>`, so there was nothing extra to write for the cascade to
+hold. Not so free on the write side: `updateItem()` and `addFromSource()` both build a fresh
+item array from named keys rather than copying the old one wholesale, so `hidden` needed
+carrying across explicitly in both or a save through the edit modal (which has no field for
+it) would have silently unhidden anything hidden. `reorderTree()` didn't need the same fix:
+it copies `$flat[$id]` wholesale before touching `children`, so `hidden` was never at risk
+there.
+
+Not built: a bulk "hide all" per location, or hiding a whole location at once. Nothing asked
+for either yet.

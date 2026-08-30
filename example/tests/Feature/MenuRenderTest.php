@@ -81,6 +81,22 @@ it('falls back to # rather than another locale\'s URL when this locale has none'
         ->and($html)->not->toContain('href="/about"');
 });
 
+it('skips a hidden item, and its children with it, without touching a visible sibling', function () {
+    $hidden = renderTestItem('m_hidden', 'Hidden', '/hidden', [renderTestItem('m_hidden_child', 'Hidden child', '/hidden/child')]);
+    $hidden['hidden'] = true;
+
+    Menu::forLocation('primary')->update(['items' => [
+        $hidden,
+        renderTestItem('m_visible', 'Visible', '/visible'),
+    ]]);
+
+    $html = view('atelier::partials.menu', ['location' => 'primary', 'locale' => 'en'])->render();
+
+    expect($html)->not->toContain('Hidden')
+        ->and($html)->not->toContain('/hidden')
+        ->and($html)->toContain('Visible');
+});
+
 it('is RTL-safe: no left/right utility leaks into the menu markup', function () {
     Menu::forLocation('primary')->update(['items' => [
         renderTestItem('m_about', 'About', '/about', ar: 'من نحن'),
