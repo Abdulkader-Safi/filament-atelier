@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Safi\Atelier\LayoutRegistry;
+use Safi\Atelier\MenuSource;
 
 /**
  * @property string $title
@@ -19,7 +20,7 @@ use Safi\Atelier\LayoutRegistry;
  * @property array|null $seo
  * @property array|null $schema
  */
-class Page extends Model
+class Page extends Model implements MenuSource
 {
     protected $table = 'atelier_pages';
 
@@ -283,5 +284,43 @@ class Page extends Model
     public function metaTitle(string $locale): string
     {
         return $this->seo($locale, 'meta_title') ?? $this->title;
+    }
+
+    // MenuSource -------------------------------------------------------
+    //
+    // Lets a client pick an existing page as a menu item, the single most
+    // common case, rather than retyping its title and copying its URL.
+    // Registered like any other source: ->menuSources([Page::class]).
+
+    public static function menuSourceLabel(): string
+    {
+        return 'Page';
+    }
+
+    /** @return array<int, string> */
+    public static function menuSourceOptions(): array
+    {
+        return static::query()
+            ->where('status', 'published')
+            ->orderBy('title')
+            ->get()
+            ->mapWithKeys(fn (self $page) => [$page->getKey() => $page->title])
+            ->all();
+    }
+
+    public static function menuSourceFind(int|string $id): ?static
+    {
+        return static::query()->find($id);
+    }
+
+    public function getMenuLabel(): string
+    {
+        return $this->title;
+    }
+
+    /** The default locale's URL. The editor prefills that locale's tab; the others are the client's to translate. */
+    public function getMenuUrl(): string
+    {
+        return $this->url(array_key_first(config('atelier.locales', []))) ?? '#';
     }
 }

@@ -22,6 +22,12 @@ return [
         'ar' => ['label' => 'العربية', 'dir' => 'rtl'],
     ],
 
+    'menus' => [
+        'primary' => ['label' => 'Primary'],
+        'footer' => ['label' => 'Footer'],
+        'sidebar' => ['label' => 'Sidebar'],
+    ],
+
     /*
     | Blade layout wrapping the rendered blocks. The preview and the public
     | page both use it, which is what keeps the preview honest.

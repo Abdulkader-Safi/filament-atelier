@@ -17,11 +17,11 @@ Five decisions taken on 14 Aug 2026:
 4. **First target is the next new dsrpt client site**, not KIF. So the v1 block library is a generic marketing set, not an events set.
 5. **Blocks are code-defined in v1. Creating block types from the panel moves to v2.** A developer writes a PHP class and a Blade view, and it appears in the section picker, with a visual editor on top. The client edits content and structure, never block types. Authoring new block types from the panel, Gutenberg-style, is a later phase and carries its own research, kept at the bottom of this doc.
 
-One more decision was forced by the research: FilamentCraft already does all of the above and sells for a one-time fee from about $74. Safi's reason for building anyway is that it becomes dsrpt's own tool for client websites, owned and extendable. That's the stated rationale and this PRD assumes it.
+One more decision was forced by the research: FilamentCraft already does all of the above and sells for a one-time fee from about $74. Safi's reason for building anyway is that it becomes dsrpt's own tool for client websites, owned outright and extended as needed. That's the stated rationale and this PRD assumes it.
 
 ## What v1 actually is, in one paragraph
 
-Code-defined sections with a real visual editor on top. A dsrpt developer defines the block types in code. The client opens a page in the panel, sees the site rendered in the middle pane with the site's own CSS at the site's own width, clicks a section, edits its fields on the right, and watches the render update. They add sections from a picker of the code-defined blocks, drag to reorder, duplicate, hide, delete. The point of the render is judgement the form can't give: whether a headline wraps badly, whether two cards sit unevenly, whether the section reads right in Arabic. Nothing about block *types* is editable from the panel in v1.
+Code-defined sections with a real visual editor on top. A dsrpt developer defines the block types in code. The client opens a page in the panel, sees the site rendered in the middle pane with the site's own CSS at the site's own width, clicks a section, edits its fields on the right, and watches the render update. They add sections from a picker of the code-defined blocks, drag to reorder, duplicate, hide, delete. The point of the render is judgement the form can't give: whether a headline wraps badly, whether two cards sit unevenly, whether the section reads right in Arabic. Nothing about block _types_ is editable from the panel in v1.
 
 ## Problem
 
@@ -31,9 +31,7 @@ The goal: a Filament plugin that turns a Laravel app into a CMS where a non-tech
 
 ## Who it's for
 
-- **Clients** (non-technical): build and edit pages by adding sections and filling in fields, in either language, seeing the real page as they work. Never see code.
-- **dsrpt developers**: register block types in code (a PHP class and a Blade view), drop the plugin into any Laravel + Filament project, hand it over. This is the only way new block types get created in v1.
-- **Site visitors**: fast, server-rendered, crawlable pages, correct in RTL.
+Clients, non-technical, add sections and fill in fields in either language, seeing the real page as they work. They never see code. dsrpt developers register block types in code, a PHP class and a Blade view, drop the plugin into any Laravel + Filament project, hand it over. That's the only way new block types get created in v1. Site visitors get fast, server-rendered pages a crawler can read, correct in RTL.
 
 ## Success criteria (concrete, testable)
 
@@ -41,13 +39,14 @@ The goal: a Filament plugin that turns a Laravel app into a CMS where a non-tech
 2. Editing a field updates the middle iframe within 1 second of the user pausing, without saving and without a full editor reload.
 3. Reordering sections by drag updates the preview and persists the new order.
 4. A developer registers a new block type (one PHP class + one Blade view) and it appears in the section picker with working controls, no core changes.
-5. The middle pane renders with the public site's own stylesheet, not panel styles, so what the client sees is what ships. A text change that pushes a heading onto a third line is visible in the preview before saving, and the client can switch the preview between desktop, tablet and mobile widths to check the same thing at each.
+5. The middle pane renders with the public site's own stylesheet, not panel styles, so what the client sees is what ships. A text change that pushes a heading onto a third line is visible in the preview before saving, and the client can switch the preview to a desktop, tablet or mobile width to check the same thing at each.
 6. Public pages are server-rendered: full content present in the initial response with JS disabled, in both locales.
 7. Every page exists at `/{slug}` and `/ar/{slug}` with `hreflang` tags pointing at each other, and `dir="rtl"` applied on the Arabic side.
 8. Editing a draft never changes the live page until Publish is clicked.
 9. Each page has editable SEO fields per locale that render into the head, plus an auto-generated sitemap covering both locales.
-10. An editor applies a scroll animation to a section from a dropdown, and it works live and survives Livewire SPA navigation.
+10. ~~An editor applies a scroll animation to a section from a dropdown, and it works live and survives Livewire SPA navigation.~~ **Retired, 29 Aug 2026.** Animation was never Atelier's to build. A block is already one PHP class and one Blade view the developer owns, so it animates in its own view with whatever it likes; the plugin ships no GSAP dependency, no preset map, no animation dropdown. See task 08, dropped 18 Aug 2026 for the same reason. Number kept retired rather than reused, so nothing else in this doc needs renumbering.
 11. A published page hits green Core Web Vitals (LCP ≤ 2.5s, INP ≤ 200ms, CLS ≤ 0.1) on a representative page.
+12. A developer registers a menu location with one call on the plugin class, and a client adds, reorders, nests one level and deletes items in it from the panel, correct in both locales, live on the public page with no publish step. Added 29 Aug 2026, see task 13.
 
 ## Scope
 
@@ -56,14 +55,15 @@ The goal: a Filament plugin that turns a Laravel app into a CMS where a non-tech
 - Plugin packaging: composer install, panel registration, publishable config and migrations.
 - Three-pane editor as a custom Filament page: section list (drag to reorder, duplicate, delete, hide), live iframe, settings panel.
 - Preview fidelity: the iframe loads the site's real front-end layout and stylesheet, plus a desktop/tablet/mobile width switcher in the toolbar.
-- Language switcher in the editor toolbar, English and Arabic.
+- Language switcher in the editor toolbar: English, then Arabic.
 - Block registry, code-defined only: a block type is a PHP class plus a Blade view, registered at boot. Plus a marketing block set: header, hero, features, logo wall, testimonials, CTA, FAQ, rich text, image, gallery, contact form, footer.
 - A raw-HTML block as the content-level escape hatch, so a one-off bit of markup doesn't need a new block type.
 - Blade server-side rendering, one Blade view per block type.
 - Two-column draft/published model, plus a revisions snapshot table.
 - Per-locale SEO fields and JSON-LD via `ralphjsmit/laravel-seo`, sitemap via `spatie/laravel-sitemap`.
-- GSAP animation presets stored as block data, initialised Livewire-safe.
+- ~~GSAP animation presets stored as block data, initialised Livewire-safe.~~ **Retired, 29 Aug 2026.** Not Atelier's to build, see criterion 10 above. A block animates in its own Blade view, with whatever library its developer picks; the plugin ships no GSAP dependency.
 - Design tokens (palette, type scale, spacing) shared by editor and front end.
+- Named navigation menus, editable from the panel. One small JSON tree per location, the same translatable-map convention as a page's block tree, not a relational nested-set or adjacency-list table. Added 29 Aug 2026, see task 13 and criterion 12.
 
 ### Later (v2)
 
@@ -85,8 +85,8 @@ The goal: a Filament plugin that turns a Laravel app into a CMS where a non-tech
 
 ## Constraints
 
-- **Stack:** Laravel 12/13, Filament (build against v4, support `^4.0|^5.0`), Livewire 4, Alpine 3, Tailwind 4, GSAP 3.15.
-- **GSAP licensing:** free for commercial use since April 2025, including the former Club plugins. It is not MIT and not open source. Ships fine in client sites, don't call it open source.
+- **Stack:** Laravel 12/13, Filament (build against v4, support `^4.0|^5.0`), Livewire 4, Alpine 3, Tailwind 4.
+- ~~**GSAP licensing:** free for commercial use since April 2025, including the former Club plugins. It is not MIT and not open source. Ships fine in client sites, don't call it open source.~~ **Retired, 29 Aug 2026.** Atelier has no GSAP dependency to license, animation moved to whatever the developer picks for their own block. Kept as a note for whoever does reach for GSAP in a block's own view: it's still not MIT, still don't call it open source in a README or a composer file.
 - **SEO is a first-class requirement.** SSR is mandatory. The canvas is an editing tool, the public render is always Blade SSR. Never inject blocks client-side.
 - **The preview and the public page render through the same code path.** Same Blade views, same layout, same stylesheet, different data source. Any second rendering path for the editor is a bug waiting to happen and defeats the point of the preview.
 - **Performance:** lean DOM, conditional per-block assets, cached output. Don't repeat Elementor's bloat.
@@ -103,13 +103,13 @@ Both earlier documents said to build on `Z3d0X/filament-fabricator`. We're not.
 
 **The real argument is that we override almost all of it.** Of the five things Fabricator provides, our own spec already replaces four:
 
-| Fabricator provides | Our spec |
-|---|---|
-| A `PageResource` edit screen | Replaced by the three-pane editor |
-| A single `content` column | Replaced by `draft_content` + `published_content` |
-| A slug on the page record | Replaced by the `page_slugs` table, per locale |
-| Layouts + Page Blocks abstraction | Replaced by `BlockRegistry` and our `Block` contract |
-| Front-end routing and layout resolution | Kept |
+| Fabricator provides                     | Our spec                                             |
+| --------------------------------------- | ---------------------------------------------------- |
+| A `PageResource` edit screen            | Replaced by the three-pane editor                    |
+| A single `content` column               | Replaced by `draft_content` + `published_content`    |
+| A slug on the page record               | Replaced by the `page_slugs` table, per locale       |
+| Layouts + Page Blocks abstraction       | Replaced by `BlockRegistry` and our `Block` contract |
+| Front-end routing and layout resolution | Kept                                                 |
 
 What's left is a route, a controller and a slug lookup. Taking a dependency that shapes the page model, then overriding the page model, is the worst of both: we'd carry its constraints and its upgrade path without using the parts that justify them. For something dsrpt ships to clients and needs to extend for years, owning that layer outright is worth the few days it costs.
 
@@ -158,13 +158,13 @@ interface Block
     public static function icon(): string;
     public static function category(): string;
     public function schema(): array;            // Filament form components = the settings pane
-    public static function supports(): array;   // ['background', 'padding', 'animation']
+    public static function supports(): array;   // ['background', 'padding'], what shipped, not the original 'animation' idea
 }
 ```
 
 Plus one Blade view at a conventional path, rendered with the block's attributes. Register the class once at boot and it appears in the picker with working controls. No core changes, no editor code, no JS.
 
-`schema()` returning a plain Filament schema is the leverage here: the settings pane, validation and the whole control system come free, and translatable fields get the per-locale treatment described above without each block knowing about it.
+`schema()` returning a plain Filament schema is the whole saving here: the settings pane and validation come free, so does the rest of the control system, and translatable fields get the per-locale treatment described above without each block knowing about it.
 
 ## The live preview, and its two hard problems
 
@@ -185,7 +185,7 @@ This is the highest-risk part of the build and the first thing to prototype. If 
 5. **Bilingual.** Per-locale attributes, `/ar/{slug}` routing, RTL layout, hreflang.
 6. **Draft, publish, preview links.** Two-column flow, signed shareable preview, revisions snapshots.
 7. **SEO + sitemap.** Per-locale meta, JSON-LD, sitemap covering both locales.
-8. **Animation.** GSAP presets, `livewire:navigated` init, `gsap.context()` teardown.
+8. ~~**Animation.** GSAP presets, `livewire:navigated` init, `gsap.context()` teardown.~~ **Retired, 29 Aug 2026,** see criterion 10.
 9. **Performance pass.** Conditional assets, per-page CSS cache, image dimensions and lazy loading, CWV check.
 10. **Verification.** SSR check with JS off in both locales, a non-technical build-and-publish run, a developer add-a-block run, Lighthouse.
 
@@ -199,7 +199,7 @@ Three constraints found on 14 Aug 2026, all still true whenever this gets built:
 
 **Rendering must be placeholder substitution, not template compilation.** `Blade::render()` on user input compiles to PHP, which turns an admin textarea into remote code execution. Values get escaped on substitution, with a per-field opt-in for richtext.
 
-**Tailwind cannot see classes stored in a database.** It scans plain text source files, confirmed against Tailwind's own docs. So pasted Tailwind classes generate no CSS. Two paths, and this feature needs both: plain CSS pasted alongside the HTML, stored, scoped and rendered in a `<style>` tag with no build step; or an artisan command that extracts every class from the stored templates into an `@source inline(...)` file the site's normal `npm run build` picks up, which means a new block is unstyled until the next deploy.
+**Tailwind cannot see classes stored in a database.** It scans plain text source files, confirmed against Tailwind's own docs. So pasted Tailwind classes generate no CSS. Two paths, and this feature needs both: plain CSS pasted alongside the HTML, stored and scoped, rendered in a `<style>` tag with no build step; or an artisan command that extracts every class from the stored templates into an `@source inline(...)` file the site's normal `npm run build` picks up, which means a new block is unstyled until the next deploy.
 
 **Pasted HTML runs on the public site**, so anyone who can author a block can inject script. It needs its own permission, off by default, so a client editor cannot reach it.
 

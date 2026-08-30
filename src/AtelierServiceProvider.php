@@ -23,6 +23,7 @@ class AtelierServiceProvider extends PackageServiceProvider
                 'create_atelier_page_redirects_table',
                 'create_atelier_settings_table',
                 'add_schema_to_atelier_pages_table',
+                'create_atelier_menus_table',
             ]);
     }
 
@@ -31,6 +32,21 @@ class AtelierServiceProvider extends PackageServiceProvider
         $this->app->singleton(BlockRegistry::class);
         $this->app->singleton(SitemapRegistry::class);
         $this->app->singleton(LayoutRegistry::class);
+
+        // Seeded from config('atelier.menus'), the same source `locales`
+        // reads from. AtelierPlugin::menuLocations() still works after
+        // this: it calls ->locations() again on the same singleton, adding
+        // to what config already registered rather than replacing it.
+        $this->app->singleton(
+            MenuRegistry::class,
+            fn () => (new MenuRegistry)->locations(config('atelier.menus', [])),
+        );
+
+        // Same seed-from-config-then-override shape as MenuRegistry above.
+        $this->app->singleton(
+            ExperimentalFeatures::class,
+            fn () => (new ExperimentalFeatures)->set(config('atelier.experimental', [])),
+        );
     }
 
     public function packageBooted(): void

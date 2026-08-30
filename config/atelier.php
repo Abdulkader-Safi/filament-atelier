@@ -23,6 +23,25 @@ return [
     ],
 
     /*
+    | Named menu locations, the same idea as `locales` above: a fixed set a
+    | developer decides, not something a client adds from the panel. What
+    | the client edits is a location's items, in the Menus page, not the set
+    | of locations itself.
+    |
+    | `depth` is how many levels of children a location's items may nest.
+    | Default 1 (one level) when left out. The editor and the public partial
+    | are only built for one level regardless of a higher number here.
+    |
+    | AtelierPlugin::make()->menuLocations([...]) in a panel provider adds to
+    | this rather than replacing it, for a location that only makes sense
+    | inside one specific panel.
+    */
+    'menus' => [
+        // 'primary' => ['label' => 'Primary'],
+        // 'footer' => ['label' => 'Footer', 'depth' => 2],
+    ],
+
+    /*
     | Blade layout wrapping the rendered blocks. The preview and the public
     | page both use it, which is what keeps the preview honest.
     */
@@ -78,6 +97,20 @@ return [
     'revisions' => [
         // Snapshots kept per page. Oldest are pruned on publish.
         'keep' => 20,
+    ],
+
+    /*
+    | Feature flags for anything still being proven out. Off by default: a
+    | flag stays off until you turn it on, here or with
+    | AtelierPlugin::make()->experimental([...]) in a panel provider, which
+    | overrides this rather than only adding to it.
+    |
+    | 'menus' is the menu manager: a real page in the panel, in a client's
+    | sidebar the moment it's on, so it's worth trying in your own project
+    | before you turn it on somewhere a client will see it.
+    */
+    'experimental' => [
+        'menus' => false,
     ],
 
 ];

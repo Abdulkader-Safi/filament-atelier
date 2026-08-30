@@ -8,8 +8,6 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
-use Safi\Atelier\AtelierPlugin;
-use Safi\Atelier\Blocks\DefaultBlocks;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
@@ -20,6 +18,9 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Safi\Atelier\AtelierPlugin;
+use Safi\Atelier\Blocks\DefaultBlocks;
+use Safi\Atelier\Models\Page as AtelierPage;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -57,6 +58,21 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 AtelierPlugin::make()
                     ->blocks(DefaultBlocks::all())
+                    // Off by default in config/atelier.php: the menu
+                    // manager is still being proven out, and this line is
+                    // what turns it on for this one panel. Delete it (or
+                    // flip it to false) to pull the Menus page and its
+                    // route out of the panel entirely, no separate
+                    // uninstall step.
+                    ->experimental(['menus' => true])
+                    // The locations themselves (primary, footer, sidebar)
+                    // live in config/atelier.php now, next to `locales`.
+                    // ->menuLocations([...]) still works here too, additive
+                    // rather than a replacement, for a location that only
+                    // makes sense inside this one panel.
+                    ->menuSources([
+                        AtelierPage::class,
+                    ])
                     ->layouts([
                         'site' => [
                             'label' => 'Navbar and footer',
@@ -67,6 +83,11 @@ class AdminPanelProvider extends PanelProvider
                             'label' => 'Sidebar',
                             'view' => 'layouts.docs',
                             'description' => 'Documentation shell, with a page list beside the content.',
+                        ],
+                        'marketing' => [
+                            'label' => 'Navbar and footer menus',
+                            'view' => 'layouts.marketing',
+                            'description' => 'Same shell as "site", with the primary and footer menus wired up.',
                         ],
                     ]),
             ])

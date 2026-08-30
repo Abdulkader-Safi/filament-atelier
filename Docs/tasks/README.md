@@ -4,12 +4,7 @@ One file per feature. Build order is the file order. Nothing here starts until `
 
 Every file follows the same shape:
 
-- **What it is** — the thing itself, in plain terms.
-- **Why we're building it** — what breaks or stays painful without it.
-- **How it should feel** — the experience we're aiming at. This is the acceptance bar that a checklist can't hold.
-- **In the dashboard** — what the client or developer actually clicks, and where.
-- **Tasks** — the checklist.
-- **Done when** — the testable end state, tied back to the PRD's success criteria.
+What it is names the thing itself, in plain terms. Why we're building it says what breaks or stays painful without it. How it should feel sets the experience we're aiming at, the acceptance bar a checklist can't hold on its own. In the dashboard says what the client or developer actually clicks, and where. Tasks is the checklist. Done when is the testable end state, tied back to the PRD's success criteria.
 
 ## Build order
 
@@ -32,8 +27,9 @@ the documentation surface) has no feature file of its own and is tracked at the 
 | [08](08-animation.md)      | Animation                     | Dropped        | Animation lives in each block's own view. Nothing was built.                    |
 | [09](09-performance.md)    | Performance                   | Barely started | Conditional assets, CSS cache, Core Web Vitals.                                 |
 | [10](10-verification.md)   | Verification                  | Not started    | The runs that prove the success criteria, not a vibe check.                     |
-| [11](11-seo-v0.2.md)       | SEO depth (v0.2.0)            | Mostly done    | Sitemap, robots, redirects and noindex shipped. JSON-LD moved to 12.            |
+| [11](11-seo-v0.2.md)       | SEO depth (v0.2.0)            | Mostly done    | Sitemap shipped. Robots, redirects, noindex too. JSON-LD moved to 12.           |
 | [12](12-structured-data.md)| Structured data (JSON-LD)     | Planned        | The full schema list, three sources, and the site settings screen it needs.     |
+| [13](13-menu-manager.md)   | Menu manager                  | Mostly done    | Navigation editable from the panel. On a branch; blocked on 03 for a nav block. |
 
 ### What blocks what
 
@@ -57,7 +53,7 @@ The meta tags were trapped inside `atelier::layouts.site`, so pointing `atelier.
 a host app's own view lost the entire head. Fixed 18 Aug 2026 with
 `atelier::partials.meta` and `atelier::partials.tokens`.
 
-01 is a spike. If it doesn't feel live on a page with 12 sections, stop and redesign rather than continuing down the list.
+01 is a spike. If it doesn't feel live on a page with 12 sections, stop. Redesign instead of continuing down the list.
 
 ## Status legend
 
