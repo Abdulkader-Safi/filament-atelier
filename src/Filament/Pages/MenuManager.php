@@ -156,12 +156,27 @@ class MenuManager extends FilamentPage
      * level to drag into, so nothing should arrive with one, and dropping
      * them is what actually enforces that rather than merely assuming it.
      *
+     * The one thing this refuses outright rather than tolerates: a payload
+     * that leaves out an id the tree already had. A sync() built from a
+     * DOM read mid-drag, or one that raced a Livewire re-render, is the
+     * likeliest way that happens, and this method has no way to tell that
+     * apart from a genuine deletion request, so it treats every apparent
+     * deletion as suspect and no-ops rather than risk silently discarding
+     * an item deleteItem() was never actually called for.
+     *
      * @param  array<int, string>  $top  Item ids, top-level, in their new order.
      * @param  array<string, array<int, string>>  $children  Item ids per parent id, in their new order.
      */
     public function reorderTree(array $top, array $children = []): void
     {
         $flat = $this->flatten($this->tree);
+
+        $incoming = array_unique(array_merge($top, ...array_values($children)));
+
+        if (array_diff(array_keys($flat), $incoming) !== []) {
+            return;
+        }
+
         $newTree = [];
 
         foreach ($top as $id) {

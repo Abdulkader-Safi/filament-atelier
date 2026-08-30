@@ -25,22 +25,21 @@
             class="h-4 w-4 shrink-0 cursor-grab text-gray-300 active:cursor-grabbing dark:text-gray-600"
         />
 
-        <div class="flex shrink-0 flex-col">
-            <button type="button" wire:click="move('{{ $item['id'] }}', -1)" title="Move up"
-                class="rounded p-0.5 text-gray-300 hover:text-gray-700 dark:hover:text-white">
-                <x-filament::icon icon="heroicon-m-chevron-up" class="h-3 w-3" />
-            </button>
-            <button type="button" wire:click="move('{{ $item['id'] }}', 1)" title="Move down"
-                class="rounded p-0.5 text-gray-300 hover:text-gray-700 dark:hover:text-white">
-                <x-filament::icon icon="heroicon-m-chevron-down" class="h-3 w-3" />
-            </button>
-        </div>
-
         <span class="min-w-0 flex-1 truncate px-2 text-sm font-medium text-gray-950 dark:text-white">
             {{ \Safi\Atelier\Models\Menu::label($item, app()->getLocale()) ?: 'Untitled' }}
         </span>
 
         <div class="flex shrink-0 items-center gap-3 pe-1 text-xs font-medium opacity-0 transition group-hover:opacity-100">
+            <div class="flex items-center">
+                <button type="button" wire:click="move('{{ $item['id'] }}', -1)" title="Move up"
+                    class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <x-filament::icon icon="heroicon-m-chevron-up" class="h-3.5 w-3.5" />
+                </button>
+                <button type="button" wire:click="move('{{ $item['id'] }}', 1)" title="Move down"
+                    class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
+                    <x-filament::icon icon="heroicon-m-chevron-down" class="h-3.5 w-3.5" />
+                </button>
+            </div>
             <button type="button" wire:click="mountAction('editItem', { id: '{{ $item['id'] }}' })"
                 class="text-gray-500 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-white">
                 Edit
@@ -61,6 +60,7 @@
             <ul
                 data-sortable-list
                 data-parent-id="{{ $item['id'] }}"
+                x-data="atelierMenuSortable()"
                 @class([
                     'min-h-2',
                     'border-t border-gray-100 dark:border-white/5' => ! empty($item['children']),

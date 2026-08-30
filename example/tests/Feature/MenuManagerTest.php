@@ -227,11 +227,32 @@ it('promotes a sub-item to top-level by dragging it out of its parent', function
         ->and($tree[1]['label']['en'])->toBe('Web design');
 });
 
-it('drops a grandchild rather than let a drag create a second level of nesting', function () {
+it('refuses a reorder that would silently drop an id, rather than apply it missing a sibling', function () {
     // m_web is dragged under m_services, but m_web itself already had a
-    // child in the pre-drag tree, m_deep. Nothing in the UI offers a place
-    // to drag into a child's own row, so this can only happen from a
-    // tampered request, and the enforcement has to hold regardless.
+    // child, m_deep, and this payload never mentions it anywhere: neither
+    // in $top nor in any $children bucket. That's the same shape a DOM read
+    // mid-drag produced once already (task 13's drag-and-drop note), so the
+    // whole call is refused rather than applied with m_deep quietly gone.
+    Menu::forLocation('primary')->update(['items' => [
+        menuManagerItem('m_services', 'Services', '/services'),
+        [...menuManagerItem('m_web', 'Web design', '/web-design'), 'children' => [
+            menuManagerItem('m_deep', 'Should survive', '/too-deep'),
+        ]],
+    ]]);
+
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_services'], ['m_services' => ['m_web']]);
+
+    $tree = Menu::forLocation('primary')->tree();
+
+    expect($tree)->toHaveCount(2)
+        ->and($tree[1]['children'][0]['label']['en'])->toBe('Should survive');
+});
+
+it('truncates a second level of nesting even when the dropped grandchild is named in the payload', function () {
+    // Every id here IS accounted for, m_deep included, so the integrity
+    // check above has nothing to object to. The UI can never build this
+    // payload, a child's row has no drop target of its own, so this is
+    // the tampered-request case: depth enforcement still has to hold.
     Menu::forLocation('primary')->update(['items' => [
         menuManagerItem('m_services', 'Services', '/services'),
         [...menuManagerItem('m_web', 'Web design', '/web-design'), 'children' => [
@@ -239,7 +260,10 @@ it('drops a grandchild rather than let a drag create a second level of nesting',
         ]],
     ]]);
 
-    Livewire::test(MenuManager::class)->call('reorderTree', ['m_services'], ['m_services' => ['m_web']]);
+    Livewire::test(MenuManager::class)->call('reorderTree', ['m_services'], [
+        'm_services' => ['m_web'],
+        'm_web' => ['m_deep'],
+    ]);
 
     $tree = Menu::forLocation('primary')->tree();
 

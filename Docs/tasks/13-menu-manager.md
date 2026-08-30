@@ -257,11 +257,47 @@ claims otherwise is enforcing depth from the wrong side. Six new tests cover the
 same-level reorder, promoting a child, demoting a top-level item into another one's
 children, the grandchild-dropping enforcement, and an unrecognised id being ignored.
 
-**What isn't verified: the drag gesture itself.** Every attempt this session to simulate a
-real drag through browser automation, both a native drag synthesis and hand-dispatched
-`pointerdown`/`pointermove`/`pointerup` sequences, produced no DOM change at all, against
-this component and against the Filament Repeater's own drag earlier in this file. Real mouse
-input works fine through the same tooling elsewhere on this page (the move buttons, the edit
-modal), so this reads as a synthetic-event limitation specific to how SortableJS detects a
-drag start, not evidence of a bug, but it means the actual gesture needs a human to try it
-before this is called done. The server-side logic behind it is what the six tests cover.
+**What isn't verified by automation: the drag gesture itself.** Every attempt this session to
+simulate a real drag through browser automation, both a native drag synthesis and
+hand-dispatched `pointerdown`/`pointermove`/`pointerup` sequences, produced no DOM change at
+all, against this component and against the Filament Repeater's own drag earlier in this
+file. Real mouse input works fine through the same tooling elsewhere on this page (the move
+buttons, the edit modal), so this reads as a synthetic-event limitation specific to how
+SortableJS detects a drag start, not evidence of a bug. It means the actual gesture needs a
+human to try it, which happened the same day, see below.
+
+## Fixed, 30 Aug 2026: a same-list drag could delete a sibling
+
+Hand-tested the drag once it was built. Dragging "Website services" above "mobile services",
+both children of the same "Services" item, made "mobile services" disappear, not just from
+the screen, the delete persisted.
+
+The likely cause: `MutationObserver({ subtree: true })` watching the whole component reacted
+to every DOM mutation, including SortableJS's own internal shuffling while a drag was still
+in progress, and re-ran setup mid-drag. A `sync()` firing off that half-settled DOM read the
+wrong snapshot and sent it to the server, which trusted it completely, `reorderTree()`
+rebuilds the tree from exactly the shape it's given.
+
+Checked `notebrainslab/filament-menu-manager`'s own source for how a plugin solving the same
+problem handles it, since Docs/research/menu-manager-prior-art.md had already looked at it
+once for the data model but not the client-side reorder code. Its `menu-builder.js` doesn't
+use a MutationObserver at all: one small Alpine component per sortable `<ul>`, initialised
+once in that component's own `init()`, torn down and recreated only when Livewire actually
+replaces that specific element. Rebuilt to match: `x-data="atelierMenuSortable()"` on each
+list rather than one wrapping component with a global observer, each list creates its own
+`Sortable` instance the first time Alpine mounts it and never again for that same DOM node.
+`sync()` still walks the whole tree from one fixed root (`#atelier-menu-root`) on any list's
+`onEnd`, a drop in a nested list can still move an item to a different level, but it's no
+longer triggered by anything other than an actual drag ending.
+
+Also added a second, independent safety net server-side, since a client-side fix alone still
+leaves the same failure mode possible if some other race turns up later:
+`reorderTree()` now refuses the whole call outright if the incoming shape doesn't account
+for every id the tree already had, rather than silently applying a partial one. Two tests
+cover it directly: one confirms a payload missing an id is rejected wholesale (the tree comes
+back untouched, not touched-and-pruned), the other confirms depth enforcement still holds
+when every id **is** accounted for but a payload claims two levels of nesting, which the UI
+itself can never produce, only a tampered request can.
+
+Moved the up/down buttons next to Edit/Delete on the row's end while making both fixes, on
+request: the drag handle now sits alone at the row's start.

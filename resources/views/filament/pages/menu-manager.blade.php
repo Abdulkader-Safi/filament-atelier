@@ -15,14 +15,11 @@
             </x-filament::input.wrapper>
         </div>
 
-        <div
-            x-data="atelierMenuTree()"
-            class="fi-section rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900"
-        >
+        <div class="fi-section rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
             @if (empty($tree))
                 <p class="p-6 text-center text-sm text-gray-400">Nothing here yet. Add one below.</p>
             @else
-                <ul data-sortable-list data-parent-id="">
+                <ul id="atelier-menu-root" data-sortable-list data-parent-id="" x-data="atelierMenuSortable()">
                     @foreach ($tree as $item)
                         @include('atelier::filament.pages.partials.menu-item-row', ['item' => $item, 'isChild' => false])
                     @endforeach
@@ -45,25 +42,29 @@
         // support package (window.Sortable), so this borrows it rather than
         // shipping a second copy.
         //
-        // Livewire re-renders the tree on every add, delete, edit save and
-        // drop, which can replace the list elements a Sortable instance was
-        // attached to. Rather than guess which Livewire lifecycle hook
-        // fires when, a MutationObserver on the whole component reacts to
-        // the DOM actually changing and (re-)initialises anything new,
-        // skipping elements already set up via the _atelierSortable flag.
-        Alpine.data('atelierMenuTree', () => ({
+        // One Alpine component per sortable <ul>, not one global observer
+        // watching the whole tree: a global MutationObserver re-running
+        // setup on every mutation fired mid-drag too, on SortableJS's own
+        // internal DOM shuffling, and a sync() that read the DOM while a
+        // drag was still resolving lost a sibling entirely. Alpine's own
+        // per-element lifecycle only (re)initialises a list when Livewire
+        // actually replaces that element, which is what a plugin solving
+        // the exact same problem (notebrainslab/filament-menu-manager)
+        // does too, checked against its source rather than guessed at.
+        function extractTree(container) {
+            return Array.from(container.querySelectorAll(':scope > [data-item-id]')).map((el) => {
+                const nested = el.querySelector(':scope > [data-sortable-list]');
+
+                return { id: el.dataset.itemId, children: nested ? extractTree(nested) : [] };
+            });
+        }
+
+        Alpine.data('atelierMenuSortable', () => ({
             init() {
-                this.mount();
+                this.$nextTick(() => {
+                    if (this.$el._atelierSortable) return;
 
-                new MutationObserver(() => this.mount())
-                    .observe(this.$el, { childList: true, subtree: true });
-            },
-
-            mount() {
-                this.$el.querySelectorAll('[data-sortable-list]').forEach((list) => {
-                    if (list._atelierSortable) return;
-
-                    list._atelierSortable = Sortable.create(list, {
+                    this.$el._atelierSortable = Sortable.create(this.$el, {
                         group: 'atelier-menu-tree',
                         draggable: '[data-item-id]',
                         handle: '[data-sortable-handle]',
@@ -73,20 +74,20 @@
                 });
             },
 
-            /** Reads every list's current order straight from the DOM and sends the whole shape in one call. */
+            /** Walks from the one fixed root, not just this list, since a drop can move an item between levels. */
             sync() {
+                const root = document.getElementById('atelier-menu-root');
+
+                if (! root) return;
+
                 const top = [];
                 const children = {};
 
-                this.$el.querySelectorAll('[data-sortable-list]').forEach((list) => {
-                    const ids = Array.from(list.children)
-                        .filter((el) => el.matches('[data-item-id]'))
-                        .map((el) => el.dataset.itemId);
+                extractTree(root).forEach((node) => {
+                    top.push(node.id);
 
-                    if (list.dataset.parentId) {
-                        children[list.dataset.parentId] = ids;
-                    } else {
-                        top.push(...ids);
+                    if (node.children.length) {
+                        children[node.id] = node.children.map((child) => child.id);
                     }
                 });
 
