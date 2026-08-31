@@ -62,7 +62,9 @@ class PageEditor extends FilamentPage
 
     public function getTitle(): string
     {
-        return $this->page->title;
+        // Shield builds its permission labels by newing up every page class
+        // without mounting it, so the record is not set yet.
+        return isset($this->page) ? $this->page->title : 'Page editor';
     }
 
     /** The editor's own toolbar is the header. Filament's would just eat space. */
