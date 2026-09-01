@@ -214,28 +214,50 @@
                     @endforelse
                 </div>
 
-                <div class="border-t border-gray-200 p-2 dark:border-white/10" x-data="{ open: false }">
-                    <x-filament::button size="sm" icon="heroicon-m-plus" class="w-full" x-on:click="open = !open">
+                <div class="shrink-0 border-t border-gray-200 p-2 dark:border-white/10" x-data="{ open: false, q: '' }">
+                    <x-filament::button
+                        size="sm"
+                        icon="heroicon-m-plus"
+                        class="w-full"
+                        x-on:click="open = ! open; q = ''; if (open) $nextTick(() => $refs.search.focus())"
+                    >
                         Add section
                     </x-filament::button>
 
-                    <div x-show="open" x-cloak x-on:click.outside="open = false" class="mt-2 space-y-3">
-                        @foreach ($this->picker as $category => $blocks)
-                            <div>
-                                <p class="px-1 pb-1 text-xs font-medium uppercase tracking-wide text-gray-400">{{ $category }}</p>
-                                @foreach ($blocks as $block)
-                                    <button
-                                        type="button"
-                                        class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start text-sm hover:bg-gray-50 dark:hover:bg-white/5"
-                                        wire:click="addBlock('{{ $block['type'] }}')"
-                                        x-on:click="open = false"
-                                    >
-                                        <x-filament::icon :icon="$block['icon']" class="h-4 w-4 text-gray-400" />
-                                        {{ $block['label'] }}
-                                    </button>
-                                @endforeach
-                            </div>
-                        @endforeach
+                    <div x-show="open" x-cloak x-on:click.outside="open = false" class="mt-2">
+                        <input
+                            type="search"
+                            x-ref="search"
+                            x-model="q"
+                            placeholder="Search sections"
+                            x-on:keydown.escape.stop="q ? q = '' : open = false"
+                            class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-white/10 dark:bg-white/5"
+                        />
+
+                        <div class="mt-2 max-h-[45vh] space-y-3 overflow-y-auto">
+                            @foreach ($this->picker as $category => $blocks)
+                                <div x-show="{{ Js::from(array_column($blocks, 'label')) }}.some((l) => l.toLowerCase().includes(q.trim().toLowerCase()))">
+                                    <p class="px-1 pb-1 text-xs font-medium uppercase tracking-wide text-gray-400">{{ $category }}</p>
+                                    @foreach ($blocks as $block)
+                                        <button
+                                            type="button"
+                                            class="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start text-sm hover:bg-gray-50 dark:hover:bg-white/5"
+                                            wire:click="addBlock('{{ $block['type'] }}')"
+                                            x-on:click="open = false"
+                                            x-show="{{ Js::from($block['label']) }}.toLowerCase().includes(q.trim().toLowerCase())"
+                                        >
+                                            <x-filament::icon :icon="$block['icon']" class="h-4 w-4 shrink-0 text-gray-400" />
+                                            {{ $block['label'] }}
+                                        </button>
+                                    @endforeach
+                                </div>
+                            @endforeach
+
+                            <p
+                                class="px-1 py-6 text-center text-sm text-gray-400"
+                                x-show="q.trim() && ! {{ Js::from(collect($this->picker)->flatten(1)->pluck('label')->all()) }}.some((l) => l.toLowerCase().includes(q.trim().toLowerCase()))"
+                            >No section matches "<span x-text="q"></span>".</p>
+                        </div>
                     </div>
                 </div>
             @endif
