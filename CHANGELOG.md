@@ -8,6 +8,67 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-09-01
+
+A menu manager, behind an experimental flag that is off by default. Also a search box on
+the section picker, and a fix for a crash that only showed up next to Shield.
+
+**This release adds a table**, used only if you turn the menu manager on. Publishing and
+migrating is still the safe order:
+
+```bash
+composer update safi/filament-atelier
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate
+```
+
+Leaving the flag off changes nothing about an existing site. No new page, no sidebar entry,
+no route.
+
+### Added
+
+- **A menu manager, experimental and off by default.** Named navigation menus per location,
+  edited from the panel and rendered on the public site with `Menu::treeFor()`. Drag and drop
+  reorders, nests a top-level item under another and promotes one back out. Labels and URLs
+  are per locale, an item can point at an Atelier page or anything else you register as a
+  `MenuSource`, and an item can be hidden without deleting it.
+
+  Locations come from config, so a theme decides that it has a header and a footer rather
+  than a client inventing menu names. One row per location, holding the whole tree as JSON.
+  `src/Models/Menu.php` says why that beats a nested-set table here.
+
+  Turn it on in `config/atelier.php`:
+
+  ```php
+  'experimental' => [
+      'menus' => true,
+  ],
+  ```
+
+  Or per panel, which overrides config rather than adding to it:
+
+  ```php
+  AtelierPlugin::make()->experimental(['menus' => true])
+  ```
+
+  It is experimental because it is a real page in a client's sidebar the moment it is on, and
+  it has not been through a client project yet. Off means the page and its route are never
+  registered, not just hidden. The [Menus guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Menus)
+  covers the rest.
+
+- **A search box on the section picker.** Twelve blocks fit in a dropdown, thirty do not.
+  Typing filters the list by label and hides a category once nothing in it matches, escape
+  clears the box and then closes the picker, and the list scrolls in its own pane rather than
+  pushing the editor around.
+
+### Fixed
+
+- **Opening a Shield role wrecked the whole screen if Atelier was installed.** Shield builds
+  its role form by instantiating every registered page class and asking each one for its
+  title. `PageEditor` only receives its record in `mount()`, so an instance Shield made by
+  hand hit an uninitialised typed property and threw, taking the role edit screen with it.
+  `getTitle()` now answers without a record.
+
 ## [0.3.2] - 2026-08-25
 
 A bug fix. No migration, no config change, no new table. `composer update
@@ -498,7 +559,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.2...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.2.0...v0.3.0
