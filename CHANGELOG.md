@@ -8,10 +8,30 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
-## [0.3.3] - 2026-09-01
+## [0.3.4] - 2026-09-01
 
-A menu manager, behind an experimental flag that is off by default. Also a search box on
-the section picker, and a fix for a crash that only showed up next to Shield.
+The section picker, on a site with a lot of block types. No migration, no config change.
+`composer update safi/filament-atelier` is the whole upgrade.
+
+### Fixed
+
+- **The Add section picker ran off the bottom of the panel with no way to scroll it.** The
+  list had no height of its own, so past roughly twenty block types everything below the fold
+  was unreachable: the editor is a fixed-height layout that clips rather than scrolls, and
+  the panel's own scroll belongs to the section list above. The picker now caps at 45vh and
+  scrolls inside itself.
+
+### Added
+
+- **A search box on the picker.** It opens focused, so adding a section is now type a word,
+  click the block. Typing filters by label and hides a category once nothing in it matches,
+  with a line saying so when nothing matches at all. Escape clears the box, then closes the
+  picker.
+
+## [0.3.3] - 2026-08-31
+
+A menu manager, behind an experimental flag that is off by default, and a fix for a crash
+that only showed up next to Shield.
 
 **This release adds a table**, used only if you turn the menu manager on. Publishing and
 migrating is still the safe order:
@@ -55,11 +75,6 @@ no route.
   it has not been through a client project yet. Off means the page and its route are never
   registered, not just hidden. The [Menus guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Menus)
   covers the rest.
-
-- **A search box on the section picker.** Twelve blocks fit in a dropdown, thirty do not.
-  Typing filters the list by label and hides a category once nothing in it matches, escape
-  clears the box and then closes the picker, and the list scrolls in its own pane rather than
-  pushing the editor around.
 
 ### Fixed
 
@@ -559,7 +574,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.3...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.0...v0.3.1
