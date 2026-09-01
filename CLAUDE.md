@@ -30,6 +30,13 @@ No page-builder dependency. Atelier owns the page model, slug resolution, front-
 
 Because there's no upstream skeleton, Filament version tracking is ours. Keep the surface touching Filament internals small and concentrated.
 
+**Touching a panel Blade view means running `npm run build` in the same commit.** The panel's
+CSS is compiled ahead of time to `resources/dist/atelier.css` and shipped in the package, so a
+consumer installs with no build step. Tailwind only emits the classes it finds in the views at
+build time. A new class in a view without a rebuild is a class that does not exist on any
+client site, and it fails silently: the markup is right, the rule is absent. This shipped
+broken in 0.3.4 (`max-h-[45vh]` on the section picker) and 0.3.5 was the rebuild.
+
 ## Document precedence
 
 Read in this order. Later documents override earlier ones and say so in a banner at the top.

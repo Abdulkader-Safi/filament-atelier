@@ -8,6 +8,22 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.3.5] - 2026-09-01
+
+Ships the stylesheet 0.3.4 should have shipped. `composer update safi/filament-atelier` is the
+whole upgrade.
+
+### Fixed
+
+- **The Add section picker still would not scroll on 0.3.4.** The fix was real but half of it
+  never left this repository. Atelier compiles its panel CSS ahead of time into the package so
+  a client installs with no build step, Tailwind only emits the classes it finds in the views
+  at build time, and 0.3.4 changed a view without rebuilding. So `max-h-[45vh]` was in the
+  markup and nowhere in the stylesheet, leaving the list uncapped and unscrollable exactly as
+  before. Searching worked throughout because that part is Alpine, not CSS.
+
+  Same rebuild also brings in the search input's focus ring and placeholder colour.
+
 ## [0.3.4] - 2026-09-01
 
 The section picker, on a site with a lot of block types. No migration, no config change.
@@ -574,7 +590,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.4...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.5...HEAD
+[0.3.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.2...v0.3.3
 [0.3.2]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.1...v0.3.2
