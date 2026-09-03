@@ -30,6 +30,7 @@ the documentation surface) has no feature file of its own and is tracked at the 
 | [11](11-seo-v0.2.md)       | SEO depth (v0.2.0)            | Mostly done    | Sitemap shipped. Robots, redirects, noindex too. JSON-LD moved to 12.           |
 | [12](12-structured-data.md)| Structured data (JSON-LD)     | Planned        | The full schema list, three sources, and the site settings screen it needs.     |
 | [13](13-menu-manager.md)   | Menu manager                  | Mostly done    | Navigation editable from the panel. On a branch; blocked on 03 for a nav block. |
+| [14](14-v1-release.md)     | Release 1.0.0                 | Not started    | The gates between 0.3.6 and a stable tag. Half decisions, half release work.     |
 
 ### What blocks what
 
