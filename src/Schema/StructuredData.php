@@ -279,14 +279,7 @@ class StructuredData
     /** @return array<int, array<string, string>>|null */
     protected function areaServed(): ?array
     {
-        $areas = collect(explode(',', (string) SiteSettings::get('area_served', '')))
-            ->map(fn (string $area) => trim($area))
-            ->filter()
-            ->values();
-
-        return $areas->isEmpty()
-            ? null
-            : $areas->map(fn (string $area) => ['@type' => 'Place', 'name' => $area])->all();
+        return $this->places((string) SiteSettings::get('area_served', ''));
     }
 
     /**
@@ -640,14 +633,11 @@ class StructuredData
      */
     protected function places(?string $list): ?array
     {
-        $places = collect(explode(',', (string) $list))
-            ->map(fn (string $place) => trim($place))
-            ->filter()
-            ->values();
+        $places = $this->list($list);
 
-        return $places->isEmpty()
+        return $places === null
             ? null
-            : $places->map(fn (string $place) => ['@type' => 'Place', 'name' => $place])->all();
+            : array_map(fn (string $place) => ['@type' => 'Place', 'name' => $place], $places);
     }
 
     /**

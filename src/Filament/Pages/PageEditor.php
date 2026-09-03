@@ -9,6 +9,7 @@ use Filament\Panel;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Safi\Atelier\Block;
 use Safi\Atelier\BlockRegistry;
 use Safi\Atelier\Filament\Resources\PageResource;
 use Safi\Atelier\Models\Page;
@@ -243,9 +244,14 @@ class PageEditor extends FilamentPage
     public function move(string $id, int $offset): void
     {
         $from = $this->indexOf($id);
+
+        if ($from === null) {
+            return;
+        }
+
         $to = $from + $offset;
 
-        if ($from === null || $to < 0 || $to >= count($this->tree)) {
+        if ($to < 0 || $to >= count($this->tree)) {
             return;
         }
 
@@ -346,7 +352,7 @@ class PageEditor extends FilamentPage
      * Label the row by the block's own heading where it has one. "Hero" three
      * times in a list tells the client nothing.
      */
-    protected function rowLabel(array $node, ?object $block): string
+    protected function rowLabel(array $node, ?Block $block): string
     {
         $heading = $node['attributes']['heading'] ?? null;
 
@@ -373,7 +379,7 @@ class PageEditor extends FilamentPage
         return app(BlockRegistry::class);
     }
 
-    protected function selectedBlock(): ?object
+    protected function selectedBlock(): ?Block
     {
         $type = $this->selectedNode()['type'] ?? null;
 

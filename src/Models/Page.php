@@ -217,7 +217,9 @@ class Page extends Model implements MenuSource
             ->whereHas('slugs', fn ($query) => $query
                 ->where('locale', $locale)
                 ->where('slug', 'like', $slug.'/%')
-                ->whereRaw('length(slug) - length(replace(slug, "/", "")) = ?', [
+                // Single-quoted literals: double quotes are identifiers under
+                // ANSI_QUOTES and on Postgres, where this would fail outright.
+                ->whereRaw("length(slug) - length(replace(slug, '/', '')) = ?", [
                     substr_count($slug, '/') + 1,
                 ]))
             ->with('slugs')

@@ -117,17 +117,13 @@ class MenuManager extends FilamentPage
 
     public function move(string $id, int $offset): void
     {
-        $location = $this->locate($id);
+        $items = &$this->siblingsOf($id, $index);
 
-        if (! $location) {
+        if ($index === null) {
             return;
         }
 
-        if ($location['parentIndex'] === null) {
-            $this->swap($this->tree, $location['index'], $location['index'] + $offset);
-        } else {
-            $this->swap($this->tree[$location['parentIndex']]['children'], $location['index'], $location['index'] + $offset);
-        }
+        $this->swap($items, $index, $index + $offset);
 
         $this->persist();
     }
@@ -135,18 +131,13 @@ class MenuManager extends FilamentPage
     /** Keeps a hidden item in the tree, saved, not rendered, so hiding is reversible without retyping it. */
     public function toggleHidden(string $id): void
     {
-        $location = $this->locate($id);
+        $items = &$this->siblingsOf($id, $index);
 
-        if (! $location) {
+        if ($index === null) {
             return;
         }
 
-        if ($location['parentIndex'] === null) {
-            $this->tree[$location['index']]['hidden'] = ! ($this->tree[$location['index']]['hidden'] ?? false);
-        } else {
-            $item = &$this->tree[$location['parentIndex']]['children'][$location['index']];
-            $item['hidden'] = ! ($item['hidden'] ?? false);
-        }
+        $items[$index]['hidden'] = ! ($items[$index]['hidden'] ?? false);
 
         $this->persist();
     }
@@ -250,37 +241,41 @@ class MenuManager extends FilamentPage
         return null;
     }
 
-    /** Where an item lives: its own index, plus its parent's index if it's a child. */
-    protected function locate(string $id): ?array
+    /**
+     * The list an item lives in, by reference, with its position written into
+     * `$index`: the tree itself for a top-level item, its parent's `children`
+     * for a child. Every mutation below is then the same two lines whichever
+     * level the item is on. An id nobody has gives back an empty list and a
+     * null index, which each caller treats as nothing to do.
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function &siblingsOf(string $id, ?int &$index): array
     {
-        $topIndex = $this->indexOf($this->tree, $id);
+        $index = $this->indexOf($this->tree, $id);
 
-        if ($topIndex !== null) {
-            return ['parentIndex' => null, 'index' => $topIndex];
+        if ($index !== null) {
+            return $this->tree;
         }
 
         foreach ($this->tree as $parentIndex => $parent) {
-            $childIndex = $this->indexOf($parent['children'] ?? [], $id);
+            $index = $this->indexOf($parent['children'] ?? [], $id);
 
-            if ($childIndex !== null) {
-                return ['parentIndex' => $parentIndex, 'index' => $childIndex];
+            if ($index !== null) {
+                return $this->tree[$parentIndex]['children'];
             }
         }
 
-        return null;
+        $missing = [];
+
+        return $missing;
     }
 
     protected function findItem(string $id): ?array
     {
-        $location = $this->locate($id);
+        $items = &$this->siblingsOf($id, $index);
 
-        if (! $location) {
-            return null;
-        }
-
-        return $location['parentIndex'] === null
-            ? $this->tree[$location['index']]
-            : $this->tree[$location['parentIndex']]['children'][$location['index']];
+        return $index === null ? null : $items[$index];
     }
 
     // Edit and delete, as Filament actions --------------------------------
@@ -334,49 +329,35 @@ class MenuManager extends FilamentPage
 
     protected function updateItem(string $id, array $data): void
     {
-        $location = $this->locate($id);
+        $items = &$this->siblingsOf($id, $index);
 
-        if (! $location) {
+        if ($index === null) {
             return;
         }
 
-        $existing = $location['parentIndex'] === null
-            ? $this->tree[$location['index']]
-            : $this->tree[$location['parentIndex']]['children'][$location['index']];
-
-        $updated = [
+        $items[$index] = [
             'id' => $id,
             'label' => $data['label'] ?? [],
             'url' => $data['url'] ?? [],
             'target' => $data['target'] ?? '_self',
             // Not a form field: the edit modal is content, hiding is a
             // separate action, so whatever it was stays what it is.
-            'hidden' => $existing['hidden'] ?? false,
-            'children' => $existing['children'] ?? [],
+            'hidden' => $items[$index]['hidden'] ?? false,
+            'children' => $items[$index]['children'] ?? [],
         ];
-
-        if ($location['parentIndex'] === null) {
-            $this->tree[$location['index']] = $updated;
-        } else {
-            $this->tree[$location['parentIndex']]['children'][$location['index']] = $updated;
-        }
 
         $this->persist();
     }
 
     protected function deleteItem(string $id): void
     {
-        $location = $this->locate($id);
+        $items = &$this->siblingsOf($id, $index);
 
-        if (! $location) {
+        if ($index === null) {
             return;
         }
 
-        if ($location['parentIndex'] === null) {
-            array_splice($this->tree, $location['index'], 1);
-        } else {
-            array_splice($this->tree[$location['parentIndex']]['children'], $location['index'], 1);
-        }
+        array_splice($items, $index, 1);
 
         $this->persist();
     }

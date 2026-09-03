@@ -48,9 +48,6 @@ return [
     'layout' => 'atelier::layouts.site',
 
     'preview' => [
-        // Milliseconds after the user stops typing before the iframe refreshes.
-        'debounce' => 500,
-
         // How long a shareable preview link stays valid.
         'link_expiry_minutes' => 60 * 24,
 

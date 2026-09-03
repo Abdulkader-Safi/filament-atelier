@@ -8,6 +8,29 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`Page::children()` was written in SQL that only some databases accept.** The nesting
+  query used `replace(slug, "/", "")` inside a `whereRaw`. Double quotes are string
+  literals in SQLite, and in MySQL only while `ANSI_QUOTES` is off; everywhere else, and on
+  Postgres always, `"/"` is a column name. So a `CollectionPage` and the `ItemList` schema
+  it builds would have thrown a syntax error rather than rendering. Single-quoted now,
+  which all three accept. It went unnoticed because the test suite runs on SQLite.
+
+### Removed
+
+- **`preview.debounce` in `config/atelier.php`.** Nothing has ever read it. The real
+  debounce is `->live(debounce: 400)` on each field in a block's schema, which is where a
+  block author changes it. Setting the key did nothing, so removing it changes nothing;
+  your published config keeps the key until you delete it.
+
+### Changed
+
+- Internal tidying with no behaviour change: the menu manager's five mutations share one
+  sibling lookup instead of repeating the top-level-versus-child branch, and
+  `StructuredData`'s `areaServed()` and `places()` delegate to `list()` rather than
+  restating it.
+
 ## [0.3.6] - 2026-09-03
 
 Two editor fixes. No migration, no config change. `composer update
