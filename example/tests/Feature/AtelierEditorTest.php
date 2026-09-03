@@ -7,6 +7,7 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Safi\Atelier\Blocks\FaqBlock;
 use Safi\Atelier\Blocks\HeroBlock;
 use Safi\Atelier\Blocks\RichTextBlock;
 use Safi\Atelier\Filament\Pages\PageEditor;
@@ -128,6 +129,33 @@ it('adds, duplicates, hides, moves and deletes sections', function () {
         ->assertSet('tree.0.id', $added)
         ->call('deleteBlock', $added)
         ->assertCount('tree', 2);
+});
+
+it('persists a repeater row deleted through the repeater own delete action', function () {
+    $this->page->update(['draft_content' => [[
+        'id' => 'b_faq',
+        'type' => FaqBlock::type(),
+        'attributes' => ['items' => ['en' => [
+            ['question' => 'Keep me', 'answer' => 'Still here'],
+            ['question' => 'Delete me', 'answer' => 'Gone'],
+        ]]],
+        'children' => [],
+    ]]]);
+
+    $component = editor($this->page)->call('selectBlock', 'b_faq');
+
+    // Filament keys repeater items by uuid once the form is filled.
+    $keys = array_keys($component->get('data.items'));
+
+    $component->callFormComponentAction('items', 'delete', arguments: ['item' => $keys[1]]);
+
+    // The action writes component state on the server, so updatedData() never
+    // ran. Before dehydrate() synced the tree, the row vanished from the
+    // screen and came straight back on the next load.
+    $items = array_values($this->page->fresh()->draft()[0]['attributes']['items']['en']);
+
+    expect($items)->toHaveCount(1)
+        ->and($items[0]['question'])->toBe('Keep me');
 });
 
 it('refreshes the preview after any change', function () {

@@ -92,16 +92,52 @@ class PageEditor extends FilamentPage
     /** Called by Livewire whenever a settings field changes. */
     public function updatedData(): void
     {
+        $this->syncSelectedBlock();
+    }
+
+    /**
+     * Livewire calls this at the end of every request, after any action has
+     * run. It is the only hook that sees a form change made by a Filament
+     * action rather than by the browser.
+     *
+     * updatedData() fires on a wire:model update and nothing else. A Filament
+     * action writes component state directly on the server, so deleting a
+     * repeater row, adding one or reordering them changed the form, left the
+     * tree untouched, and the row came back on the next load. The same holds
+     * for whatever actions a block's own schema brings with it, which is why
+     * this catches them in one place rather than one hook per field.
+     */
+    public function dehydrate(): void
+    {
+        $this->syncSelectedBlock();
+    }
+
+    /**
+     * Form state into the selected block, persisted only if it moved.
+     *
+     * That comparison is what makes this safe to run on every request. A
+     * locale switch, a click on the section list or a plain re-render all
+     * reach dehydrate() with nothing changed, and persisting there would
+     * write the same tree back and fire a preview refresh for no reason.
+     */
+    protected function syncSelectedBlock(): void
+    {
         $index = $this->selectedIndex();
 
         if ($index === null) {
             return;
         }
 
-        $this->tree[$index]['attributes'] = $this->mergeLocale(
+        $attributes = $this->mergeLocale(
             $this->tree[$index]['attributes'] ?? [],
             $this->dehydratedData(),
         );
+
+        if ($attributes === ($this->tree[$index]['attributes'] ?? [])) {
+            return;
+        }
+
+        $this->tree[$index]['attributes'] = $attributes;
 
         $this->persist();
     }

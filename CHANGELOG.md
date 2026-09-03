@@ -8,6 +8,37 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-09-03
+
+Two editor fixes. No migration, no config change. `composer update
+safi/filament-atelier` and `php artisan filament:assets`, which re-publishes the panel
+stylesheet.
+
+### Fixed
+
+- **Deleting a row from a repeater field did not stick.** The row disappeared, the preview
+  kept it, and it was back on the next load. The editor wrote form changes into the block
+  tree from `updatedData()`, a Livewire hook that fires on a field update from the browser and
+  nothing else. A Filament action writes component state on the server instead, so deleting a
+  repeater row, adding one or reordering them changed the form and never reached the tree.
+
+  The sync now also runs on `dehydrate()`, at the end of every request, after any action has
+  run. That covers every action a block schema brings with it rather than one hook per field,
+  and it only writes when the tree actually moved, so a click or a locale switch does not fire
+  a pointless save. If a row you deleted before this release is still on the page, delete it
+  again and it will stay gone.
+
+- **The Add section picker still ran off the bottom of the screen.** 0.3.4 capped its height
+  with a Tailwind class and 0.3.5 shipped the stylesheet that class needed, but a panel that
+  had not re-published its assets was still uncapped, and the cap alone did not stop a tall
+  list from stretching the whole page. The cap is now an inline style, so it cannot be lost to
+  a stale stylesheet, and the panel clips rather than growing past the viewport.
+
+### Changed
+
+- **The section picker is capped at two thirds of the screen** rather than 45%, and the
+  section list behind it stays visible.
+
 ## [0.3.5] - 2026-09-01
 
 Ships the stylesheet 0.3.4 should have shipped. `composer update safi/filament-atelier` is the
@@ -590,7 +621,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.5...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.6...HEAD
+[0.3.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.2...v0.3.3

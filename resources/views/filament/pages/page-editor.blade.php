@@ -122,7 +122,12 @@
         </nav>
 
         {{-- ── One panel, two states ───────────────────────────────── --}}
-        <aside class="flex w-72 shrink-0 flex-col border-e border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900">
+        {{--
+            min-h-0 and overflow-hidden are load-bearing. Without them a tall
+            child stretches the panel past the viewport and takes the whole
+            document with it, since nothing between here and <body> scrolls.
+        --}}
+        <aside class="flex min-h-0 w-72 shrink-0 flex-col overflow-hidden border-e border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900">
             @if ($selected)
                 {{-- Inspector --}}
                 <div class="flex h-11 shrink-0 items-center gap-1 border-b border-gray-200 px-2 dark:border-white/10">
@@ -234,7 +239,21 @@
                             class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-white/10 dark:bg-white/5"
                         />
 
-                        <div class="mt-2 max-h-[45vh] space-y-3 overflow-y-auto">
+                        {{--
+                            Two thirds of the viewport, so a site with fifty
+                            block types scrolls here and still leaves the
+                            section list visible behind it.
+
+                            The cap is an inline style on purpose. Everything
+                            else in this view relies on a class existing in the
+                            stylesheet the consumer published, and a stale
+                            publish drops the cap silently: the list renders,
+                            looks right, and runs off the bottom of the screen
+                            with nothing to scroll. This one rule is the
+                            difference between usable and unusable at fifty
+                            blocks, so it does not go through the build.
+                        --}}
+                        <div class="mt-2 space-y-3 overflow-y-auto" style="max-height: 66vh">
                             @foreach ($this->picker as $category => $blocks)
                                 <div x-show="{{ Js::from(array_column($blocks, 'label')) }}.some((l) => l.toLowerCase().includes(q.trim().toLowerCase()))">
                                     <p class="px-1 pb-1 text-xs font-medium uppercase tracking-wide text-gray-400">{{ $category }}</p>
