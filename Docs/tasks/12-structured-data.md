@@ -68,12 +68,12 @@ number). It does not exist today in any form, and every tier 1 node depends on i
 The existing screen, with one addition. Where it goes matters, so concretely:
 
 ```
-Pages › Edit                    [Edit page content] [View live] [Publish] …
+Pages › Edit                    [Edit page content] [View live] [Publish] ...
 
 ┌─ Section ──────────────────────────────────────────────────┐
 │  Title              Internal name, and the meta fallback   │
 │  Layout             The shell wrapped around this page     │
-│  Page type          What this page is: Service, Article…   │  ← new
+│  Page type          What this page is: Service, Article... │  ← new
 │     └ fields for the chosen type appear here               │  ← new
 └────────────────────────────────────────────────────────────┘
 
@@ -169,7 +169,7 @@ Not every one of these belongs in v1 of this feature. The tiering below says whi
 
 ### Tier 3: generated from blocks, never typed twice
 
-This is the part no other builder does well, and it is where the leverage is.
+This is the part no other builder does well, and it is where the win is.
 
 | Block                | Schema it produces                                                | Confidence                                       |
 | -------------------- | ----------------------------------------------------------------- | ------------------------------------------------ |

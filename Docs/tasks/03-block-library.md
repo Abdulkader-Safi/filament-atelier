@@ -25,7 +25,7 @@ interface Block
 
 ## Why we're building it
 
-This is the visual-and-code split the whole product rests on. The developer keeps control of markup, styling and quality. The client gets a fixed set of well-built sections they can't break. `supports()` plus design tokens is what stops this becoming Elementor, where every block grows a hundred style fields and every page ends up looking different.
+This is the visual-and-code split the whole product rests on. The developer owns the markup and the styling. The client gets a fixed set of well-built sections they can't break. `supports()` plus design tokens is what stops this becoming Elementor, where every block grows a hundred style fields and every page ends up looking different.
 
 `schema()` returning a plain Filament schema is the biggest saving in the project: the entire control system, validation and field rendering come free.
 
@@ -99,5 +99,5 @@ what the site already has, and would drag spam handling, retention and export in
 What the block gives the client is the section: heading, intro text, which fields show, the
 button label, and the action URL the developer points at their own route.
 
-The original question and its cheaper-option recommendation stand as written; this is the
+The original question and its cheaper-option recommendation are unchanged. This is the
 decision, not a reversal.

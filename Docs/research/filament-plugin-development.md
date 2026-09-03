@@ -311,7 +311,7 @@ Cast options: `'array'`/`'json'` (most common, what Builder expects round-trip),
 
 ## 8. Existing page-builder packages on Filament (honest maturity read)
 
-### Z3d0X/filament-fabricator — the reference choice
+### Z3d0X/filament-fabricator, the reference choice
 
 A block-based page-builder skeleton. It gives you the `PageResource` plus front-end routing; you define the Layouts and Page Blocks. Intentionally a skeleton, not a turnkey CMS.
 
@@ -319,11 +319,11 @@ Model: a `pages` table; each page picks a Layout and has a Builder-style stack o
 
 Maturity: most mature, clearly page-builder-focused option. 379 stars, 70 forks, 44 releases, MIT, generated from the official plugin skeleton, has tests/PHPStan/Pint. Actively maintained. Version matrix: 3.x → Filament ^4, 4.x → Filament ^5. Latest v4.1.0 (6 May 2026); Filament v5 support landed in v4.0.0 (16 Feb 2026), within weeks of Filament v5. Strong signal. Credits pboivin/Filament Peek for live preview.
 
-### tomatophp/filament-cms — "CMS Builder"
+### tomatophp/filament-cms, "CMS Builder"
 
 Tagline says "easy page builder," but the README surface is Posts + Categories with SEO, comments, import/export. Did not see a block/Builder-based visual page builder; treat the "page builder" claim with caution, it reads more as content/post management. 119 stars, MIT, latest v4.0.0 (9 Oct 2025). Part of the broader TomatoPHP ecosystem (lots of interdependencies).
 
-### lara-zeus/sky — "Sky CMS"
+### lara-zeus/sky, "Sky CMS"
 
 A simple CMS (posts, pages, tags, categories) with front-end scaffolding ready to use. A blog/site CMS, not a block page-builder. Packagist shows v5.0.0 (Filament v5). Solid, but solves a different problem.
 
@@ -333,8 +333,8 @@ A genuine drag-and-drop page builder (different model from Fabricator's block-st
 
 ### Companions worth a look
 
-- **pboivin/filament-peek** — adds live page preview to Filament forms/pages. Strong companion to whatever builder you ship.
-- **awcodes/filament-curator** — media library manager. You'll likely want it for image blocks.
+- **pboivin/filament-peek.** Adds live page preview to Filament forms/pages. Strong companion to whatever builder you ship.
+- **awcodes/filament-curator.** Media library manager. You'll likely want it for image blocks.
 
 ## Recommendation: build from scratch vs fork Fabricator
 

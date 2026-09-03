@@ -8,7 +8,7 @@
 
 The plumbing everything else sits on: the composer package, the panel plugin registration, the database tables, the `Page` model, slug resolution, front-end routing, layout resolution, the block registry, and the design tokens shared by the editor and the front end.
 
-No page-builder dependency. This feature grew on 15 Aug when Fabricator was dropped, and the page model, routing and layout resolution became ours. The reasoning is in `prd.md` under "Why not Fabricator".
+No page-builder dependency. This feature grew on 15 Aug when Fabricator was dropped, and the page model, slug resolution, routing and layout resolution became ours. The reasoning is in `prd.md` under "Why not Fabricator".
 
 ## Why we're building it
 

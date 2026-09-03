@@ -1,4 +1,4 @@
-# Gutenberg block editing — architecture brief
+# Gutenberg block editing, an architecture brief
 
 A source-cited technical brief on how WordPress's Gutenberg block editor works under the hood, written so you can decide which parts to replicate in a server-rendered Laravel page builder. Verified against the official Block Editor Handbook (developer.wordpress.org/block-editor), June 2026.
 
@@ -18,7 +18,7 @@ A block type is described primarily by a **`block.json`** file. That file is the
 >
 > "The `register_block_type()` function utilises the name and arguments provided in the function call to create a new instance of `WP_Block_Type` class and the instance thus created is registered with the global `WP_Block_Type_Registry` instance."
 
-Two-sided registration — this is the part most relevant to you:
+Two-sided registration, the part most relevant to you:
 
 - **Server (PHP)** registers the block type so the front end and REST API know it exists. "Block registration on the server takes place in the main plugin PHP file, hooked on `init`." You point `register_block_type()` at the folder containing `block.json`.
 - **Client (JavaScript)** registers the same block type in the editor with `registerBlockType()`, supplying the interactive `edit` component and the `save` function. The two registrations share the same `name` and the same `block.json` metadata.
@@ -27,7 +27,7 @@ Since WordPress 6.8 there's a bulk path, `wp_register_block_types_from_metadata_
 
 **The `name`** is the unique key in the registry: "A unique string that identifies a block. Names have to be structured as `namespace/block-name`." Core blocks omit the namespace in markup (`wp:image` means `core/image`); custom blocks keep it (`wp:my-plugin/notice`).
 
-**Laravel takeaway:** you want one registry too — a service/container binding mapping a block type name (`hero`, `pricing-table`) to its definition (schema + a Blade view + an optional server resolver). Register them once at boot. Keep the type name namespaced so third parties can add blocks without collisions.
+**Laravel takeaway:** you want one registry too: a service/container binding mapping a block type name (`hero`, `pricing-table`) to its definition (schema + a Blade view + an optional server resolver). Register them once at boot. Keep the type name namespaced so third parties can add blocks without collisions.
 
 ---
 
@@ -135,7 +135,7 @@ The **`render`** field is the dynamic-rendering hook. "PHP file to use when rend
 </div>
 ```
 
-**Laravel takeaway:** a JSON (or PHP array) manifest per block is a good pattern — declarative, lintable, and separable from rendering code. Mirror the split between "attributes" (the data shape), "supports" (toggle-able styling features), and "render" (the server template). For Laravel, `render` is just "the Blade view that renders this block," and since Laravel renders server-side, your equivalent of `render.php` is the default, not the exception (more in section 4).
+**Laravel takeaway:** a JSON (or PHP array) manifest per block is a good pattern: declarative, lintable, separable from rendering code. Mirror the split between "attributes" (the data shape), "supports" (toggle-able styling features), and "render" (the server template). For Laravel, `render` is just "the Blade view that renders this block," and since Laravel renders server-side, your equivalent of `render.php` is the default, not the exception (more in section 4).
 
 ---
 
@@ -145,8 +145,8 @@ This is the conceptual heart of Gutenberg and the part worth understanding deepl
 
 ### Two functions, two jobs
 
-- **`edit`** — a React component. "The `edit` function describes the structure of your block in the context of the editor. This represents what the editor will render when the block is used." It is interactive and stateful: it can use hooks, read data stores, and call `setAttributes` to change the block's data.
-- **`save`** — a pure function. "The `save` function defines the way in which the different attributes should be combined into the final markup, which is then serialized into `post_content`."
+- **`edit`.** A React component. "The `edit` function describes the structure of your block in the context of the editor. This represents what the editor will render when the block is used." It is interactive and stateful: it can use hooks, read data stores, and call `setAttributes` to change the block's data.
+- **`save`.** A pure function. "The `save` function defines the way in which the different attributes should be combined into the final markup, which is then serialized into `post_content`."
 
 Why two? Because the editing experience (drag handles, toolbars, placeholders, live controls) is nothing like the final published HTML. Gutenberg deliberately separates "how you manipulate this block" from "what gets stored and shown."
 
@@ -179,7 +179,7 @@ A static block (image), serialized:
 <!-- /wp:image -->
 ```
 
-A purely dynamic block stores only a self-closing delimiter with its attributes — no inner HTML:
+A purely dynamic block stores only a self-closing delimiter with its attributes, no inner HTML:
 
 ```html
 <!-- wp:latest-posts {"postsToShow":4,"displayPostDate":true} /-->
@@ -190,7 +190,7 @@ A purely dynamic block stores only a self-closing delimiter with its attributes 
 The in-memory model the editor works on is **a tree of block objects**, not the HTML string. Each block object carries `clientId`, `type`, `attributes`, and `innerBlocks`.
 
 - **Serialization** (tree → stored HTML): "the serialization process converts the block tree into HTML using HTML comments as explicit block delimiters—which can contain the attributes in non-HTML form." Attributes go in as "JSON literals inside the comment."
-- **Parsing** (stored HTML → tree): a formal grammar reads `post_content` back into the block tree. The parser keys off the comment delimiters, which is why it is robust: "Because the comments are so different from other HTML tags and because we can perform a first-pass to extract the top-level blocks, we don't actually depend on having fully valid HTML."
+- **Parsing** (stored HTML → tree): a formal grammar reads `post_content` back into the block tree. The parser keys off the comment delimiters, which is why it tolerates broken markup: "Because the comments are so different from other HTML tags and because we can perform a first-pass to extract the top-level blocks, we don't actually depend on having fully valid HTML."
 
 Why HTML comments specifically? The handbook is explicit about the design intent:
 
@@ -202,9 +202,9 @@ And the single-source-of-truth motive for storing everything back into `post_con
 
 > "Were we to store the object tree separately, we would face the risk of `post_content` and the tree getting out of sync and the problem of data duplication in both places."
 
-A nice safety property falls out of this: if you render the stored HTML on a system that knows nothing about blocks, the post is "mostly intact" — static content displays, only dynamic/interactive parts degrade.
+A nice safety property falls out of this: if you render the stored HTML on a system that knows nothing about blocks, the post is "mostly intact". Static content displays, only dynamic/interactive parts degrade.
 
-**Laravel takeaway:** you have a clean choice here that Gutenberg did not. Gutenberg stores rendered HTML + JSON-in-comments in one text column because WordPress's whole ecosystem expects `post_content` to be HTML. You are not bound by that. You can store the **block tree as structured JSON** in its own column/table and render through Blade at request time. That sidesteps the entire validation/deprecation headache (section 9) because you never re-derive a tree from HTML — the tree *is* the source of truth. Keep Gutenberg's good idea (a serializable tree of typed blocks with attributes and nested children); drop the "serialize to annotated HTML and re-parse it" mechanism unless you specifically need portable, self-describing HTML output.
+**Laravel takeaway:** you have a clean choice here that Gutenberg did not. Gutenberg stores rendered HTML + JSON-in-comments in one text column because WordPress's whole ecosystem expects `post_content` to be HTML. You are not bound by that. You can store the **block tree as structured JSON** in its own column/table and render through Blade at request time. That sidesteps the entire validation/deprecation headache (section 9) because you never re-derive a tree from HTML. The tree *is* the source of truth. Keep Gutenberg's good idea (a serializable tree of typed blocks with attributes and nested children); drop the "serialize to annotated HTML and re-parse it" mechanism unless you specifically need portable, self-describing HTML output.
 
 ---
 
@@ -246,12 +246,12 @@ function gutenberg_examples_dynamic_render_callback( $block_attributes, $content
 
 > "The server-side rendering is a function taking the block and the block inner content as arguments, and returning the markup (quite similar to shortcodes)."
 
-**Why dynamic blocks matter** — the handbook gives two concrete reasons (this is the SEO/live-data argument):
+**Why dynamic blocks matter.** The handbook gives two concrete reasons (this is the SEO/live-data argument):
 
 > "1. Blocks where content should change even if a post has not been updated: An example is the Latest Posts block, which will automatically update whenever a new post is published.
 > 2. Blocks where updates to the markup should be immediately shown on the front end: If you update the structure of a block by adding a new class, adding an HTML element, or changing the layout in any other way, using a dynamic block ensures those changes are applied immediately on all occurrences of that block across the site."
 
-Because dynamic blocks render real HTML server-side at request time, the markup is fully present in the initial page response — good for SEO and for any content that must reflect live data (latest posts, prices, stock, personalised content). And because the markup is generated, not stored, changing the template updates every instance at once with no re-saving and no validation errors.
+Because dynamic blocks render real HTML server-side at request time, the markup is fully present in the initial page response, which is good for SEO and for any content that must reflect live data (latest posts, prices, stock, personalised content). And because the markup is generated, not stored, changing the template updates every instance at once with no re-saving and no validation errors.
 
 **Fallback behaviour.** Dynamic blocks can also keep a saved HTML copy as a backup:
 
@@ -259,7 +259,7 @@ Because dynamic blocks render real HTML server-side at request time, the markup 
 
 > "Server-side render is meant as a fallback; client-side rendering in JavaScript is always preferred (client rendering is faster and allows better editor manipulation)."
 
-**Laravel takeaway — this is your model.** In Gutenberg, dynamic/server-rendered is the special case bolted onto a client-render-first system. In Laravel, **server rendering is the native, default, and only thing you need** — every block is effectively a "dynamic block" rendered by a Blade view at request time. That gives you, for free, what WordPress had to engineer around:
+**Laravel takeaway, and this is your model.** In Gutenberg, dynamic/server-rendered is the special case bolted onto a client-render-first system. In Laravel, **server rendering is the native and only thing you need**. Every block is effectively a "dynamic block" rendered by a Blade view at request time. That gives you, for free, what WordPress had to engineer around:
 
 - Full SEO-ready HTML in the first response.
 - Live data in any block without re-saving content.
@@ -300,7 +300,7 @@ So attributes are stored in one of two fundamentally different places:
 
 **(b) Scraped back out of the saved HTML** via a source + selector. Examples:
 
-`attribute` — pull `src` off an `<img>`:
+`attribute`, pull `src` off an `<img>`:
 
 ```js
 url: {
@@ -311,7 +311,7 @@ url: {
 }
 ```
 
-`html` — pull inner HTML of a `<figcaption>` (this is how rich text is stored):
+`html`, pull inner HTML of a `<figcaption>` (this is how rich text is stored):
 
 ```js
 content: {
@@ -321,7 +321,7 @@ content: {
 }
 ```
 
-`query` — pull an array of objects, one per matched element ("effectively a nested block attributes definition"):
+`query`, pull an array of objects, one per matched element ("effectively a nested block attributes definition"):
 
 ```js
 images: {
@@ -370,14 +370,14 @@ save: () => {
 
 Controls on nesting:
 
-- **`allowedBlocks`** — restrict which block types can be inserted as direct children.
-- **`template`** — "define a set of blocks that prefill the InnerBlocks component when it has no existing content," e.g. `[[ 'core/image', {} ], [ 'core/heading', { placeholder: 'Book Title' } ]]`.
-- **`templateLock`** — `all` locks the template completely; `insert` "prevents additional blocks from being inserted, but existing blocks can be reordered."
-- **`parent` / `ancestor`** (in `block.json`) — the inverse constraint, declared by the child: `parent` means "only as a direct child of X"; `ancestor` means "anywhere inside X's subtree."
+- **`allowedBlocks`.** Restrict which block types can be inserted as direct children.
+- **`template`.** "define a set of blocks that prefill the InnerBlocks component when it has no existing content," e.g. `[[ 'core/image', {} ], [ 'core/heading', { placeholder: 'Book Title' } ]]`.
+- **`templateLock`.** `all` locks the template completely; `insert` "prevents additional blocks from being inserted, but existing blocks can be reordered."
+- **`parent` / `ancestor`** (in `block.json`): the inverse constraint, declared by the child: `parent` means "only as a direct child of X"; `ancestor` means "anywhere inside X's subtree."
 
-Nesting serializes as **nested delimiter comments** — each child sits inside its parent's open/close pair, e.g. `<!-- wp:columns --> ... <!-- wp:column --> ... <!-- /wp:column --> ... <!-- /wp:columns -->`. In the block tree this is simply each block's `innerBlocks` array.
+Nesting serializes as **nested delimiter comments**, each child sitting inside its parent's open/close pair, e.g. `<!-- wp:columns --> ... <!-- wp:column --> ... <!-- /wp:column --> ... <!-- /wp:columns -->`. In the block tree this is simply each block's `innerBlocks` array.
 
-**Laravel takeaway:** model this as recursion. A block is `{ type, attributes, children: Block[] }`; rendering recurses into `children`. Carry over the useful guardrails — `allowedBlocks` (validation on insert), `template` (starter children), `templateLock` (editor lock). The `parent`/`ancestor` constraints are worth keeping for blocks that only make sense in a context (a "column" only inside "columns").
+**Laravel takeaway:** model this as recursion. A block is `{ type, attributes, children: Block[] }`; rendering recurses into `children`. Carry over the useful guardrails: `allowedBlocks` (validation on insert), `template` (starter children), `templateLock` (editor lock). The `parent`/`ancestor` constraints are worth keeping for blocks that only make sense in a context (a "column" only inside "columns").
 
 ---
 
@@ -385,7 +385,7 @@ Nesting serializes as **nested delimiter comments** — each child sits inside i
 
 Three distinct things, often confused:
 
-**Block patterns** — "predefined block layouts available from the patterns tab of the block inserter. Once inserted into content, the blocks are ready for additional or modified content and configuration." A pattern is a **starting point**: you insert it, and from then on the copy is independent. Editing it changes only that one instance. Registered with `register_block_pattern( 'namespace/title', [...] )` on the `init` hook, where `content` is literal block markup:
+**Block patterns.** "Predefined block layouts available from the patterns tab of the block inserter. Once inserted into content, the blocks are ready for additional or modified content and configuration." A pattern is a **starting point**: you insert it, and from then on the copy is independent. Editing it changes only that one instance. Registered with `register_block_pattern( 'namespace/title', [...] )` on the `init` hook, where `content` is literal block markup:
 
 ```php
 register_block_pattern(
@@ -400,9 +400,9 @@ register_block_pattern(
 
 Patterns can be attached to block types (becoming transform suggestions) and can be marked as header/footer ("semantic block patterns") in block themes.
 
-**Block templates** — a predefined list of blocks that prefill a *new* post of a given type, or the inner content of a block (the `template` prop in section 6). Same idea as patterns but applied as the initial scaffold rather than inserted on demand.
+**Block templates.** A predefined list of blocks that prefill a *new* post of a given type, or the inner content of a block (the `template` prop in section 6). Same idea as patterns but applied as the initial scaffold rather than inserted on demand.
 
-**Reusable blocks / synced patterns** — the synced counterpart. A synced pattern (formerly "reusable block," stored as the `wp_block` post type) is a **single shared source**: editing it updates **every** place it is used across the site. This is the opposite of a normal pattern, where each insertion is independent.
+**Reusable blocks / synced patterns.** The synced counterpart. A synced pattern (formerly "reusable block," stored as the `wp_block` post type) is a **single shared source**: editing it updates **every** place it is used across the site. This is the opposite of a normal pattern, where each insertion is independent.
 
 So the axis is: **pattern = copy once, then independent; synced pattern = one source, edits propagate everywhere.**
 
@@ -438,16 +438,16 @@ Supports cover `align`, `anchor`, `className`, `color` (text/background/link/gra
 
 It has two halves:
 
-- **`settings`** — *what is available*: the color palette, font sizes, gradients, spacing units, layout widths (`contentSize`, `wideSize`), and which controls are shown or hidden. Works globally and **per block** (`settings.blocks`). It is opt-in/opt-out: "it's the block's responsibility to add support for the features that are relevant to it" — theme.json can only expose what the block's `supports` allows. (`appearanceTools: true` is a shortcut that switches on a batch of common features at once.)
-- **`styles`** — *the actual values applied*: top-level styles map to the `body` selector; per-block styles map to `.wp-block-<name>`; there's also an `elements` layer (links, headings, buttons, captions).
+- **`settings`.** *What is available*: the color palette, font sizes, gradients, spacing units, layout widths (`contentSize`, `wideSize`), and which controls are shown or hidden. Works globally and **per block** (`settings.blocks`). It is opt-in/opt-out: "it's the block's responsibility to add support for the features that are relevant to it". theme.json can only expose what the block's `supports` allows. (`appearanceTools: true` is a shortcut that switches on a batch of common features at once.)
+- **`styles`.** *The actual values applied*: top-level styles map to the `body` selector; per-block styles map to `.wp-block-<name>`; there's also an `elements` layer (links, headings, buttons, captions).
 
 The linking sentence that ties supports and theme.json together:
 
 > "Each block declares which style properties it exposes via the block supports mechanism. The support declarations are used to automatically generate the UI controls for the block in the editor. Themes can use any style property via the `theme.json` for any block."
 
-The payoff the handbook claims: managing CSS centrally lets WordPress "reduce the amount of CSS enqueued" and "prevent specificity wars," and presets become CSS custom properties shared by editor and front end — so the editor preview matches the published page.
+The payoff the handbook claims: managing CSS centrally lets WordPress "reduce the amount of CSS enqueued" and "prevent specificity wars," and presets become CSS custom properties shared by editor and front end, so the editor preview matches the published page.
 
-**Laravel takeaway:** this is the single most worth-copying idea after the block tree. Have a central design-tokens config (your `theme.json` equivalent): one palette, one type scale, one spacing scale, layout widths — defined once, used by every block, emitted as CSS custom properties so the editor and the live page share exactly the same styling. Pair it with a per-block "supports" declaration so a block opts into, say, "background colour + padding" and your builder automatically renders the right controls and applies the right classes/inline styles. This is what stops a page builder from devolving into a thousand bespoke style fields per block.
+**Laravel takeaway:** this is the single most worth-copying idea after the block tree. Have a central design-tokens config (your `theme.json` equivalent): one palette, one type scale, one spacing scale, layout widths, defined once, used by every block, emitted as CSS custom properties so the editor and the live page share exactly the same styling. Pair it with a per-block "supports" declaration so a block opts into, say, "background colour + padding" and your builder automatically renders the right controls and applies the right classes/inline styles. This is what stops a page builder from devolving into a thousand bespoke style fields per block.
 
 ---
 
@@ -468,7 +468,7 @@ This is also why `save` must be pure (section 3): if `save` depended on anything
 
 **What the user sees.** An invalid block prompts for recovery: an "Attempt Block Recovery" button, plus options to **Resolve**, **Convert to HTML** (edit the raw markup), or **Convert to Classic Block**. Disruptive, and a frequent source of the dreaded "This block appears to have been modified externally" message.
 
-**Deprecation** is the escape hatch for when you *intentionally* change a block's `save` output (e.g. you change a `<p>` to a `<div>`). You supply a `deprecated` array — older versions of the block's `attributes` + `supports` + `save`, plus an optional `migrate`:
+**Deprecation** is the escape hatch for when you *intentionally* change a block's `save` output (e.g. you change a `<p>` to a `<div>`). You supply a `deprecated` array: older versions of the block's `attributes` + `supports` + `save`, plus an optional `migrate`:
 
 ```js
 registerBlockType( 'gutenberg/block-with-deprecated-version', {
@@ -489,10 +489,10 @@ The mechanism, verbatim:
 
 `migrate` can also rename attributes or move data into inner blocks (returning `[attributes, innerBlocks]`). `isEligible` lets you force migration even for technically-valid blocks. Deprecations are listed reverse-chronologically and "are not automatically inherited from the current version."
 
-**Laravel takeaway — this is the cautionary tale.** Every bit of this complexity — validation diffs, "modified externally" errors, the entire `deprecated`/`migrate`/`isEligible` machinery — is a **direct tax on storing rendered HTML and re-deriving the tree from it.** If you store the block tree as structured JSON and render via Blade at request time, none of this exists:
+**Laravel takeaway, and this is the cautionary tale.** Every bit of this complexity (validation diffs, "modified externally" errors, the entire `deprecated`/`migrate`/`isEligible` machinery) is a **direct tax on storing rendered HTML and re-deriving the tree from it.** If you store the block tree as structured JSON and render via Blade at request time, none of this exists:
 
 - There is no stored markup to diff against, so no invalidation.
-- Changing a block's Blade template just changes the output next request — no deprecation needed, ever.
+- Changing a block's Blade template just changes the output next request. No deprecation needed, ever.
 - Migrating a block's data shape is a normal data migration (a script that rewrites the JSON), not a runtime save-function chain.
 
 The one thing worth keeping the *spirit* of: **versioned attribute schemas with explicit migrations.** Store a schema version on each block; when you change a block's attribute shape, write a migration that upgrades old records. That gives you Gutenberg's forward-compatibility benefit without its runtime fragility.
@@ -505,7 +505,7 @@ The one thing worth keeping the *spirit* of: **versioned attribute schemas with 
 
 1. **A block = typed unit with a declarative manifest.** `block.json`-style metadata (name, attributes schema, supports, render target) keeps blocks declarative and lintable. Have a registry mapping type → definition.
 2. **The block tree as the model.** A page is an ordered tree of `{ type, attributes, children }`. Clean, recursive, serializable.
-3. **Server rendering as the default.** Gutenberg's "dynamic block" (PHP render at request time) is exactly the Laravel model — and it is the half that gives SEO-ready HTML, live data, and instant template updates. In your builder, *every* block works this way.
+3. **Server rendering as the default.** Gutenberg's "dynamic block" (PHP render at request time) is exactly the Laravel model, and it is the half that gives SEO-ready HTML, live data, and instant template updates. In your builder, *every* block works this way.
 4. **`supports` + central design tokens (theme.json).** Declare per-block which styling features exist; define palette/type/spacing once; emit as CSS custom properties shared by editor and front end. This keeps styling consistent and the editor preview faithful.
 5. **InnerBlocks nesting with guardrails.** `allowedBlocks`, `template`, `templateLock`, parent/ancestor constraints.
 6. **Patterns, templates, synced patterns.** Starter layouts, default page scaffolds, and shared blocks that update everywhere. Cheap, high user value.
@@ -520,7 +520,7 @@ The one thing worth keeping the *spirit* of: **versioned attribute schemas with 
 5. **The pure-`save`-function constraint.** It exists only to make HTML re-serialization deterministic; you don't need it if rendering is request-time and the tree is the truth.
 6. **The two-place attribute split (comment JSON vs HTML).** One place for data.
 
-The honest summary: Gutenberg's *data model* (typed blocks, attribute schemas, supports, a nested tree, server rendering for dynamic content, central theme tokens) is excellent and worth copying. Its *storage and consistency model* (everything as annotated HTML, re-parsed and re-validated on every load, with deprecation chains to survive changes) is a workaround for WordPress's `post_content`-is-HTML legacy. A greenfield Laravel builder should keep the model and throw away the workaround — store the tree as JSON, render with Blade at request time, and you inherit Gutenberg's strengths while skipping its hardest, most fragile machinery. The real work you can't shortcut is the *editor UI* — Gutenberg's `edit` components — which is where most of the actual engineering effort lives.
+The honest summary: Gutenberg's *data model* (typed blocks, attribute schemas, supports, a nested tree, server rendering for dynamic content, central theme tokens) is excellent and worth copying. Its *storage and consistency model* (everything as annotated HTML, re-parsed and re-validated on every load, with deprecation chains to survive changes) is a workaround for WordPress's `post_content`-is-HTML legacy. A greenfield Laravel builder should keep the model and throw away the workaround. Store the tree as JSON, render with Blade at request time, and you inherit Gutenberg's strengths while skipping its hardest, most fragile machinery. The real work you can't shortcut is the *editor UI*, Gutenberg's `edit` components, which is where most of the actual engineering effort lives.
 
 ---
 
@@ -528,22 +528,22 @@ The honest summary: Gutenberg's *data model* (typed blocks, attribute schemas, s
 
 All pages from the official WordPress Block Editor Handbook (developer.wordpress.org), verified June 2026.
 
-- Markup representation of a block — https://developer.wordpress.org/block-editor/getting-started/fundamentals/markup-representation-block/
-- Metadata in block.json — https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
-- block.json (Fundamentals) — https://developer.wordpress.org/block-editor/getting-started/fundamentals/block-json/
-- Block API Reference — https://developer.wordpress.org/block-editor/reference-guides/block-api/
-- Attributes — https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/
-- Edit and Save — https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/
-- Static or Dynamic rendering of a block — https://developer.wordpress.org/block-editor/getting-started/fundamentals/static-dynamic-rendering/
-- Creating dynamic blocks — https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/creating-dynamic-blocks/
-- Data Flow and Data Format — https://developer.wordpress.org/block-editor/explanations/architecture/data-flow/
-- Nested Blocks / InnerBlocks — https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/nested-blocks-inner-blocks/
-- Block Deprecation — https://developer.wordpress.org/block-editor/reference-guides/block-api/block-deprecation/
-- Block Patterns — https://developer.wordpress.org/block-editor/reference-guides/block-api/block-patterns/
-- Global Settings and Styles (theme.json) — https://developer.wordpress.org/block-editor/how-to-guides/themes/global-settings-and-styles/
-- Block Supports — https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
-- Registration of a block — https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/
-- register_block_type() — https://developer.wordpress.org/reference/functions/register_block_type/
-- WP_Block_Type_Registry::register() — https://developer.wordpress.org/reference/classes/wp_block_type_registry/register/
-- Static vs. dynamic blocks (Developer Blog) — https://developer.wordpress.org/news/2023/02/27/static-vs-dynamic-blocks-whats-the-difference/
-- Understanding block attributes (Developer Blog) — https://developer.wordpress.org/news/2023/09/understanding-block-attributes/
+- Markup representation of a block: https://developer.wordpress.org/block-editor/getting-started/fundamentals/markup-representation-block/
+- Metadata in block.json: https://developer.wordpress.org/block-editor/reference-guides/block-api/block-metadata/
+- block.json (Fundamentals): https://developer.wordpress.org/block-editor/getting-started/fundamentals/block-json/
+- Block API Reference: https://developer.wordpress.org/block-editor/reference-guides/block-api/
+- Attributes: https://developer.wordpress.org/block-editor/reference-guides/block-api/block-attributes/
+- Edit and Save: https://developer.wordpress.org/block-editor/reference-guides/block-api/block-edit-save/
+- Static or Dynamic rendering of a block: https://developer.wordpress.org/block-editor/getting-started/fundamentals/static-dynamic-rendering/
+- Creating dynamic blocks: https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/creating-dynamic-blocks/
+- Data Flow and Data Format: https://developer.wordpress.org/block-editor/explanations/architecture/data-flow/
+- Nested Blocks / InnerBlocks: https://developer.wordpress.org/block-editor/how-to-guides/block-tutorial/nested-blocks-inner-blocks/
+- Block Deprecation: https://developer.wordpress.org/block-editor/reference-guides/block-api/block-deprecation/
+- Block Patterns: https://developer.wordpress.org/block-editor/reference-guides/block-api/block-patterns/
+- Global Settings and Styles (theme.json): https://developer.wordpress.org/block-editor/how-to-guides/themes/global-settings-and-styles/
+- Block Supports: https://developer.wordpress.org/block-editor/reference-guides/block-api/block-supports/
+- Registration of a block: https://developer.wordpress.org/block-editor/getting-started/fundamentals/registration-of-a-block/
+- register_block_type(): https://developer.wordpress.org/reference/functions/register_block_type/
+- WP_Block_Type_Registry::register(): https://developer.wordpress.org/reference/classes/wp_block_type_registry/register/
+- Static vs. dynamic blocks (Developer Blog): https://developer.wordpress.org/news/2023/02/27/static-vs-dynamic-blocks-whats-the-difference/
+- Understanding block attributes (Developer Blog): https://developer.wordpress.org/news/2023/09/understanding-block-attributes/

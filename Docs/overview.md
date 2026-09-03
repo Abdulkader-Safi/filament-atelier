@@ -4,7 +4,7 @@
 > GitHub: `Abdulkader-Safi/filament-atelier`.
 > Name checked 2026-08-14. `safi/filament-atelier` is free. One near-collision: `blackpig-creatif/atelier`, "artisanal content blocks for FilamentPHP v5", 40 downloads total, 0 stars, last release April 2026. Small enough to ignore, worth knowing if this goes public.
 
-A Laravel + Filament plugin that turns a client's Laravel app into a visual CMS. A dsrpt developer defines the block types in code, one PHP class and one Blade view each. The client then builds pages from those blocks in a three-pane editor, adding, reordering and editing sections while watching the real page render update as they type. The public site is server-rendered, bilingual (English + Arabic), and SEO-ready.
+A Laravel + Filament plugin that turns a client's Laravel app into a visual CMS. A dsrpt developer defines the block types in code, one PHP class and one Blade view each. The client then builds pages from those blocks in a three-pane editor, reordering and editing sections while watching the real page render update as they type. The public site is server-rendered, bilingual (English + Arabic), and SEO-ready.
 
 Built to be dsrpt's own tool for client websites. One install per site.
 
@@ -16,16 +16,16 @@ The build is starting. `example/` is a fresh Laravel 13 app for testing, the plu
 
 ## Files
 
-- `tasks/` — one markdown file per feature, in build order, each covering what it is, why it exists, how it should feel, how it works in the panel, and its checklist. `tasks/README.md` is the index. This is where the work gets tracked.
-- `features.md` — what is built, and how it lines up against Gutenberg feature by feature.
-- `installation.md` — putting Atelier on a real project, writing a block, and the MVP's known limits.
-- `prd.md` — the current PRD (v2). Start here. Covers the five decisions taken on 14 Aug, the data model changes, the block interface, the two preview problems, the 10-step plan, and 4 open questions.
-- `architecture.md` — the technical design from 22 June. Still correct on the block tree, registry, CSS strategy and SEO. Superseded on the editor, locales and slugs, see the note at its top.
-- `research/filament-plugin-development.md` — building a Filament plugin, the Builder field, custom fields and pages, assets, and a maturity read on existing packages.
-- `research/gutenberg-block-model.md` — how Gutenberg blocks work, what to copy and what to avoid.
-- `research/elementor-architecture.md` — how Elementor is built and what to borrow.
-- `research/preview-drafts-gsap-seo.md` — preview patterns, draft/publish/revisions, GSAP in Livewire, SEO and Core Web Vitals.
-- `quick-win-options.md` — from 28 June, which off-the-shelf option to ship a client on while this is being built. Stale for this build: it recommends Fabricator, which we dropped on 15 Aug. Still useful if a client needs shipping on something off-the-shelf.
+- `tasks/`: one markdown file per feature, in build order, each covering what it is, why it exists, how it should feel, how it works in the panel, and its checklist. `tasks/README.md` is the index. This is where the work gets tracked.
+- `features.md`: what is built, and how it lines up against Gutenberg feature by feature.
+- `installation.md`: putting Atelier on a real project, writing a block, and the MVP's known limits.
+- `prd.md`: the current PRD (v2). Start here. Covers the five decisions taken on 14 Aug, the data model changes, the block interface, the two preview problems, the 10-step plan, and 4 open questions.
+- `architecture.md`: the technical design from 22 June. Still correct on the block tree, registry, CSS strategy and SEO. Superseded on the editor, locales and slugs, see the note at its top.
+- `research/filament-plugin-development.md`: building a Filament plugin, the Builder field, custom fields and pages, assets, and a maturity read on existing packages.
+- `research/gutenberg-block-model.md`: how Gutenberg blocks work, what to copy and what to avoid.
+- `research/elementor-architecture.md`: how Elementor is built and what to borrow.
+- `research/preview-drafts-gsap-seo.md`: preview patterns, draft/publish/revisions, GSAP in Livewire, SEO and Core Web Vitals.
+- `quick-win-options.md`: from 28 June, which off-the-shelf option to ship a client on while this is being built. Stale for this build: it recommends Fabricator, which we dropped on 15 Aug. Still useful if a client needs shipping on something off-the-shelf.
 
 ## The core idea in one line
 

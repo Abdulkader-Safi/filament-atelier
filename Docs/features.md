@@ -3,7 +3,7 @@
 > Written 15 Aug 2026 against the MVP. Everything marked "built" was verified running, not planned.
 > Gutenberg details come from `research/gutenberg-block-model.md`.
 
-The short version: Atelier copies Gutenberg's data model and skips its storage model. Gutenberg stores rendered HTML as the source of truth and pays for it with three subsystems Atelier simply doesn't have. What Gutenberg has that Atelier doesn't is mostly breadth and a decade of editor polish.
+The short version: Atelier copies Gutenberg's data model and skips its storage model. Gutenberg stores rendered HTML as the source of truth, and pays for that one decision with three subsystems Atelier does not have at all. What Gutenberg has and Atelier doesn't is breadth, plus a decade of editor polish.
 
 ## What's built
 
@@ -122,6 +122,6 @@ Honest list. Some of these are planned, some are not worth copying.
 
 Gutenberg's data model is better than its reputation and Atelier copies it closely. Gutenberg's storage model is a workaround for WordPress storing post content as HTML, and Atelier skips it entirely, which removes four subsystems rather than reimplementing them.
 
-What Gutenberg has that this doesn't is the editor surface: drag, canvas editing, patterns, transforms, undo, multi-select, and ten years of edge cases. That's the part the research brief called out as the work you cannot shortcut, and it's where the remaining effort goes.
+What Gutenberg has and this doesn't is the editor surface: drag, canvas editing, patterns, transforms, undo, multi-select, ten years of edge cases. The research brief called that out as the work you cannot shortcut. It is where the remaining effort goes.
 
 The trade Atelier makes deliberately: a client can arrange and fill sections, and can't invent new ones. In Gutenberg that's a constant fight against a permissive editor. Here it's the default, because the block author writes the schema.

@@ -6,10 +6,10 @@
 
 Elementor models a page as a tree of elements. Every node is one of three `elType` values, plus the document root:
 
-- **Document (root)** — the page/template. Holds `page_settings` and a `content` array of top-level elements.
-- **`container`** — the modern layout element (since Elementor 3.6, early 2022). A CSS Flexbox or Grid box that holds other containers or widgets, nested arbitrarily deep. This replaced the old rigid model.
-- **`widget`** — a leaf element with its own `widgetType` and controls (heading, image, button, form). Some newer "nested" widgets (Menu, Accordion, Tabs) can contain children.
-- **Legacy `section` / `column`** — the original model: Section to Column to (optional inner Section) to Widget. Still supported for backward compatibility but deprecated in favour of containers. This is the single most important architectural lesson: the old model forced 3 to 4 nested `<div>` wrappers around every widget, the root of Elementor's bloat reputation.
+- **Document (root).** The page/template. Holds `page_settings` and a `content` array of top-level elements.
+- **`container`.** The modern layout element (since Elementor 3.6, early 2022). A CSS Flexbox or Grid box that holds other containers or widgets, nested arbitrarily deep. This replaced the old rigid model.
+- **`widget`.** A leaf element with its own `widgetType` and controls (heading, image, button, form). Some newer "nested" widgets (Menu, Accordion, Tabs) can contain children.
+- **Legacy `section` / `column`.** The original model: Section to Column to (optional inner Section) to Widget. Still supported for backward compatibility but deprecated in favour of containers. This is the single most important architectural lesson: the old model forced 3 to 4 nested `<div>` wrappers around every widget, the root of Elementor's bloat reputation.
 
 The idea worth borrowing: a page is a recursive tree where each node has a `type`, a unique `id`, a settings bag, and a `children` array. Layout nodes and content nodes share the same envelope, so one renderer walks the whole tree.
 
@@ -73,8 +73,8 @@ Settings detail worth copying: control values stored key to value (the key is th
 
 Two regions:
 
-- **Preview** — a live preview rendered by a JS engine, typically without a server round-trip. Loaded in an iframe (the actual front-end render, so styles match production), while the editor chrome sits in the parent frame. This iframe isolation is deliberate.
-- **Panel** — the controls column on the left, swapping between Widgets, Page Settings, Site Settings, History, Menu.
+- **Preview.** A live preview rendered by a JS engine, typically without a server round-trip. Loaded in an iframe (the actual front-end render, so styles match production), while the editor chrome sits in the parent frame. This iframe isolation is deliberate.
+- **Panel.** The controls column on the left, swapping between Widgets, Page Settings, Site Settings, History, Menu.
 
 How live preview works: the editor is a JS app holding the element tree in memory. Change a control and the JS re-renders that element in the iframe immediately, using the widget's `content_template()` (a JS template), no PHP round-trip. Drag-and-drop, inline text editing, right-click menu, hover edit buttons all inherit from the canvas. On Save, the in-memory tree serialises to JSON and POSTs back.
 
@@ -88,9 +88,9 @@ Control taxonomy (relevant to which Filament fields you map to): Text, Number, T
 
 Three control flavours:
 
-1. **Regular** — `add_control()`, one value.
-2. **Responsive** — `add_responsive_control()`, one value per breakpoint. Stores separate `default`, `tablet_default`, `mobile_default`; at render maps each breakpoint into media-query CSS. Stored as parallel keys (`space_between`, `space_between_tablet`, `space_between_mobile`).
-3. **Group** — `add_group_control()`, a reusable bundle.
+1. **Regular.** `add_control()`, one value.
+2. **Responsive.** `add_responsive_control()`, one value per breakpoint. Stores separate `default`, `tablet_default`, `mobile_default`; at render maps each breakpoint into media-query CSS. Stored as parallel keys (`space_between`, `space_between_tablet`, `space_between_mobile`).
+3. **Group.** `add_group_control()`, a reusable bundle.
 
 Conditional display, dynamic content, and CSS selectors are all declared in the control definition (`condition`, `dynamic`, `selectors`) rather than in render code. The control declaration is the single source of truth for the field, its default, when it shows, and what CSS it produces. Strong pattern to copy.
 
@@ -186,7 +186,7 @@ Current consensus (2024 to 2026): on defaults, still heavier than lean/code-firs
 Borrow (Elementor does these well):
 
 1. One recursive JSON tree for the whole page, uniform node envelope (`id`, `type`, `widgetType`, `settings`, `children`). Save/reuse/export comes nearly free.
-2. Declarative control system. A widget declares its fields, defaults, conditions, and the CSS each field produces, all in one place. Maps cleanly onto Filament form schemas, your single biggest leverage point.
+2. Declarative control system. A widget declares its fields, defaults, conditions, and the CSS each field produces, all in one place. Maps cleanly onto Filament form schemas, which is the single biggest win available here.
 3. Selectors-as-data + scoped CSS. Store style intent as selector template to value, scoped per element, compiled to a cached per-page stylesheet.
 4. Referenced global design system. Store token references not literals, resolved at render against a Kit. Theme changes ripple instantly.
 5. Dynamic values as first-class. A control holds `{source, params, fallback}` resolved at render, enabling templates over live data.

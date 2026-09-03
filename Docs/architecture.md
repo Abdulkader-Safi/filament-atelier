@@ -107,11 +107,11 @@ interface Block
 
 Register them once at boot into a `BlockRegistry` (a container binding mapping `type` to the class). Three layers of "who can do what," which is exactly the Gutenberg + Elementor extensibility model:
 
-1. **Non-technical editor** — drags registered blocks, fills in controls (Filament form fields). Never touches code.
-2. **Power user** — uses a built-in `html` / `code` block to drop raw HTML/CSS/Blade-safe markup into a page. This is your "visual plus code" escape hatch at the content level.
-3. **Developer** — registers new block types in code (a class + a Blade view), the way Elementor devs write a `Widget_Base` and Gutenberg devs write `block.json` + render. New capability = a new class, the platform handles the picker UI, persistence, and rendering.
+1. **Non-technical editor.** Drags registered blocks and fills in controls (Filament form fields). Never touches code.
+2. **Power user.** Uses a built-in `html` / `code` block to drop raw HTML/CSS/Blade-safe markup into a page. This is the "visual plus code" escape hatch at the content level.
+3. **Developer.** Registers new block types in code (a class + a Blade view), the way Elementor devs write a `Widget_Base` and Gutenberg devs write `block.json` + render. New capability = a new class, and the platform handles the picker UI, persistence and rendering.
 
-Filament's form field types map almost 1:1 onto Elementor's control taxonomy (text, select, color, slider, repeater, responsive), so `schema()` is just a Filament schema. That's the single biggest leverage point: you get the entire control system for free.
+Filament's form field types map almost 1:1 onto Elementor's control taxonomy (text, select, color, slider, repeater, responsive), so `schema()` is just a Filament schema. That is the single biggest win: the entire control system comes free.
 
 ### `supports` + central design tokens
 

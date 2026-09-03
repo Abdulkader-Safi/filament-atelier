@@ -74,7 +74,7 @@ Latest v2.13.1 (22 Feb 2026). Requires PHP ^8.4, supports Laravel 12 and 13, ~6M
 
 ### Revision history options (verified June 2026)
 
-**owen-it/laravel-auditing** — actively maintained. Latest v14.0.4 (12 Jun 2026), PHP ≥ 8.2, Laravel ≥ 11, MIT. Records an audit row per change (old + new values, user, timestamp). More an audit log ("who changed what") than a "restore version N" system, though you can reconstruct from stored values.
+**owen-it/laravel-auditing.** Actively maintained. Latest v14.0.4 (12 Jun 2026), PHP ≥ 8.2, Laravel ≥ 11, MIT. Records an audit row per change (old + new values, user, timestamp). More an audit log ("who changed what") than a "restore version N" system, though you can reconstruct from stored values.
 
 **A dedicated `page_revisions` table** (roll-your-own, often the best fit):
 
