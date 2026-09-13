@@ -49,6 +49,28 @@ Two client-visible decisions, and nothing else:
 - **Whether a raw-HTML block exists in the picker.** It is named in `CLAUDE.md` as the v1
   escape hatch for one-off markup, and it is not built.
 
+## Tagged 1.0.0 on 13 Sep 2026
+
+What went in: criterion 3 (drag to reorder), the public API named in the README, the two
+bugs above, and the editor navigation work in [16](16-editor-navigation.md).
+
+What was deliberately left, and is now 1.1 rather than owed:
+
+- **The raw HTML block, the contact form, header and footer blocks.** `example/` shows a
+  contact form written in the host app, which is the shape the package will take when open
+  question 4 is answered. Header and footer are arguably answered by layouts plus the menu
+  manager, and that has not been written down yet.
+- **Criterion 11 and conditional per-block assets.** Never measured, and no shipped block
+  carries its own CSS or JS, so the retrofit cost is still nine blocks either way. The
+  trigger for building it is the first block that ships an asset.
+- **Criterion 12, the menu manager's flag.** It stays experimental and off. Criterion 12
+  moves to 1.1 rather than being called met by a feature nobody sees by default.
+- **The revisions UI, the sitemap stylesheet guard, the six uncalled public methods, and
+  the duplicated FAQ schema builder.** All still true, all still small.
+
+Tagging with those open is the decision the version number records: 1.0.0 says the API is
+named and will not move, not that the feature list is finished.
+
 ## The gates
 
 ### Gate A: decide what 1.0.0 contains
@@ -90,7 +112,13 @@ Cheapest work here is subtraction. Every item is a decision first and code secon
 Found on 3 Sep 2026 during a simplification pass over `src/`. Each one is a 1.0.0
 consideration in its own right.
 
-- [ ] **The home page has two URLs and the wrong one is canonical.** `PageController`
+- [x] **The home page has two URLs and the wrong one is canonical.** Fixed 13 Sep 2026 for
+      1.0.0. `Page::url()` returns the root of the locale for the `home` slug, and
+      `PageController` 301s the named URL to it. The slug itself is still hardcoded as
+      `Page::HOME` rather than configurable, which is now a named constant instead of a
+      literal in two files.
+
+      Original note: `PageController`
       serves the page whose slug is `home` at `/`, but `Page::url()` has no case for it, so
       the canonical tag, the hreflang alternates, the sitemap entry and every menu item
       built from that page point at `/home`. `/home` resolves to the same content through
@@ -104,7 +132,11 @@ consideration in its own right.
       have 500'd there. It passed only because the test suite runs on SQLite. Worth a
       second look for the same pattern elsewhere, and worth asking whether CI should run
       the suite against Postgres before a 1.0 that claims to be a normal Laravel package.
-- [ ] **Link fields have no scheme check.** `cta_url` on the hero and CTA blocks, and a
+- [x] **Link fields have no scheme check.** Fixed 13 Sep 2026 for 1.0.0. `Url::safe()`
+      allows http, https, mailto, tel and sms and returns `#` otherwise, applied in the
+      hero, the call to action, the logo wall and the menu partial.
+
+      Original note: `cta_url` on the hero and CTA blocks, and a
       menu item's per-locale URL, go straight into an `href`. Blade escaping does not stop
       `javascript:`. It sits on the same trust boundary as `RichTextBlock`'s `{!! $body !!}`,
       which is inherent to a rich editor, but an allowlist on a plain URL field is cheap and

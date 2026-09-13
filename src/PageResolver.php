@@ -42,7 +42,7 @@ class PageResolver
 
         return [
             'locale' => $locale,
-            'slug' => implode('/', $segments) ?: 'home',
+            'slug' => implode('/', $segments) ?: Page::HOME,
         ];
     }
 

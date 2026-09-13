@@ -8,6 +8,87 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-09-13
+
+The version number, and the two editor changes that were worth waiting for.
+
+```bash
+composer update safi/filament-atelier
+php artisan filament:assets     # re-publishes the panel stylesheet
+```
+
+No migration, no config change. If you wrote your own layout, you can delete the editor
+script from it: it is injected into the preview now, and a copy in the layout only runs
+twice.
+
+### What 1.0.0 means
+
+The public API is named in the README and will not move inside 1.x. That is `Block`,
+`PageType`, `AtelierPlugin`'s registration methods, the documented methods on `Page`,
+`Media`, `Tokens`, `Url`, `MenuSource`, the two head partials, the `data-atelier-canvas` contract,
+every config key, and the table shapes. Everything else, the registries, the Filament
+resources, the renderer and the controllers, is internal.
+
+It does not mean feature complete. "Not built yet" in the README is still accurate and
+still honest.
+
+### Added
+
+- **A Pages panel in the editor.** A third button in the icon rail, listing every page
+  grouped by type with a search box and the current one marked. Clicking one opens it in
+  the builder, with the address bar following, so refresh and the back button behave.
+  Editing a header on one page and a footer on another stops being ten clicks each way.
+
+- **Links in the preview open the page they point at.** Clicking a nav item in the preview
+  used to navigate the iframe to that page's public URL, leaving the canvas showing one
+  page while the section list described another, silently. Now it switches the builder to
+  that page. A link Atelier does not own opens in a new tab, and the builder stays where it
+  was.
+
+- **Drag to reorder sections.** The same gesture and the same library as the menu manager,
+  with a handle on the section icon so a click still selects. Moving a section from the
+  bottom of a twelve-section page to the top is one drag rather than eleven clicks and
+  eleven preview refreshes. The up and down buttons stay for the keyboard. This is PRD
+  criterion 3, the last unmet one.
+
+- **`Safi\Atelier\PageResolver`.** One implementation of "which page is this URL",
+  including the rule that the first segment is a locale only when it names one.
+  `PageController` and the editor both call it. A second copy of that rule is how
+  `/services/web-design` served the wrong page in August.
+
+### Changed
+
+- **The preview's editor script is injected by the controller, not carried by the layout.**
+  It sat inside `atelier::layouts.site` behind a `@if ($preview)`, so every layout needed a
+  copy and a hand-written one silently lost section-clicking. A layout now carries nothing
+  for the editor beyond `data-atelier-canvas`. Delete the script from your own layouts.
+
+- **Forms inside the preview no longer submit.** A form in a block posted for real from the
+  editor, against a page that may not be published yet.
+
+### Fixed
+
+- **The home page had two URLs and the canonical pointed at the wrong one.** The page whose
+  slug is `home` is served at `/`, but `Page::url()` had no case for it and built `/home`.
+  That is what the canonical tag, the hreflang alternates, the sitemap entry and every menu
+  item built from the home page carried, while `/home` served the same content through the
+  catch-all. Duplicate content with the canonical naming the copy, on a package that sells
+  itself on SEO. `url()` now returns the root of the locale, and `/home` 301s to it. If you
+  linked to `/home` by hand, the redirect covers it.
+
+- **A URL typed in the panel could carry a `javascript:` scheme into an `href`.** Blade
+  escaping stops the value breaking out of the attribute and does nothing about the scheme,
+  so a link pasted into a hero, a call to action, a logo wall or a menu item was stored XSS
+  against every visitor. `Safi\Atelier\Url::safe()` allows http, https, mailto, tel and
+  sms, and returns `#` for anything else. It is applied in the shipped views; call it in
+  your own blocks wherever a client-supplied URL reaches an `href`.
+
+- **Every link in the preview opened in a new tab when `APP_URL` did not match the address
+  being browsed.** The link handler compared hosts against `config('app.url')`, so the
+  ordinary local setup, `APP_URL` naming localhost while somebody browses 127.0.0.1,
+  treated the whole site as external. The request's own host counts as this site now. Same
+  mistake the signed preview URL made before it went relative.
+
 ## [0.5.0] - 2026-09-13
 
 Page types: a service, a product or a case study becomes its own entry in the sidebar,
@@ -719,7 +800,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.5.0...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.6...v0.5.0
 [0.3.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.4...v0.3.5

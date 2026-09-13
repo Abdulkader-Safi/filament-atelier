@@ -8,7 +8,7 @@ A developer defines the sections in code. The client builds pages from them in a
 
 ## Status
 
-MVP, and installable. The builder, blocks, page settings, per-locale SEO and public pages all work. Read "Not built yet" below and the [known limits](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation#known-limits) before you promise anything to a client.
+**1.0.0.** In use on client sites, and the public API is named below: it will not move inside 1.x. Read "Not built yet" before you promise anything to a client.
 
 The package is the repository root. `example/` is a Laravel 13 app that installs it for testing, and `Docs/` holds the spec. Both are export-ignored, so `composer require` pulls the package and nothing else.
 
@@ -49,7 +49,7 @@ php artisan migrate
 
 - **Three-pane editor.** Add, reorder, duplicate, hide and delete sections, with the live preview beside them. Reordering is up and down buttons, not drag, and new sections land at the end.
 - **Ten blocks:** hero, features, logo wall, testimonials, CTA, FAQ, rich text, image, gallery, collection.
-- **[Page types](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Installation#adding-a-page-type).** Services, products, case studies: one plain class per type gives it its own sidebar entry, its own custom fields, its own starter sections and its own set of usable blocks, all on the same table and the same editor. The collection block lists them, each rendered through the type's own card view.
+- **[Page types](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Page-types).** Services, products, case studies: one plain class per type gives it its own sidebar entry, its own custom fields, its own starter sections and its own set of usable blocks, all on the same table and the same editor. The collection block lists them, each rendered through the type's own card view.
 - **Shared section controls.** A block declares `supports()` and gets background and vertical space in its settings pane, built once rather than per block.
 - **[Multiple layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts), picked per page.** Register a navbar-and-footer shell, a docs sidebar and anything else; the client chooses one from a dropdown in page settings.
 - **Design tokens.** Colour, font, spacing and width as CSS custom properties, read by the editor preview and the public page from the same layout, so the two cannot drift.
@@ -66,7 +66,7 @@ Listed because a page builder is judged on what it does not do:
 - **Header, footer, contact form and raw HTML blocks.** The contact form will be presentational, posting to a route you wire yourself. `example/` shows one written in the host app, with the submissions landing in their own panel resource.
 - **A revisions UI.** Snapshots are written and `restoreRevision()` works, but there is no screen for browsing or comparing them.
 - **Per-block asset loading and a measured performance budget.** No page cache, no per-block CSS or JS, no Lighthouse numbers recorded.
-- **Drag to reorder,** and inserting a section anywhere but the end.
+- **Inserting a section anywhere but the end.** Dragging one into place works; a new one still lands at the bottom.
 - **`Review` schema from testimonials.** Deliberate: Google ignores reviews a business publishes about itself, and the block has no rating field.
 
 Block types are defined in code, and that is the design rather than a stopgap. Creating block types from the panel is v2 and deliberately parked.
@@ -152,6 +152,26 @@ A blog post lives on your route, in your view, and Atelier never sees it. It sho
 
 That emits the `Organization` and `WebSite` nodes plus whatever you pass, with the same pruning and safe encoding. The post's publisher is then the same node the rest of the site points at, not a copy that drifts the first time a phone number changes. Full details in the [structured data guide](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Structured-data).
 
+## What 1.x will not break
+
+Semantic versioning, and this is the surface it applies to. Anything not listed is internal and may move in a minor release.
+
+| Surface | What is stable |
+|---|---|
+| `Safi\Atelier\Block` | The interface a block implements, and `BaseBlock`'s defaults |
+| `Safi\Atelier\PageType` | The interface a page type implements, and `BasePageType`'s defaults |
+| `Safi\Atelier\AtelierPlugin` | `blocks()`, `pageTypes()`, `layouts()`, `menuLocations()`, `menuSources()`, `sitemap()`, `experimental()` |
+| `Safi\Atelier\Models\Page` | `draft()`, `published()`, `publish()`, `unpublish()`, `slug()`, `setSlugs()`, `url()`, `data()`, `children()`, `seo()`, `isPublished()` |
+| `Safi\Atelier\Media` | `upload()` and `url()` |
+| `Safi\Atelier\Url` | `safe()`, for a client-supplied URL going into an `href` |
+| `Safi\Atelier\Tokens` | `options()`, `resolve()`, `all()` |
+| `Safi\Atelier\MenuSource` | The interface, and `Menu::treeFor()`, `Menu::label()`, `Menu::url()` |
+| Views | `atelier::partials.meta`, `atelier::partials.tokens`, and `data-atelier-canvas` as the layout contract |
+| Config | Every key in `config/atelier.php` |
+| Tables | Column names and shapes in `atelier_pages`, `atelier_page_slugs`, `atelier_page_redirects`, `atelier_page_revisions`, `atelier_menus`, `atelier_settings` |
+
+Block and page-type registries, the Filament resources and pages, the renderer and the controllers are internal. They are documented where useful, and extending them is at your own risk.
+
 ## Built on
 
 Laravel 12/13, Filament 5, Livewire 4, Alpine 3, Tailwind 4.
@@ -172,6 +192,7 @@ Animation belongs to whoever writes the block. A block is your PHP class and you
 **Building a site**
 
 - **[Blocks](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Blocks)**: writing your own section types, shared controls, and the five things that bite
+- **[Page types](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Page-types)**: services, products and anything else with its own sidebar entry and its own fields
 - **[Layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts)**: several shells, picked per page
 - **[Menus](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Menus)**: named navigation, drag and drop, experimental
 - **[Design tokens](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Design-tokens)**: colour, type and spacing read by the editor and the site alike

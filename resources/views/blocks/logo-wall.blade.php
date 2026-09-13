@@ -13,7 +13,7 @@
                 @php $src = Media::url($logo['image'] ?? null); @endphp
                 @if ($src)
                     @if ($url = $logo['url'] ?? null)
-                        <a href="{{ $url }}" rel="noopener">
+                        <a href="{{ \Safi\Atelier\Url::safe($url) }}" rel="noopener">
                             <img src="{{ $src }}" alt="{{ $logo['name'] ?? '' }}" loading="lazy"
                                  class="h-8 w-auto opacity-60 transition hover:opacity-100" height="32">
                         </a>

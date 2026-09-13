@@ -46,7 +46,7 @@
             <div @class(['mt-10 flex gap-4', 'justify-center' => $center])>
                 {{-- The brand colour comes from the design tokens in
                      config/atelier.php, so a rebrand is one file. --}}
-                <a href="{{ $attributes['cta_url'] ?? '#' }}"
+                <a href="{{ \Safi\Atelier\Url::safe($attributes['cta_url'] ?? null) }}"
                    @class([
                        'rounded-lg px-5 py-3 text-sm font-semibold transition hover:opacity-90',
                        'bg-white text-slate-900 hover:bg-slate-100' => (bool) $image,

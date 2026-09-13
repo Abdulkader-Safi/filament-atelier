@@ -36,7 +36,7 @@
                      sets one gets its own button colour everywhere without
                      overriding a single view. Over an image the button stays
                      white, because a brand colour on a photo is a coin toss. --}}
-                <a href="{{ $attributes['cta_url'] ?? '#' }}"
+                <a href="{{ \Safi\Atelier\Url::safe($attributes['cta_url'] ?? null) }}"
                    @class(['rounded-md px-5 py-3 text-sm font-medium transition hover:opacity-90', 'bg-white text-neutral-900 hover:bg-neutral-100' => (bool) $image])
                    @style(['background:var(--atelier-color-primary);color:var(--atelier-color-on-primary)' => ! $image])>
                     {{ $label }}

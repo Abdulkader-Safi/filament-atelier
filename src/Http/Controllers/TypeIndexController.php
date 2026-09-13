@@ -42,7 +42,7 @@ class TypeIndexController
         $redirected = PageRedirect::where('locale', $locale)->where('from_slug', $prefix)->exists();
 
         if ($existing?->page?->isPublished() || $redirected) {
-            return ($this->pages)($locale, $prefix);
+            return ($this->pages)(request(), $locale, $prefix);
         }
 
         app()->setLocale($locale);

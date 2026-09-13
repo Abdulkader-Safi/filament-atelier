@@ -47,7 +47,11 @@ it('404s a draft, so an unfinished page never leaks', function () {
 it('renders the other locale with rtl and hreflang', function () {
     publishedPage('Home', 'home');
 
-    get('/ar/home')
+    // The Arabic home lives at /ar, not /ar/home: the home slug is served at
+    // the root of its locale and the named URL 301s to it.
+    get('/ar/home')->assertRedirect('http://localhost:8000/ar')->assertStatus(301);
+
+    get('/ar')
         ->assertOk()
         ->assertSee('dir="rtl"', escape: false)
         ->assertSee('hreflang="en"', escape: false)

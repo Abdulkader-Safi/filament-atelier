@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Safi\Atelier\Http\Controllers;
 
+use Illuminate\Http\Request;
 use Safi\Atelier\Models\Page;
 use Safi\Atelier\Models\PageRedirect;
 use Safi\Atelier\PageResolver;
@@ -21,7 +22,7 @@ class PageController
      * The public page. Reads published_content and nothing else, so an
      * in-progress draft can never leak.
      */
-    public function __invoke(?string $locale = null, ?string $slug = null): Response
+    public function __invoke(Request $request, ?string $locale = null, ?string $slug = null): Response
     {
         // /{slug} is the default locale, /{locale}/{slug} is everything else,
         // and the first segment is a locale only when it names one. That rule
@@ -41,6 +42,21 @@ class PageController
         $page = $resolved['page'];
 
         abort_unless($page->isPublished(), 404);
+
+        // The home page answers at the root of its locale, and `/home` reaches
+        // the same row through the catch-all. Two URLs for one page is
+        // duplicate content, so the named one redirects to the canonical one
+        // rather than serving a copy of it. Compared against the canonical
+        // path rather than against an empty one, because the second locale's
+        // home lives at `/ar` and is not a duplicate of anything.
+        if ($slug === Page::HOME) {
+            $canonical = $page->url($locale) ?? url('/');
+            $canonicalPath = trim((string) parse_url($canonical, PHP_URL_PATH), '/');
+
+            if (trim($request->path(), '/') !== $canonicalPath) {
+                return redirect($canonical, 301);
+            }
+        }
 
         app()->setLocale($locale);
 

@@ -22,7 +22,7 @@
         @endphp
         <li>
             <a
-                href="{{ $url ?: '#' }}"
+                href="{{ \Safi\Atelier\Url::safe($url) }}"
                 target="{{ $item['target'] ?? '_self' }}"
                 @if ($isCurrent) aria-current="page" @endif
                 @class(['font-semibold' => $isCurrent || $isAncestor])

@@ -12,7 +12,7 @@
         @endif
 
         @if ($label = $attributes['cta_label'] ?? null)
-            <a href="{{ $attributes['cta_url'] ?? '#' }}"
+            <a href="{{ \Safi\Atelier\Url::safe($attributes['cta_url'] ?? null) }}"
                class="mt-8 inline-block rounded-md bg-white px-5 py-3 text-sm font-medium transition hover:bg-neutral-100"
                style="color:var(--atelier-color-primary)">
                 {{ $label }}

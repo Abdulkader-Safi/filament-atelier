@@ -12,7 +12,9 @@
         @endif
 
         @if ($label = $attributes['cta_label'] ?? null)
-            <a href="{{ $attributes['cta_url'] ?? '#' }}"
+            {{-- Url::safe keeps a javascript: link typed in the panel out of an href.
+                 Blade escaping does not stop that one. --}}
+            <a href="{{ \Safi\Atelier\Url::safe($attributes['cta_url'] ?? null) }}"
                class="mt-8 inline-block rounded-lg bg-white px-5 py-3 text-sm font-semibold transition hover:bg-slate-100"
                style="color:var(--atelier-color-primary)">
                 {{ $label }}

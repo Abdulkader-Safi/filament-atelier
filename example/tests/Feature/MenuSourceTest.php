@@ -48,7 +48,8 @@ it('keeps a picked page menu item working after the page itself is deleted', fun
     // no 500 on the public page that renders it.
     $about->delete();
 
-    $html = get('/home')->assertOk()->getContent();
+    // The home page is served at the root, and /home 301s to it.
+    $html = get('/')->assertOk()->getContent();
 
     expect($html)->toContain('About us')
         ->and($html)->toContain('href="http://localhost:8000/about"');

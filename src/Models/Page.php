@@ -27,6 +27,9 @@ use Safi\Atelier\PageTypeRegistry;
  */
 class Page extends Model implements MenuSource
 {
+    /** The slug served at the root of a locale, rather than under its own name. */
+    public const HOME = 'home';
+
     protected $table = 'atelier_pages';
 
     protected $guarded = [];
@@ -305,7 +308,14 @@ class Page extends Model implements MenuSource
             ->get();
     }
 
-    /** The public URL for a locale. The first configured locale has no prefix. */
+    /**
+     * The public URL for a locale. The first configured locale has no prefix.
+     *
+     * The `home` slug is served at the root, so it has to build `/` rather
+     * than `/home`. Getting that wrong pointed the canonical tag, the hreflang
+     * alternates, the sitemap entry and every menu item built from the home
+     * page at a duplicate of itself, on a package that sells itself on SEO.
+     */
     public function url(string $locale): ?string
     {
         $slug = $this->slug($locale);
@@ -314,9 +324,13 @@ class Page extends Model implements MenuSource
             return null;
         }
 
-        return $locale === array_key_first(config('atelier.locales'))
-            ? url($slug)
-            : url("{$locale}/{$slug}");
+        $default = $locale === array_key_first(config('atelier.locales'));
+
+        if ($slug === static::HOME) {
+            return $default ? url('/') : url($locale);
+        }
+
+        return $default ? url($slug) : url("{$locale}/{$slug}");
     }
 
     // SEO ------------------------------------------------------------------
