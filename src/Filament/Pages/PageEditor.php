@@ -13,6 +13,8 @@ use Safi\Atelier\Block;
 use Safi\Atelier\BlockRegistry;
 use Safi\Atelier\Filament\Resources\PageResource;
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\PageResolver;
+use Safi\Atelier\PageTypeRegistry;
 use Safi\Atelier\SharedControls;
 
 /**
@@ -241,6 +243,32 @@ class PageEditor extends FilamentPage
         $this->persist();
     }
 
+    /**
+     * The whole order at once, from a drag.
+     *
+     * Rejects anything that is not a permutation of the ids already here, the
+     * same guard the menu manager's reorder uses: a drag that resolved against
+     * a stale DOM would otherwise drop or duplicate a section, and silently
+     * losing a client's content to a mis-timed gesture is not a trade worth
+     * making for a smoother animation.
+     *
+     * @param  array<int, string>  $ids
+     */
+    public function reorder(array $ids): void
+    {
+        $current = collect($this->tree)->pluck('id')->all();
+
+        if (count($ids) !== count($current) || array_diff($current, $ids) !== []) {
+            return;
+        }
+
+        $byId = collect($this->tree)->keyBy('id');
+
+        $this->tree = collect($ids)->map(fn (string $id) => $byId[$id])->values()->all();
+
+        $this->persist();
+    }
+
     public function move(string $id, int $offset): void
     {
         $from = $this->indexOf($id);
@@ -294,6 +322,69 @@ class PageEditor extends FilamentPage
             'page' => $this->page->getKey(),
             'locale' => $this->locale,
         ], absolute: false);
+    }
+
+    /**
+     * Every page, grouped for the Pages panel.
+     *
+     * Ordinary pages first, then each registered type under its own heading,
+     * so a site with no page types sees one flat list and nothing new. The
+     * page being edited is flagged rather than filtered out: the panel is a
+     * map, and a map that hides where you are standing is a worse map.
+     *
+     * @return array<string, array<int, array{id: int|string, title: string, url: string, status: string, current: bool}>>
+     */
+    public function getPagesProperty(): array
+    {
+        $types = app(PageTypeRegistry::class)->all();
+
+        $groups = [];
+
+        foreach (Page::query()->orderBy('title')->get() as $page) {
+            $type = $types[$page->type] ?? null;
+
+            $groups[$type ? $type::pluralLabel() : 'Pages'][] = [
+                'id' => $page->getKey(),
+                'title' => $page->title,
+                'url' => static::getUrl(['record' => $page->getKey()]),
+                'status' => $page->hasUnpublishedChanges() ? 'changed' : $page->status,
+                'current' => $page->is($this->page),
+            ];
+        }
+
+        // Pages first, then the types in the order they were registered, so
+        // the panel matches the sidebar a client already knows.
+        return array_filter([
+            'Pages' => $groups['Pages'] ?? [],
+            ...collect($types)->mapWithKeys(fn (string $type) => [
+                $type::pluralLabel() => $groups[$type::pluralLabel()] ?? [],
+            ])->all(),
+        ]);
+    }
+
+    /**
+     * A link clicked inside the preview.
+     *
+     * A page on this site opens in the editor. Anything else, an external
+     * link or one of the host app's own routes, opens in a new tab and leaves
+     * the editor where it was: the preview iframe is a preview, and letting
+     * it navigate itself is how the canvas ends up showing one page while the
+     * section list describes another.
+     *
+     * Drafts resolve here even though the public route would 404 them, since
+     * editing an unpublished page is the ordinary case in a builder.
+     */
+    public function openPath(string $href): void
+    {
+        $resolved = app(PageResolver::class)->forUrl($href);
+
+        if ($resolved === null) {
+            $this->dispatch('atelier-open-tab', href: $href);
+
+            return;
+        }
+
+        $this->redirect(static::getUrl(['record' => $resolved['page']->getKey()]), navigate: true);
     }
 
     public function getSelectedSectionProperty(): ?array

@@ -43,13 +43,7 @@
         </main>
     </div>
 
-    @if ($preview ?? false)
-        <script>
-            document.addEventListener('click', (e) => {
-                const el = e.target.closest('[data-atelier-block]');
-                if (el) parent.postMessage({ atelier: 'select', id: el.dataset.atelierBlock }, '*');
-            });
-        </script>
-    @endif
+    {{-- The preview controller injects the editor's script, so this layout
+         carries nothing for it beyond data-atelier-canvas above. --}}
 </body>
 </html>

@@ -49,7 +49,7 @@ Pages → open a page. The three-pane editor is the edit screen.
 ### Section list
 
 - [x] Render the section list from the draft block tree.
-- [!] Drag to reorder, persisting to `draft_content` and refreshing the preview. Shipped as up and down buttons (`move($id, $offset)`). It persists and refreshes correctly, but "drag a section up, the page reorders in front of you" is the feel this file asked for and buttons are not it.
+- [x] Drag to reorder, persisting to `draft_content` and refreshing the preview. Shipped as up and down buttons first (`move($id, $offset)`), which persisted correctly and never felt like the thing this file asked for. Drag landed 13 Sep 2026 in [16](16-editor-navigation.md) as `reorder($ids)`, with the buttons kept for the keyboard.
 - [x] Add section: picker grouped by `category()`, with icons and labels.
 - [ ] Insert at a chosen position, not only at the end. `addBlock()` appends. Adding a section to the middle of a twelve-section page means adding it at the bottom and clicking up eleven times.
 - [x] Duplicate a section, with a fresh block `id`.

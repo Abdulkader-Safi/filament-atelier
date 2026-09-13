@@ -31,7 +31,8 @@ the documentation surface) has no feature file of its own and is tracked at the 
 | [12](12-structured-data.md)| Structured data (JSON-LD)     | Planned        | The full schema list, three sources, and the site settings screen it needs.     |
 | [13](13-menu-manager.md)   | Menu manager                  | Mostly done    | Navigation editable from the panel. On a branch; blocked on 03 for a nav block. |
 | [14](14-v1-release.md)     | Release 1.0.0                 | Not started    | The gates between 0.3.6 and a stable tag. Half decisions, half release work.     |
-| [15](15-page-types.md)     | Page types                    | In progress    | Services and products as their own sidebar entries, with custom properties.      |
+| [15](15-page-types.md)     | Page types                    | Done           | Services and products as their own sidebar entries, with custom properties.      |
+| [16](16-editor-navigation.md) | Moving around in the editor | In progress    | Page switching from inside the builder, links that follow, drag to reorder.      |
 
 ### What blocks what
 
