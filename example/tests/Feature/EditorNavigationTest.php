@@ -77,7 +77,21 @@ it('refuses a URL on another host, and anything that is not http', function () {
 
     expect($resolver->forUrl('https://example.com/about'))->toBeNull()
         ->and($resolver->forUrl('mailto:hello@example.test'))->toBeNull()
+        ->and($resolver->forUrl('tel:+97145550100'))->toBeNull()
         ->and($resolver->forUrl(config('app.url').'/about'))->not->toBeNull();
+});
+
+it('counts the address being browsed as this site, whatever APP_URL says', function () {
+    editorPage('About', 'about');
+
+    config(['app.url' => 'http://localhost:8000']);
+
+    // Browsing 127.0.0.1 with APP_URL naming localhost is the ordinary local
+    // setup, and it made every link in the preview look like another website.
+    $resolved = $this->get('http://127.0.0.1:8124/admin')->baseResponse;
+
+    expect(app(PageResolver::class)->forUrl('http://127.0.0.1:8124/about'))->not->toBeNull()
+        ->and($resolved)->not->toBeNull();
 });
 
 // The Pages panel -------------------------------------------------------------

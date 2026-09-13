@@ -92,10 +92,30 @@ class PageResolver
             return null;
         }
 
-        if (isset($parts['host']) && $parts['host'] !== parse_url((string) config('app.url'), PHP_URL_HOST)) {
+        if (isset($parts['host']) && ! in_array($parts['host'], $this->hosts(), true)) {
             return null;
         }
 
         return $this->forPath($parts['path'] ?? '');
+    }
+
+    /**
+     * The hosts that count as this site.
+     *
+     * The request's own host first, because the editor is being used on
+     * whatever address the browser is pointed at, and that is regularly not
+     * the configured one: `APP_URL` says localhost while somebody browses
+     * 127.0.0.1, or the app is reached through a tunnel. Trusting `app.url`
+     * alone made every link in the preview look like another website, which
+     * is the same mistake the signed preview URL made before it went relative.
+     *
+     * @return array<int, string>
+     */
+    protected function hosts(): array
+    {
+        return array_values(array_unique(array_filter([
+            request()?->getHost(),
+            parse_url((string) config('app.url'), PHP_URL_HOST),
+        ])));
     }
 }

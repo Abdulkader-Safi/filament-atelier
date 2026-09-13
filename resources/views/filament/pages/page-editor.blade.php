@@ -167,36 +167,43 @@
                     />
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-2">
+                <div class="flex-1 space-y-4 overflow-y-auto p-2">
                     @foreach ($this->pages as $group => $pages)
                         <div x-show="{{ Js::from(array_column($pages, 'title')) }}.some((t) => t.toLowerCase().includes(q.trim().toLowerCase()))">
-                            <p class="px-1 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-gray-400">{{ $group }}</p>
+                            {{-- The heading belongs to the rows under it, so
+                                 the space goes above the group rather than
+                                 between the label and its own first row. --}}
+                            <p class="px-2 pb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                                {{ $group }}
+                            </p>
 
-                            @foreach ($pages as $item)
-                                <div x-show="{{ Js::from($item['title']) }}.toLowerCase().includes(q.trim().toLowerCase())">
-                                    @if ($item['current'])
-                                        {{-- Not a link: this is where you already are. --}}
-                                        <span class="flex items-center gap-2 rounded-lg bg-primary-50 px-2 py-2 text-sm font-medium text-primary-700 dark:bg-primary-500/10 dark:text-primary-400">
-                                            <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
-                                            <span class="shrink-0 text-xs">editing</span>
-                                        </span>
-                                    @else
-                                        <a
-                                            href="{{ $item['url'] }}"
-                                            wire:navigate
-                                            class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-gray-50 dark:hover:bg-white/5"
-                                        >
-                                            <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
+                            <div class="space-y-0.5">
+                                @foreach ($pages as $item)
+                                    <div x-show="{{ Js::from($item['title']) }}.toLowerCase().includes(q.trim().toLowerCase())">
+                                        @if ($item['current'])
+                                            {{-- Not a link: this is where you already are. --}}
+                                            <span class="flex items-center gap-2 rounded-lg bg-primary-50 px-2 py-1.5 text-sm font-medium text-primary-700 dark:bg-primary-500/10 dark:text-primary-400">
+                                                <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
+                                                <span class="shrink-0 text-xs font-normal opacity-75">editing</span>
+                                            </span>
+                                        @else
+                                            <a
+                                                href="{{ $item['url'] }}"
+                                                wire:navigate
+                                                class="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
+                                            >
+                                                <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
 
-                                            @if ($item['status'] === 'changed')
-                                                <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="Unpublished changes"></span>
-                                            @elseif ($item['status'] !== 'published')
-                                                <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 dark:bg-white/20" title="Draft"></span>
-                                            @endif
-                                        </a>
-                                    @endif
-                                </div>
-                            @endforeach
+                                                @if ($item['status'] === 'changed')
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="Unpublished changes"></span>
+                                                @elseif ($item['status'] !== 'published')
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 dark:bg-white/20" title="Draft"></span>
+                                                @endif
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
                     @endforeach
 
