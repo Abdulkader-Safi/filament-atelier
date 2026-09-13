@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Widgets\RequestsOverview;
 use App\PageTypes\ProductType;
 use App\PageTypes\ServiceType;
 use Filament\Http\Middleware\Authenticate;
@@ -43,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                RequestsOverview::class,
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
