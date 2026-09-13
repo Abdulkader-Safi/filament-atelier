@@ -8,6 +8,88 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-09-13
+
+Page types: a service, a product or a case study becomes its own entry in the sidebar,
+with its own fields and its own starter sections, on the same table and the same editor as
+every other page. Plus the block that lists them.
+
+```bash
+composer update safi/filament-atelier
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate
+npm run build     # only if your app compiles the package's block views
+```
+
+The migration adds two columns to `atelier_pages` and touches no existing data: every page
+you have becomes an ordinary page, which is what it already was. Registering no page types
+leaves the panel exactly as it was.
+
+### Added
+
+- **Page types.** One plain class per type, registered from the panel provider:
+
+  ```php
+  AtelierPlugin::make()->pageTypes([ServiceType::class]);
+  ```
+
+  A type declares its custom properties as a plain Filament schema, the block tree a new
+  page of that kind opens with, the blocks its picker offers, a slug prefix, a schema.org
+  type, the card view a listing renders it through, and optionally a view served at the
+  prefix root. `type()` and `label()` are the only two required, so a type with no fields
+  of its own is six lines. Extend `Safi\Atelier\PageTypes\BasePageType` for the defaults.
+
+  Each registered type gets its own sidebar entry, its own list and its own URL
+  (`/admin/services`), all served by the one `PageResource` through Filament's resource
+  configurations. Nothing needs a resource class per type. Pages itself now lists only
+  untyped pages, plus anything carrying a type nobody registered, so deleting a type class
+  never hides a live page from the panel.
+
+- **Two columns on `atelier_pages`:** `type`, defaulting to `page` and indexed, and `data`
+  for whatever the type declared. Untranslated values live at `data.{key}`, translated ones
+  at `data.{locale}.{key}`, the same shape the `seo` column already uses.
+  `$page->data('excerpt', $locale)` reads either, falling back to the first configured
+  locale so a card with no Arabic text shows the English rather than a gap.
+
+- **A Collection block.** Lists pages of one type and renders each through that type's own
+  card view, so a services grid needs no code. Everything published, or hand-picked in an
+  order you drag, or the pages sitting under the current one by slug path. Published pages
+  only, in the editor preview as well as on the live page.
+
+- **`$page` in every block view,** alongside `$attributes`, `$shared`, `$children`, `$id`,
+  `$node`, `$locale` and `$editing`. A block can now know which page it is on, which is
+  what lets one block read that page's own fields.
+
+- **A generated index per type.** A type that declares both a prefix and an `indexView()`
+  gets `/services` and `/ar/خدمات` for free, listed in the sitemap once it has something
+  published. A page you build at the same slug wins, and so does a redirect left behind by
+  one that moved, so the generated listing is a fallback rather than a squatter.
+
+- **`Page::setSlugs()` takes an optional prefix map,** applied after the
+  empty-means-use-the-title fallback. The panel passes a type's prefix on create only: it
+  is a default, and the client owns the slug afterwards.
+
+### Changed
+
+- **The hero button and the call-to-action panel are painted from the design tokens**
+  rather than a hardcoded neutral. A site that sets `color.primary` in
+  `config/atelier.php` now gets its own colour on both without overriding a view, which is
+  what the token was for. If you were relying on the black panel, set `color.primary` to
+  `#171717` and nothing moves.
+
+- **The structured-data select is labelled "Type for search engines"** rather than "Page
+  type". The stored value and the options are unchanged; the phrase now belongs to the
+  sidebar, and two questions under one name is how a client picks the wrong one.
+
+- **`PageResource::form()` is four methods rather than one.** `titleSection()`,
+  `typeSection()`, `localeSection()` and `structuredDataSection()`, composed by `form()`.
+  Only matters if you extend the resource.
+
+- Internal tidying with no behaviour change: the menu manager's five mutations share one
+  sibling lookup instead of repeating the top-level-versus-child branch, and
+  `StructuredData`'s `areaServed()` and `places()` delegate to `list()` rather than
+  restating it.
+
 ### Fixed
 
 - **`Page::children()` was written in SQL that only some databases accept.** The nesting
@@ -23,13 +105,6 @@ breaks is called out under **Breaking** with what to do about it.
   debounce is `->live(debounce: 400)` on each field in a block's schema, which is where a
   block author changes it. Setting the key did nothing, so removing it changes nothing;
   your published config keeps the key until you delete it.
-
-### Changed
-
-- Internal tidying with no behaviour change: the menu manager's five mutations share one
-  sibling lookup instead of repeating the top-level-versus-child branch, and
-  `StructuredData`'s `areaServed()` and `places()` delegate to `list()` rather than
-  restating it.
 
 ## [0.3.6] - 2026-09-03
 
@@ -644,7 +719,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.6...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.6...v0.5.0
 [0.3.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.5...v0.3.6
 [0.3.5]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.4...v0.3.5
 [0.3.4]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.3...v0.3.4
