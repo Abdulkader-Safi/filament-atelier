@@ -44,6 +44,24 @@ class AtelierPlugin implements Plugin
     }
 
     /**
+     * The page types this panel offers: services, products, case studies.
+     *
+     * Each one gets its own sidebar entry, its own custom properties and its
+     * own starter sections. They are all the same `Page` model underneath,
+     * registered as extra configurations of the one page resource rather than
+     * as a resource class each, which is why a type is a plain class and not
+     * a Filament resource.
+     *
+     * @param  class-string<PageType>|array<int, class-string<PageType>>  $types
+     */
+    public function pageTypes(string|array $types): static
+    {
+        app(PageTypeRegistry::class)->register($types);
+
+        return $this;
+    }
+
+    /**
      * Extra sitemap URLs from outside Atelier: a blog, a services resource,
      * anything with its own model and routes.
      *
@@ -110,10 +128,18 @@ class AtelierPlugin implements Plugin
             $pages[] = MenuManager::class;
         }
 
+        // The plain registration is Pages itself, which lists only untyped
+        // pages. Every registered type is another configuration of the same
+        // resource class, keyed by the type and served at its own slug, which
+        // is Filament's own mechanism for one resource wearing several hats.
+        $resources = [PageResource::class];
+
+        foreach (app(PageTypeRegistry::class)->all() as $key => $type) {
+            $resources[] = PageResource::make($key)->slug($type::slug());
+        }
+
         $panel
-            ->resources([
-                PageResource::class,
-            ])
+            ->resources($resources)
             ->pages($pages);
     }
 

@@ -4,21 +4,26 @@ declare(strict_types=1);
 
 namespace Safi\Atelier\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Safi\Atelier\LayoutRegistry;
 use Safi\Atelier\MenuSource;
+use Safi\Atelier\PageType;
+use Safi\Atelier\PageTypeRegistry;
 
 /**
  * @property string $title
+ * @property string $type
  * @property string $status
  * @property array|null $draft_content
  * @property array|null $published_content
  * @property string|null $layout
  * @property array|null $seo
  * @property array|null $schema
+ * @property array|null $data
  */
 class Page extends Model implements MenuSource
 {
@@ -31,6 +36,7 @@ class Page extends Model implements MenuSource
         'published_content' => 'array',
         'seo' => 'array',
         'schema' => 'array',
+        'data' => 'array',
         'published_at' => 'datetime',
     ];
 
@@ -97,6 +103,60 @@ class Page extends Model implements MenuSource
             ?? config('atelier.layout');
     }
 
+    // Type -----------------------------------------------------------------
+
+    /** @param string|array<int, string> $type */
+    public function scopeOfType(Builder $query, string|array $type): Builder
+    {
+        return $query->whereIn('type', (array) $type);
+    }
+
+    /**
+     * The registered class for this page's type, or null for an ordinary page
+     * and for a type nobody registered.
+     *
+     * Null on a miss rather than a throw, for the same reason `layoutView()`
+     * falls back: a page keeps its type string after a developer removes that
+     * type from the panel provider, and every public page 500ing is a bad way
+     * to find that out.
+     *
+     * @return class-string<PageType>|null
+     */
+    public function pageType(): ?string
+    {
+        return app(PageTypeRegistry::class)->resolve($this->type);
+    }
+
+    /**
+     * One of the type's custom properties.
+     *
+     * Translated keys are stored at `data.{locale}.{key}`, the same shape the
+     * SEO column uses, and fall back to the first configured locale so a card
+     * with no Arabic excerpt shows the English one rather than a gap.
+     * Everything else is stored once, at `data.{key}`.
+     */
+    public function data(string $key, ?string $locale = null, mixed $default = null): mixed
+    {
+        $type = $this->pageType();
+
+        if ($type === null || ! in_array($key, $type::translatable(), true)) {
+            $value = data_get($this->data, $key);
+
+            return blank($value) ? $default : $value;
+        }
+
+        $locale ??= app()->getLocale();
+        $fallback = array_key_first(config('atelier.locales', [])) ?? $locale;
+
+        $value = data_get($this->data, "{$locale}.{$key}");
+
+        if (blank($value)) {
+            $value = data_get($this->data, "{$fallback}.{$key}");
+        }
+
+        return blank($value) ? $default : $value;
+    }
+
     // Revisions ------------------------------------------------------------
 
     public function revisions(): HasMany
@@ -159,14 +219,32 @@ class Page extends Model implements MenuSource
         return $this->slugs->firstWhere('locale', $locale)?->slug;
     }
 
-    /** @param array<string, string|null> $slugs keyed by locale */
-    public function setSlugs(array $slugs): void
+    /**
+     * @param  array<string, string|null>  $slugs  keyed by locale
+     * @param  array<string, string|null>  $prefixes  a page type's slug prefix, keyed by
+     *                                     locale. Applied to a slug that does not already
+     *                                     carry it, after the empty-means-use-the-title
+     *                                     fallback, so a service typed as `web-design`
+     *                                     and a service left blank both land under
+     *                                     `services/`. Passed on create only: the prefix
+     *                                     is a default, and the client owns the slug
+     *                                     afterwards.
+     */
+    public function setSlugs(array $slugs, array $prefixes = []): void
     {
         foreach ($slugs as $locale => $slug) {
             $slug = trim((string) $slug, " \t\n\r\0\x0B/");
 
             if ($slug === '') {
                 $slug = Str::slug($this->title) ?: 'page-'.$this->getKey();
+            }
+
+            $prefix = trim((string) ($prefixes[$locale] ?? ''), '/');
+
+            // `services` itself is left alone, so a type's own landing page
+            // does not become `services/services`.
+            if ($prefix !== '' && ! str_starts_with($slug.'/', $prefix.'/')) {
+                $slug = $prefix.'/'.$slug;
             }
 
             $previous = $this->slug($locale);
