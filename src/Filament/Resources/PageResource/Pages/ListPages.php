@@ -38,7 +38,8 @@ class ListPages extends ListRecords
 
                     // A type's starter sections, seeded into the draft so the
                     // builder opens on a page rather than on an empty canvas.
-                    $template = $resource::pageType()?->template() ?? [];
+                    $type = $resource::pageType();
+                    $template = $type ? $type::template() : [];
 
                     if ($template !== []) {
                         $data['draft_content'] = app(BlockRegistry::class)->tree($template);

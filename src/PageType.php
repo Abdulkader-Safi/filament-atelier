@@ -4,6 +4,12 @@ declare(strict_types=1);
 
 namespace Safi\Atelier;
 
+use Filament\Forms\Components\Field;
+use Filament\Schemas\Components\Component;
+use Safi\Atelier\Models\Page;
+use Safi\Atelier\PageTypes\BasePageType;
+use Safi\Atelier\Schema\PageTypes;
+
 /**
  * A kind of page a developer defines in code: a service, a product, a case
  * study. It gets its own entry in the panel sidebar, its own custom
@@ -12,7 +18,7 @@ namespace Safi\Atelier;
  * Underneath it is still an `atelier_pages` row, so a typed page inherits
  * slugs, redirects, revisions, drafts, preview, SEO and the sitemap for free.
  *
- * Not to be confused with {@see \Safi\Atelier\Schema\PageTypes}, which is the
+ * Not to be confused with {@see PageTypes}, which is the
  * schema.org type in the JSON-LD. A page type can name one through
  * schemaType() so the client is not asked the same question twice.
  *
@@ -20,7 +26,7 @@ namespace Safi\Atelier;
  *
  *     AtelierPlugin::make()->pageTypes([ServiceType::class]);
  *
- * Extend {@see \Safi\Atelier\PageTypes\BasePageType} for the defaults and
+ * Extend {@see BasePageType} for the defaults and
  * write only the parts that differ.
  */
 interface PageType
@@ -46,12 +52,12 @@ interface PageType
     /**
      * The type's custom properties, as plain Filament components. Whatever is
      * returned here is what the settings screen shows and what
-     * {@see \Safi\Atelier\Models\Page::data()} reads back.
+     * {@see Page::data()} reads back.
      *
      * Called once per locale for the translated fields, so it must return
      * fresh instances rather than cached ones.
      *
-     * @return array<int, \Filament\Forms\Components\Field|\Filament\Schemas\Components\Component>
+     * @return array<int, Field|Component>
      */
     public static function fields(): array;
 

@@ -345,7 +345,8 @@ class PageEditor extends FilamentPage
      */
     public function getPickerProperty(): array
     {
-        $allowed = $this->page->pageType()?->blocks();
+        $type = $this->page->pageType();
+        $allowed = $type ? $type::blocks() : null;
 
         return collect($this->registry()->byCategory())
             ->map(fn (array $blocks) => collect($blocks)

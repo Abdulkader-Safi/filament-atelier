@@ -222,13 +222,13 @@ class Page extends Model implements MenuSource
     /**
      * @param  array<string, string|null>  $slugs  keyed by locale
      * @param  array<string, string|null>  $prefixes  a page type's slug prefix, keyed by
-     *                                     locale. Applied to a slug that does not already
-     *                                     carry it, after the empty-means-use-the-title
-     *                                     fallback, so a service typed as `web-design`
-     *                                     and a service left blank both land under
-     *                                     `services/`. Passed on create only: the prefix
-     *                                     is a default, and the client owns the slug
-     *                                     afterwards.
+     *                                                locale. Applied to a slug that does not already
+     *                                                carry it, after the empty-means-use-the-title
+     *                                                fallback, so a service typed as `web-design`
+     *                                                and a service left blank both land under
+     *                                                `services/`. Passed on create only: the prefix
+     *                                                is a default, and the client owns the slug
+     *                                                afterwards.
      */
     public function setSlugs(array $slugs, array $prefixes = []): void
     {

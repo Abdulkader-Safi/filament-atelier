@@ -21,10 +21,11 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Safi\Atelier\AtelierPlugin;
 use Safi\Atelier\Filament\Pages\PageEditor;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\ListPages;
-use Illuminate\Database\Eloquent\Builder;
 use Safi\Atelier\LayoutRegistry;
 use Safi\Atelier\Models\Page;
 use Safi\Atelier\PageType;
@@ -38,7 +39,7 @@ use Safi\Atelier\Schema\PageTypes;
  * This class is registered once per page type as well as once for ordinary
  * pages, using Filament's resource configurations: same class, one key and
  * one slug each, so /admin/services and /admin/pages are the same code
- * looking at a different `type`. {@see \Safi\Atelier\AtelierPlugin::register()}
+ * looking at a different `type`. {@see AtelierPlugin::register()}
  * does the registering; everything here reads {@see static::typeKey()} to
  * know which hat it is wearing.
  */
@@ -92,22 +93,30 @@ class PageResource extends Resource
 
     public static function getLabel(): ?string
     {
-        return static::pageType()?->label() ?? parent::getLabel();
+        $type = static::pageType();
+
+        return $type ? $type::label() : parent::getLabel();
     }
 
     public static function getPluralLabel(): ?string
     {
-        return static::pageType()?->pluralLabel() ?? parent::getPluralLabel();
+        $type = static::pageType();
+
+        return $type ? $type::pluralLabel() : parent::getPluralLabel();
     }
 
     public static function getNavigationIcon(): string|\BackedEnum|null
     {
-        return static::pageType()?->icon() ?? parent::getNavigationIcon();
+        $type = static::pageType();
+
+        return $type ? $type::icon() : parent::getNavigationIcon();
     }
 
     public static function getNavigationSort(): ?int
     {
-        return static::pageType()?->navigationSort() ?? parent::getNavigationSort();
+        $type = static::pageType();
+
+        return $type ? $type::navigationSort() ?? parent::getNavigationSort() : parent::getNavigationSort();
     }
 
     // Form sections --------------------------------------------------------
@@ -265,7 +274,7 @@ class PageResource extends Resource
                     // a client picks the wrong one.
                     ->label('Type for search engines')
                     ->options(PageTypes::options())
-                    ->default(static::pageType()?->schemaType() ?? 'WebPage')
+                    ->default(fn () => ($type = static::pageType()) ? ($type::schemaType() ?? 'WebPage') : 'WebPage')
                     ->native(false)
                     ->live()
                     ->helperText('Standard page is right for most.')

@@ -34,7 +34,7 @@ class PreviewController
             'page' => $page,
             'title' => $page->title,
             'preview' => true,
-            'blocks' => $this->renderer->render($page->draft(), $locale, editing: true),
+            'blocks' => $this->renderer->render($page->draft(), $locale, editing: true, page: $page),
         ])->render();
 
         return response($html)->withHeaders([

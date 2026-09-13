@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\PageTypes\ProductType;
+use App\PageTypes\ServiceType;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -58,6 +60,12 @@ class AdminPanelProvider extends PanelProvider
             ->plugins([
                 AtelierPlugin::make()
                     ->blocks(DefaultBlocks::all())
+                    // Each one becomes its own sidebar entry, listing only
+                    // its own pages. Pages itself keeps the untyped ones.
+                    ->pageTypes([
+                        ServiceType::class,
+                        ProductType::class,
+                    ])
                     // Off by default in config/atelier.php: the menu
                     // manager is still being proven out, and this line is
                     // what turns it on for this one panel. Delete it (or

@@ -53,7 +53,7 @@ class PageController
             'page' => $page,
             'title' => $page->metaTitle($locale),
             'preview' => false,
-            'blocks' => $this->renderer->render($page->published(), $locale),
+            'blocks' => $this->renderer->render($page->published(), $locale, page: $page),
         ]);
     }
 
