@@ -336,15 +336,28 @@ class PageEditor extends FilamentPage
         })->all();
     }
 
+    /**
+     * The section picker, narrowed to what this page's type allows.
+     *
+     * Only the picker narrows. A block already on the page keeps rendering
+     * and keeps its settings pane after it leaves the type's list, because
+     * dropping it would delete a client's content over an edit to a PHP array.
+     */
     public function getPickerProperty(): array
     {
+        $type = $this->page->pageType();
+        $allowed = $type ? $type::blocks() : null;
+
         return collect($this->registry()->byCategory())
             ->map(fn (array $blocks) => collect($blocks)
+                ->when($allowed !== null, fn ($blocks) => $blocks
+                    ->filter(fn (string $class, string $type) => in_array($type, $allowed, true)))
                 ->map(fn (string $class, string $type) => [
                     'type' => $type,
                     'label' => $class::label(),
                     'icon' => $class::icon(),
                 ])->values()->all())
+            ->filter(fn (array $blocks) => $blocks !== [])
             ->all();
     }
 

@@ -20,10 +20,19 @@ The short version: Atelier copies Gutenberg's data model and skips its storage m
 - A block type is one PHP class plus one Blade view. The class declares `type`, `label`, `icon`, `category`, `schema`, `supports`, `translatable` and `defaults`.
 - `schema()` returns a plain Filament schema, so the whole control system comes free: text, textarea, select, rich text, file upload, repeater, and anything else Filament has.
 - Registered at boot into a `BlockRegistry`. Adding a block never means editing a file inside the plugin.
-- Nine blocks ship: hero, features, rich text, image, gallery, logo wall, testimonials, FAQ, call to action.
+- Ten blocks ship: hero, features, rich text, image, gallery, logo wall, testimonials, FAQ, collection, call to action.
+- Collection lists pages of one page type and renders each through that type's own card view, so a services grid needs no code.
 - Repeaters inside a block are reorderable, so items sort within a section as well as sections sorting within a page.
 - Images upload through a shared `Media` helper. Blocks store a path; the helper turns it into a URL.
 - An unknown block type renders nothing publicly and a visible warning in the editor, rather than throwing.
+
+### Page types
+
+- A page type is a kind of page a developer defines in code: a service, a product, a case study. One class, registered with `AtelierPlugin::make()->pageTypes([ServiceType::class])`.
+- Each type gets its own sidebar entry, its own list and its own URL in the panel, all served by the one page resource through Filament's resource configurations. Pages itself lists only untyped pages.
+- A type declares its custom properties as a plain Filament schema, so any field Filament has works and the plugin never learns their names. Untranslated values are stored at `data.{key}`, translated ones at `data.{locale}.{key}`, and `$page->data('excerpt', $locale)` reads either.
+- A type can also declare starter sections for a new page, the blocks its picker offers, a slug prefix, a schema.org type, a card view for listings, and a Blade view served at the prefix root.
+- A page the client built at the prefix root wins over the generated index, so `/services` becomes editable the day someone wants copy above the list.
 
 ### The editor
 

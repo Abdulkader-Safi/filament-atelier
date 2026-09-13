@@ -22,6 +22,7 @@ class DefaultBlocks
             LogoWallBlock::class,
             TestimonialsBlock::class,
             FaqBlock::class,
+            CollectionBlock::class,
             CtaBlock::class,
         ];
     }

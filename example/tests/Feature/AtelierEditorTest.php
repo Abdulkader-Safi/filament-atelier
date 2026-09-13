@@ -7,8 +7,10 @@ use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
+use Safi\Atelier\BlockRegistry;
 use Safi\Atelier\Blocks\FaqBlock;
 use Safi\Atelier\Blocks\HeroBlock;
+use Safi\Atelier\Blocks\ImageBlock;
 use Safi\Atelier\Blocks\RichTextBlock;
 use Safi\Atelier\Filament\Pages\PageEditor;
 use Safi\Atelier\Media;
@@ -20,6 +22,11 @@ use function Pest\Laravel\get;
 
 beforeEach(function () {
     actingAs(User::factory()->create());
+
+    // The panel registers this app's own blocks, and this site has no image
+    // block. These four image tests cover the package's upload path, so they
+    // register the package's block to have something to upload into.
+    app(BlockRegistry::class)->register(ImageBlock::class);
 
     $this->page = Page::create([
         'title' => 'Test page',

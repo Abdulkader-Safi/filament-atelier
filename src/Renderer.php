@@ -7,6 +7,7 @@ namespace Safi\Atelier;
 use Filament\Forms\Components\RichEditor\RichContentRenderer;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Str;
+use Safi\Atelier\Models\Page;
 
 /**
  * Walks a block tree and renders it. The preview and the public page both
@@ -40,16 +41,22 @@ class Renderer
         return is_scalar($value) ? (string) $value : null;
     }
 
-    /** @param array<int, array> $tree */
-    public function render(array $tree, string $locale, bool $editing = false): string
+    /**
+     * @param  array<int, array>  $tree
+     * @param  Page|null  $page  the page being rendered, handed to every block view.
+     *                           A block that lists other pages needs to know which page it is
+     *                           on, and a card view needs the page it is describing. Optional
+     *                           so a bare tree can still be rendered on its own.
+     */
+    public function render(array $tree, string $locale, bool $editing = false, ?Page $page = null): string
     {
         return collect($tree)
             ->reject(fn (array $node) => ($node['hidden'] ?? false) && ! $editing)
-            ->map(fn (array $node) => $this->renderBlock($node, $locale, $editing))
+            ->map(fn (array $node) => $this->renderBlock($node, $locale, $editing, $page))
             ->implode("\n");
     }
 
-    protected function renderBlock(array $node, string $locale, bool $editing): string
+    protected function renderBlock(array $node, string $locale, bool $editing, ?Page $page = null): string
     {
         $type = $node['type'] ?? null;
         $block = $type ? $this->registry->resolve($type) : null;
@@ -77,7 +84,8 @@ class Renderer
             // The root element's attributes: the id the editor tracks sections
             // by, plus whatever the block opted into through supports().
             'shared' => SharedControls::attributes($block::supports(), $attributes, $id),
-            'children' => $children ? $this->render($children, $locale, $editing) : '',
+            'children' => $children ? $this->render($children, $locale, $editing, $page) : '',
+            'page' => $page,
             'id' => $id,
             'node' => $node,
             'locale' => $locale,

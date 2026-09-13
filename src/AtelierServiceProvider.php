@@ -24,6 +24,7 @@ class AtelierServiceProvider extends PackageServiceProvider
                 'create_atelier_settings_table',
                 'add_schema_to_atelier_pages_table',
                 'create_atelier_menus_table',
+                'add_type_to_atelier_pages_table',
             ]);
     }
 
@@ -32,6 +33,7 @@ class AtelierServiceProvider extends PackageServiceProvider
         $this->app->singleton(BlockRegistry::class);
         $this->app->singleton(SitemapRegistry::class);
         $this->app->singleton(LayoutRegistry::class);
+        $this->app->singleton(PageTypeRegistry::class);
 
         // Seeded from config('atelier.menus'), the same source `locales`
         // reads from. AtelierPlugin::menuLocations() still works after

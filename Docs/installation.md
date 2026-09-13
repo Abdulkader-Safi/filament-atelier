@@ -185,7 +185,126 @@ Three things worth knowing:
 - **`translatable()` fields are stored as `{"en": "...", "ar": "..."}`.** Everything else is shared across locales. Repeaters can be translatable too; the whole list is then per locale.
 - **Images: use `Media::upload()` in the schema and `Media::url()` in the view.** Don't call `Storage::url()` yourself. `FileUpload` state isn't reliably a string, and `Media::url()` is where that's handled.
 
-The Blade view receives `$attributes` (already collapsed to the current locale), `$id`, `$locale`, `$editing` and `$children`.
+The Blade view receives `$attributes` (already collapsed to the current locale), `$id`, `$locale`, `$editing`, `$children` and `$page`, the page being rendered.
+
+## Adding a page type
+
+A page type is a kind of page with its own sidebar entry: services, products, case studies. One class, and nothing inside the plugin changes.
+
+```php
+namespace App\PageTypes;
+
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Safi\Atelier\PageTypes\BasePageType;
+
+class ServiceType extends BasePageType
+{
+    public static function type(): string
+    {
+        return 'service';
+    }
+
+    public static function label(): string
+    {
+        return 'Service';
+    }
+
+    public static function icon(): string
+    {
+        return 'heroicon-o-wrench-screwdriver';
+    }
+
+    /** Whatever this kind of page needs. Any Filament component works. */
+    public static function fields(): array
+    {
+        return [
+            Textarea::make('excerpt')->rows(2),
+            FileUpload::make('card_image')->image()->disk(config('atelier.media.disk')),
+            TextInput::make('starting_price')->numeric(),
+        ];
+    }
+
+    /** Stored per locale. Everything else is stored once. */
+    public static function translatable(): array
+    {
+        return ['excerpt'];
+    }
+
+    /** The sections a new one opens with. */
+    public static function template(): array
+    {
+        return [['type' => 'hero'], ['type' => 'features'], ['type' => 'cta']];
+    }
+
+    /** What the section picker offers. Leave it out for everything. */
+    public static function blocks(): ?array
+    {
+        return ['hero', 'features', 'gallery', 'faq', 'cta'];
+    }
+
+    /** The partial the Collection block renders per item. */
+    public static function cardView(): string
+    {
+        return 'services.card';
+    }
+
+    /** Prefilled on a new page, per locale. The client can still change it. */
+    public static function prefix(): array|string|null
+    {
+        return ['en' => 'services', 'ar' => 'خدمات'];
+    }
+
+    public static function schemaType(): ?string
+    {
+        return 'Service';
+    }
+
+    /** Served at /services and /ar/خدمات. Leave it out for no index route. */
+    public static function indexView(): ?string
+    {
+        return 'services.index';
+    }
+}
+```
+
+Register it next to the blocks:
+
+```php
+AtelierPlugin::make()
+    ->blocks(DefaultBlocks::all())
+    ->pageTypes([ServiceType::class]),
+```
+
+`type()` and `label()` are the only two required. Everything else has a default, so a type with no custom properties is six lines.
+
+Reading the properties back in a view:
+
+```blade
+{{-- resources/views/services/card.blade.php, given $page and $locale --}}
+<a href="{{ $page->url($locale) }}">
+    <h3>{{ $page->title }}</h3>
+    <p>{{ $page->data('excerpt', $locale) }}</p>
+    <p>From AED {{ number_format((float) $page->data('starting_price')) }}</p>
+</a>
+```
+
+### Listing them on a page
+
+Build an ordinary page, add a **Collection** section, and pick the type. The block asks four things: which type, everything published or the ones you choose, how many, and how many columns. Choosing them by hand gives a drag-to-reorder list, and that order is the order they render in.
+
+The markup comes from two files, and both are yours:
+
+- **The card** is the type's `cardView()`, a partial in your app receiving `$page` and `$locale`. Change it and every listing of that type changes.
+- **The wrapper** (the heading and the grid) is `atelier::blocks.collection`. Override it the normal Laravel way, by writing `resources/views/vendor/atelier/blocks/collection.blade.php` in your app. Or ignore the shipped block and write your own, using `Page::query()->where('status', 'published')->ofType('service')->get()` and `$page->data(...)`, the same way any other block works.
+
+Four things worth knowing:
+
+- **`data()` unwraps a translated value and falls back to the first configured locale**, so a card with no Arabic excerpt shows the English one rather than a gap.
+- **The prefix is a default, not a rule.** It is applied when the page is created and the client owns the slug afterwards. Changing a slug later writes a 301 the way it always did.
+- **A real page at the prefix root beats the generated index.** Build a page at `services` and it serves instead, which is what you want as soon as the client asks for copy above the list.
+- **A block already on a page keeps working after it leaves `blocks()`.** Only the picker narrows; nothing deletes a client's content because a developer edited an array.
 
 ## What the editor does
 

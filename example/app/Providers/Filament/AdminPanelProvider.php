@@ -2,6 +2,10 @@
 
 namespace App\Providers\Filament;
 
+use App\Blocks\SiteBlocks;
+use App\Filament\Widgets\RequestsOverview;
+use App\PageTypes\ProductType;
+use App\PageTypes\ServiceType;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -19,7 +23,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Safi\Atelier\AtelierPlugin;
-use Safi\Atelier\Blocks\DefaultBlocks;
 use Safi\Atelier\Models\Page as AtelierPage;
 
 class AdminPanelProvider extends PanelProvider
@@ -41,6 +44,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                RequestsOverview::class,
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
@@ -57,7 +61,18 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 AtelierPlugin::make()
-                    ->blocks(DefaultBlocks::all())
+                    // This app's own blocks, and only those. The package
+                    // ships an equivalent set through DefaultBlocks::all(),
+                    // and most projects would start there; this one defines
+                    // its own so every section on the site can be read in
+                    // app/Blocks without opening the package.
+                    ->blocks(SiteBlocks::all())
+                    // Each one becomes its own sidebar entry, listing only
+                    // its own pages. Pages itself keeps the untyped ones.
+                    ->pageTypes([
+                        ServiceType::class,
+                        ProductType::class,
+                    ])
                     // Off by default in config/atelier.php: the menu
                     // manager is still being proven out, and this line is
                     // what turns it on for this one panel. Delete it (or

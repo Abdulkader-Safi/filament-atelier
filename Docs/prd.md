@@ -17,6 +17,10 @@ Five decisions taken on 14 Aug 2026:
 4. **First target is the next new dsrpt client site**, not KIF. So the v1 block library is a generic marketing set, not an events set.
 5. **Blocks are code-defined in v1. Creating block types from the panel moves to v2.** A developer writes a PHP class and a Blade view, and it appears in the section picker, with a visual editor on top. The client edits content and structure, never block types. Authoring new block types from the panel, Gutenberg-style, is a later phase and carries its own research, kept at the bottom of this doc.
 
+A sixth was taken on 13 Sep 2026, and it extends decision 5 rather than changing it:
+
+6. **Page types are code-defined too.** A kind of page (a service, a product, a case study) is one PHP class declaring its custom properties as a Filament schema, its starter sections and its card view. Registered with `pageTypes()`, it gets its own sidebar entry and its own list, all on the same `atelier_pages` table and the same editor. The client fills the properties in and lists them with the Collection block; they never define a type. Same rule as blocks, same reason: what the panel edits is content, not the shape of content. The work is [`tasks/15-page-types.md`](tasks/15-page-types.md).
+
 One more decision was forced by the research: FilamentCraft already does all of the above and sells for a one-time fee from about $74. Safi's reason for building anyway is that it becomes dsrpt's own tool for client websites, owned outright and extended as needed. That's the stated rationale and this PRD assumes it.
 
 ## What v1 actually is, in one paragraph

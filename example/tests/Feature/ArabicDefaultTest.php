@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Safi\Atelier\Models\Page;
-use Safi\Atelier\Renderer;
 
 use function Pest\Laravel\get;
 

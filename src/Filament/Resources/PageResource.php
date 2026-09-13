@@ -13,6 +13,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Resources\ResourceConfiguration;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
@@ -20,16 +21,27 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Safi\Atelier\AtelierPlugin;
 use Safi\Atelier\Filament\Pages\PageEditor;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\ListPages;
 use Safi\Atelier\LayoutRegistry;
 use Safi\Atelier\Models\Page;
+use Safi\Atelier\PageType;
+use Safi\Atelier\PageTypeRegistry;
 use Safi\Atelier\Schema\PageTypes;
 
 /**
  * The page's settings: title, per-locale slugs and SEO. Content is edited in
  * the builder, a full-screen page opened from here.
+ *
+ * This class is registered once per page type as well as once for ordinary
+ * pages, using Filament's resource configurations: same class, one key and
+ * one slug each, so /admin/services and /admin/pages are the same code
+ * looking at a different `type`. {@see AtelierPlugin::register()}
+ * does the registering; everything here reads {@see static::typeKey()} to
+ * know which hat it is wearing.
  */
 class PageResource extends Resource
 {
@@ -37,173 +49,328 @@ class PageResource extends Resource
 
     protected static ?string $slug = 'pages';
 
+    /** Required before Filament will let the class be registered more than once. */
+    protected static ?string $configurationClass = ResourceConfiguration::class;
+
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-document-text';
 
     protected static ?int $navigationSort = -1;
 
     public static function form(Schema $schema): Schema
     {
+        return $schema->components(array_values(array_filter([
+            static::titleSection(),
+            static::typeSection(),
+            static::localeSection(),
+            static::structuredDataSection(),
+        ])));
+    }
+
+    /**
+     * Which type this registration serves: a registered page type's key, or
+     * `page` for the plain registration.
+     *
+     * Filament sets the configuration key from the route and keeps it across
+     * Livewire requests, so this answers correctly on a table sort as well as
+     * on the first load.
+     */
+    public static function typeKey(): string
+    {
+        return static::getConfiguration()?->getKey() ?? PageTypeRegistry::DEFAULT;
+    }
+
+    /** @return class-string<PageType>|null */
+    public static function pageType(): ?string
+    {
+        return app(PageTypeRegistry::class)->resolve(static::typeKey());
+    }
+
+    /**
+     * Services never appear under Pages, and Pages never appears under
+     * Services.
+     *
+     * Pages also picks up anything carrying a type nobody registered, which
+     * is what happens the day a developer deletes a type class. Those pages
+     * still serve publicly, and a page that is live but invisible in the
+     * panel is the worst of both. Same reasoning as `Page::layoutView()`
+     * falling back rather than throwing.
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        $key = static::typeKey();
+
+        if ($key !== PageTypeRegistry::DEFAULT) {
+            return parent::getEloquentQuery()->where('type', $key);
+        }
+
+        $registered = array_keys(app(PageTypeRegistry::class)->all());
+
+        return parent::getEloquentQuery()->where(fn (Builder $query) => $query
+            ->where('type', PageTypeRegistry::DEFAULT)
+            ->orWhereNotIn('type', [...$registered, PageTypeRegistry::DEFAULT]));
+    }
+
+    public static function getLabel(): ?string
+    {
+        $type = static::pageType();
+
+        return $type ? $type::label() : parent::getLabel();
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        $type = static::pageType();
+
+        return $type ? $type::pluralLabel() : parent::getPluralLabel();
+    }
+
+    public static function getNavigationIcon(): string|\BackedEnum|null
+    {
+        $type = static::pageType();
+
+        return $type ? $type::icon() : parent::getNavigationIcon();
+    }
+
+    public static function getNavigationSort(): ?int
+    {
+        $type = static::pageType();
+
+        return $type ? $type::navigationSort() ?? parent::getNavigationSort() : parent::getNavigationSort();
+    }
+
+    // Form sections --------------------------------------------------------
+    //
+    // Four methods rather than one long one, because a section that exists
+    // only for some types has to be skippable, and because the type section
+    // is built from a schema this package has never seen.
+
+    protected static function titleSection(): Section
+    {
+        // Two facts about the page itself, side by side. Both are shared
+        // across locales: the title is an internal name, and a layout is
+        // structure, which both locales share by design.
+        return Section::make()
+            ->schema([
+                TextInput::make('title')
+                    ->required()
+                    ->maxLength(255)
+                    ->helperText('Internal name, and the fallback for the meta title.'),
+
+                // Hidden entirely when the app registered no layouts, since
+                // a select with one option is a question with one answer.
+                Select::make('layout')
+                    ->label('Layout')
+                    ->options(fn () => app(LayoutRegistry::class)->options())
+                    ->placeholder('Default')
+                    ->helperText('The shell wrapped around this page. Leave as Default to use the site-wide one.')
+                    ->native(false)
+                    ->visible(fn () => app(LayoutRegistry::class)->options() !== []),
+            ])
+            ->columns(2)
+            ->columnSpanFull();
+    }
+
+    protected static function localeSection(): Tabs
+    {
         $locales = config('atelier.locales');
         $default = array_key_first($locales);
 
-        return $schema->components([
-            // Two facts about the page itself, side by side. Both are shared
-            // across locales: the title is an internal name, and a layout is
-            // structure, which both locales share by design.
-            Section::make()
-                ->schema([
-                    TextInput::make('title')
-                        ->required()
-                        ->maxLength(255)
-                        ->helperText('Internal name, and the fallback for the meta title.'),
+        return Tabs::make('Locales')
+            ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
+                TextInput::make("slugs.{$code}")
+                    ->label('Slug')
+                    ->prefix($code === $default ? '/' : "/{$code}/")
+                    ->helperText('Leave empty to generate one from the title.')
+                    ->maxLength(255),
 
-                    // Hidden entirely when the app registered no layouts, since
-                    // a select with one option is a question with one answer.
-                    Select::make('layout')
-                        ->label('Layout')
-                        ->options(fn () => app(LayoutRegistry::class)->options())
-                        ->placeholder('Default')
-                        ->helperText('The shell wrapped around this page. Leave as Default to use the site-wide one.')
-                        ->native(false)
-                        ->visible(fn () => app(LayoutRegistry::class)->options() !== []),
-                ])
-                ->columns(2)
-                ->columnSpanFull(),
+                TextInput::make("seo.{$code}.meta_title")
+                    ->label('Meta title')
+                    ->maxLength(70)
+                    ->helperText('Around 60 characters. Falls back to the page title.'),
 
-            Tabs::make('Locales')
-                ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
-                    TextInput::make("slugs.{$code}")
-                        ->label('Slug')
-                        ->prefix($code === $default ? '/' : "/{$code}/")
-                        ->helperText('Leave empty to generate one from the title.')
-                        ->maxLength(255),
+                Textarea::make("seo.{$code}.meta_description")
+                    ->label('Meta description')
+                    ->rows(3)
+                    ->maxLength(180)
+                    ->helperText('Around 155 characters.'),
 
-                    TextInput::make("seo.{$code}.meta_title")
-                        ->label('Meta title')
-                        ->maxLength(70)
-                        ->helperText('Around 60 characters. Falls back to the page title.'),
+                FileUpload::make("seo.{$code}.og_image")
+                    ->label('Social share image')
+                    ->image()
+                    ->disk(config('atelier.media.disk'))
+                    ->directory(config('atelier.media.directory').'/og')
+                    // A share image a crawler cannot read is not a share
+                    // image. Without this it works on a local disk and
+                    // 403s on S3, which is the worst way for it to break.
+                    ->visibility('public')
+                    ->helperText('1200 by 630 is the safe size.'),
 
-                    Textarea::make("seo.{$code}.meta_description")
-                        ->label('Meta description')
-                        ->rows(3)
-                        ->maxLength(180)
-                        ->helperText('Around 155 characters.'),
+                Toggle::make("seo.{$code}.noindex")
+                    ->label('Hide from search engines')
+                    ->helperText('Adds a noindex tag and drops the page from the sitemap. The page stays public.'),
 
-                    FileUpload::make("seo.{$code}.og_image")
-                        ->label('Social share image')
-                        ->image()
-                        ->disk(config('atelier.media.disk'))
-                        ->directory(config('atelier.media.directory').'/og')
-                        // A share image a crawler cannot read is not a share
-                        // image. Without this it works on a local disk and
-                        // 403s on S3, which is the worst way for it to break.
-                        ->visibility('public')
-                        ->helperText('1200 by 630 is the safe size.'),
+                Toggle::make("seo.{$code}.nofollow")
+                    ->label('Tell search engines not to follow its links')
+                    ->helperText('Independent of the above. A page can be indexed and still not pass link credit.'),
 
-                    Toggle::make("seo.{$code}.noindex")
-                        ->label('Hide from search engines')
-                        ->helperText('Adds a noindex tag and drops the page from the sitemap. The page stays public.'),
+                TextInput::make("seo.{$code}.canonical")
+                    ->label('Canonical URL')
+                    ->url()
+                    ->helperText("Leave empty to use this page's own URL."),
+            ]))->all())
+            ->columnSpanFull();
+    }
 
-                    Toggle::make("seo.{$code}.nofollow")
-                        ->label('Tell search engines not to follow its links')
-                        ->helperText('Independent of the above. A page can be indexed and still not pass link credit.'),
+    /**
+     * The type's own properties, from its fields().
+     *
+     * Untranslated fields are stored at `data.{key}`, translated ones at
+     * `data.{locale}.{key}`, which is the shape the SEO column already uses.
+     * fields() is called once per locale so each tab gets its own component
+     * instances; one instance cannot live in two tabs.
+     */
+    protected static function typeSection(): ?Section
+    {
+        $type = static::pageType();
 
-                    TextInput::make("seo.{$code}.canonical")
-                        ->label('Canonical URL')
-                        ->url()
-                        ->helperText("Leave empty to use this page's own URL."),
-                ]))->all())
-                ->columnSpanFull(),
+        if ($type === null) {
+            return null;
+        }
 
-            // Below the per-locale fields, because it is the least often
-            // touched thing on the screen and the answer is Standard page for
-            // most of them. Page-level, not per locale: a page that is a
-            // Service in English is a Service in Arabic.
-            Section::make('Structured data')
-                ->description('What this page is, for search engines. It becomes the JSON-LD in the head.')
-                ->schema([
-                    Select::make('schema.type')
-                        ->label('Page type')
-                        ->options(PageTypes::options())
-                        ->default('WebPage')
-                        ->native(false)
-                        ->live()
-                        ->helperText('Standard page is right for most.')
-                        ->columnSpanFull(),
+        $translatable = $type::translatable();
 
-                    // Only the chosen type's fields, and nothing at all for the
-                    // types that need none.
-                    Group::make()
-                        ->schema(fn (callable $get) => PageTypes::fields($get('schema.type') ?? 'WebPage'))
-                        ->columns(2)
-                        ->columnSpanFull(),
+        $shared = array_values(array_filter(
+            $type::fields(),
+            fn (object $field) => ! in_array(static::fieldName($field), $translatable, true),
+        ));
 
-                    // Schema typed here rather than derived from the page's
-                    // blocks. A page can carry FAQ or breadcrumb data whatever
-                    // it is built from, including nothing.
-                    // The safety net for blocks that do not describe
-                    // themselves. A block can generate its own schema, but
-                    // most blocks are written by whoever installed this, and
-                    // nobody should have to edit a PHP class to get an FAQ
-                    // into the head.
-                    Tabs::make('Schema')
-                        ->tabs([
-                            Tab::make('FAQ')
-                                ->badge(fn (callable $get) => self::countFaq($get('schema.faq')) ?: null)
-                                ->schema([self::localeTabs(fn (string $code) => [
-                                    Repeater::make("schema.faq.{$code}")
-                                        ->label('Questions')
+        $components = [];
+
+        if ($shared !== []) {
+            $components[] = Group::make($shared)->statePath('data')->columns(2)->columnSpanFull();
+        }
+
+        if ($translatable !== []) {
+            $components[] = static::localeTabs(fn (string $code) => [
+                Group::make(array_values(array_filter(
+                    $type::fields(),
+                    fn (object $field) => in_array(static::fieldName($field), $translatable, true),
+                )))
+                    ->statePath("data.{$code}")
+                    ->columns(2)
+                    ->columnSpanFull(),
+            ]);
+        }
+
+        if ($components === []) {
+            return null;
+        }
+
+        return Section::make($type::label().' details')
+            ->schema($components)
+            ->columns(2)
+            ->columnSpanFull();
+    }
+
+    /** A component's field name, or null for one that has none (a layout component). */
+    protected static function fieldName(object $field): ?string
+    {
+        return method_exists($field, 'getName') ? $field->getName() : null;
+    }
+
+    protected static function structuredDataSection(): Section
+    {
+        // Last on the screen, because it is the least often touched thing on
+        // it and the answer is Standard page for most pages. Page-level, not
+        // per locale: a page that is a Service in English is a Service in
+        // Arabic. A page type that names one picks the answer already.
+        return Section::make('Structured data')
+            ->description('What this page is, for search engines. It becomes the JSON-LD in the head.')
+            ->schema([
+                Select::make('schema.type')
+                    // Not "page type": that phrase belongs to the sidebar
+                    // now, and two different questions under one name is how
+                    // a client picks the wrong one.
+                    ->label('Type for search engines')
+                    ->options(PageTypes::options())
+                    ->default(fn () => ($type = static::pageType()) ? ($type::schemaType() ?? 'WebPage') : 'WebPage')
+                    ->native(false)
+                    ->live()
+                    ->helperText('Standard page is right for most.')
+                    ->columnSpanFull(),
+
+                // Only the chosen type's fields, and nothing at all for the
+                // types that need none.
+                Group::make()
+                    ->schema(fn (callable $get) => PageTypes::fields($get('schema.type') ?? 'WebPage'))
+                    ->columns(2)
+                    ->columnSpanFull(),
+
+                // Schema typed here rather than derived from the page's
+                // blocks. A page can carry FAQ or breadcrumb data whatever
+                // it is built from, including nothing.
+                // The safety net for blocks that do not describe
+                // themselves. A block can generate its own schema, but
+                // most blocks are written by whoever installed this, and
+                // nobody should have to edit a PHP class to get an FAQ
+                // into the head.
+                Tabs::make('Schema')
+                    ->tabs([
+                        Tab::make('FAQ')
+                            ->badge(fn (callable $get) => self::countFaq($get('schema.faq')) ?: null)
+                            ->schema([self::localeTabs(fn (string $code) => [
+                                Repeater::make("schema.faq.{$code}")
+                                    ->label('Questions')
+                                    ->schema([
+                                        TextInput::make('question')->required(),
+                                        Textarea::make('answer')->rows(2)->required(),
+                                    ])
+                                    ->itemLabel(fn (array $state) => $state['question'] ?? 'Question')
+                                    ->collapsed()
+                                    ->defaultItems(0)
+                                    ->addActionLabel('Add a question')
+                                    ->helperText('Type them here when nothing on the page generates them. The answers should still be somewhere a visitor can read, in prose or anywhere else; a question that appears nowhere on the page is against the search engines\' own rules.')
+                                    ->columnSpanFull(),
+                            ])])
+                            ->columns(1),
+
+                        Tab::make('Breadcrumbs')
+                            ->schema([
+                                Select::make('schema.breadcrumbs.mode')
+                                    ->label('Trail')
+                                    ->options([
+                                        'auto' => 'From the slug path',
+                                        'custom' => 'Typed here',
+                                        'none' => 'None',
+                                    ])
+                                    ->default('auto')
+                                    ->native(false)
+                                    ->live()
+                                    ->helperText('From the slug path builds Home › Services › This page for a page at services/this-page.')
+                                    ->columnSpanFull(),
+
+                                Group::make([self::localeTabs(fn (string $code) => [
+                                    Repeater::make("schema.breadcrumbs.items.{$code}")
+                                        ->label('Trail')
                                         ->schema([
-                                            TextInput::make('question')->required(),
-                                            Textarea::make('answer')->rows(2)->required(),
+                                            TextInput::make('name')->required(),
+                                            TextInput::make('url')
+                                                ->helperText('Leave the last one empty to use this page.'),
                                         ])
-                                        ->itemLabel(fn (array $state) => $state['question'] ?? 'Question')
-                                        ->collapsed()
+                                        ->itemLabel(fn (array $state) => $state['name'] ?? 'Step')
                                         ->defaultItems(0)
-                                        ->addActionLabel('Add a question')
-                                        ->helperText('Type them here when nothing on the page generates them. The answers should still be somewhere a visitor can read, in prose or anywhere else; a question that appears nowhere on the page is against the search engines\' own rules.')
+                                        ->addActionLabel('Add a step')
                                         ->columnSpanFull(),
                                 ])])
-                                ->columns(1),
-
-                            Tab::make('Breadcrumbs')
-                                ->schema([
-                                    Select::make('schema.breadcrumbs.mode')
-                                        ->label('Trail')
-                                        ->options([
-                                            'auto' => 'From the slug path',
-                                            'custom' => 'Typed here',
-                                            'none' => 'None',
-                                        ])
-                                        ->default('auto')
-                                        ->native(false)
-                                        ->live()
-                                        ->helperText('From the slug path builds Home › Services › This page for a page at services/this-page.')
-                                        ->columnSpanFull(),
-
-                                    Group::make([self::localeTabs(fn (string $code) => [
-                                        Repeater::make("schema.breadcrumbs.items.{$code}")
-                                            ->label('Trail')
-                                            ->schema([
-                                                TextInput::make('name')->required(),
-                                                TextInput::make('url')
-                                                    ->helperText('Leave the last one empty to use this page.'),
-                                            ])
-                                            ->itemLabel(fn (array $state) => $state['name'] ?? 'Step')
-                                            ->defaultItems(0)
-                                            ->addActionLabel('Add a step')
-                                            ->columnSpanFull(),
-                                    ])])
-                                        ->visible(fn (callable $get) => $get('schema.breadcrumbs.mode') === 'custom')
-                                        ->columnSpanFull(),
-                                ])
-                                ->columns(1),
-                        ])
-                        ->columnSpanFull(),
-                ])
-                ->columns(2)
-                ->columnSpanFull(),
-        ]);
+                                    ->visible(fn (callable $get) => $get('schema.breadcrumbs.mode') === 'custom')
+                                    ->columnSpanFull(),
+                            ])
+                            ->columns(1),
+                    ])
+                    ->columnSpanFull(),
+            ])
+            ->columns(2)
+            ->columnSpanFull();
     }
 
     /**

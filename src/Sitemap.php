@@ -37,9 +37,55 @@ class Sitemap
     public function urls(): Collection
     {
         return $this->pageUrls()
+            ->concat($this->typeIndexUrls())
             ->concat($this->registry->urls())
             ->unique('loc')
             ->values();
+    }
+
+    /**
+     * A page type's generated landing page, /services and its translations.
+     *
+     * A real page at the same slug wins, exactly as it does when the URL is
+     * requested: pageUrls() is concatenated first and urls() dedupes on
+     * `loc`, keeping the first one.
+     *
+     * @return Collection<int, array{loc: string, lastmod: ?string, alternates: array<string, string>}>
+     */
+    protected function typeIndexUrls(): Collection
+    {
+        $registry = app(PageTypeRegistry::class);
+        $locales = array_keys(config('atelier.locales', []));
+        $default = array_key_first(config('atelier.locales', []) ?: []);
+
+        return collect($registry->all())->flatMap(function (string $type, string $key) use ($registry, $locales, $default) {
+            // An index with nothing on it is not a page worth crawling, and
+            // a site that registered a type it never used should not tell a
+            // search engine otherwise.
+            $hasPages = Page::query()->where('status', 'published')->ofType($key)->exists();
+
+            if ($type::indexView() === null || ! $hasPages) {
+                return [];
+            }
+
+            $urls = collect($locales)
+                ->mapWithKeys(function (string $locale) use ($registry, $key, $default) {
+                    $prefix = $registry->prefix($key, $locale);
+
+                    if ($prefix === null) {
+                        return [];
+                    }
+
+                    return [$locale => $locale === $default ? url($prefix) : url("{$locale}/{$prefix}")];
+                })
+                ->filter();
+
+            return $urls->map(fn (string $url) => [
+                'loc' => $url,
+                'lastmod' => null,
+                'alternates' => $urls->all(),
+            ])->values();
+        })->values();
     }
 
     /** @return Collection<int, array{loc: string, lastmod: ?string, alternates: array<string, string>}> */
