@@ -170,10 +170,12 @@
                 <div class="flex-1 space-y-4 overflow-y-auto p-2">
                     @foreach ($this->pages as $group => $pages)
                         <div x-show="{{ Js::from(array_column($pages, 'title')) }}.some((t) => t.toLowerCase().includes(q.trim().toLowerCase()))">
-                            {{-- The heading belongs to the rows under it, so
-                                 the space goes above the group rather than
-                                 between the label and its own first row. --}}
-                            <p class="px-2 pb-1.5 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                            {{-- Bigger and in the accent colour, because the
+                                 heading is what tells you the four rows under
+                                 it are products and not pages. The space goes
+                                 above the group rather than between the label
+                                 and its own first row. --}}
+                            <p class="px-2 pb-1.5 text-sm font-semibold tracking-wide text-primary-600 dark:text-primary-400">
                                 {{ $group }}
                             </p>
 
@@ -182,9 +184,9 @@
                                     <div x-show="{{ Js::from($item['title']) }}.toLowerCase().includes(q.trim().toLowerCase())">
                                         @if ($item['current'])
                                             {{-- Not a link: this is where you already are. --}}
-                                            <span class="flex items-center gap-2 rounded-lg bg-primary-50 px-2 py-1.5 text-sm font-medium text-primary-700 dark:bg-primary-500/10 dark:text-primary-400">
+                                            <span class="flex items-center gap-2 rounded-lg bg-gray-100 px-2 py-1.5 text-sm font-semibold text-gray-900 dark:bg-white/10 dark:text-white">
                                                 <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
-                                                <span class="shrink-0 text-xs font-normal opacity-75">editing</span>
+                                                <span class="shrink-0 text-xs font-normal text-gray-500 dark:text-gray-400">editing</span>
                                             </span>
                                         @else
                                             <a
