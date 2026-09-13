@@ -63,7 +63,7 @@ and the client works it by hand.
 | `app/Filament/Widgets/RequestsOverview.php` | The three dashboard stats |
 | `resources/views/services/card.blade.php` | One service in a listing. The only file that knows the field names |
 | `resources/views/products/card.blade.php` | The same for a product |
-| `resources/views/blocks/*.blade.php` | The two app blocks' markup |
+| `resources/views/blocks/*.blade.php` | One view per block. The markup of every section |
 | `database/seeders/SparkleCleanSeeder.php` | Every page, service, product and menu above |
 | `config/atelier.php` | The palette, as design tokens the blocks and the preview both read |
 
@@ -75,8 +75,8 @@ and the client works it by hand.
   project would usually start from the shipped set and add to it; this one starts from
   nothing to keep the example readable.
 - **A page type is one plain class.** Two of them here, and neither is a Filament resource.
-- **A block can read the page it is on.** Both app blocks do, which is what lets one form
-  block serve services, products and a plain contact page.
+- **A block can read the page it is on.** The pricing table and the request form both do,
+  which is what lets one form block serve services, products and a plain contact page.
 - **Prices are never trusted from the browser.** The form posts an option name; the
   controller looks the price up on the page. `tests/Feature/EnquiryTest.php` proves it.
 - **A real page beats a generated one.** `ServiceType` declares an index view, so `/services`
