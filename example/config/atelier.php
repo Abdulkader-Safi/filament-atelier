@@ -61,7 +61,21 @@ return [
     |     'font'  => ['arabic' => '"IBM Plex Sans Arabic", sans-serif'],
     | ],
     */
-    'tokens' => [],
+    'tokens' => [
+        // Sparkle Clean's palette. Set here rather than in a stylesheet so the
+        // editor preview and the public page read the same values, and so a
+        // block that picks "primary" as a background follows a rebrand.
+        'color' => [
+            'primary' => '#0d9488',
+            'on-primary' => '#ffffff',
+            'text' => '#0f172a',
+            'muted' => '#64748b',
+            'surface' => '#ffffff',
+            'border' => '#e2e8f0',
+            'tint' => '#f0fdfa',
+            'accent' => '#f59e0b',
+        ],
+    ],
 
     'media' => [
         // Where uploaded images land. The disk must be public, or the

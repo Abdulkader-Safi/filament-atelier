@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Blocks\PricingBlock;
+use App\Blocks\RequestFormBlock;
 use App\Filament\Widgets\RequestsOverview;
 use App\PageTypes\ProductType;
 use App\PageTypes\ServiceType;
@@ -61,7 +63,14 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 AtelierPlugin::make()
-                    ->blocks(DefaultBlocks::all())
+                    // The shipped set, plus two of this site's own. A block
+                    // written in the host app is registered exactly like a
+                    // shipped one.
+                    ->blocks([
+                        ...DefaultBlocks::all(),
+                        PricingBlock::class,
+                        RequestFormBlock::class,
+                    ])
                     // Each one becomes its own sidebar entry, listing only
                     // its own pages. Pages itself keeps the untyped ones.
                     ->pageTypes([

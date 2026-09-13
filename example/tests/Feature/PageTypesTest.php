@@ -87,7 +87,8 @@ it('shows the type fields on the settings screen, and only that type', function 
         ->assertOk()
         ->assertSee('Service details')
         ->assertSee('Short description')
-        ->assertSee('Starting price')
+        ->assertSee('Typical duration')
+        ->assertSee('Pricing')
         // ProductType's fields belong to products.
         ->assertDontSee('SKU');
 });
@@ -118,7 +119,7 @@ it('creates a page carrying the type, its template and its prefixed slug', funct
         ->and($page->slug('ar'))->toBe('خدمات/brand-strategy')
         // The type's four starter sections, each with the block's own defaults
         // and an id the editor can track.
-        ->and(collect($page->draft())->pluck('type')->all())->toBe(['hero', 'features', 'faq', 'cta'])
+        ->and(collect($page->draft())->pluck('type')->all())->toBe(ServiceType::template() ? array_column(ServiceType::template(), 'type') : [])
         ->and($page->draft()[0]['id'])->toStartWith('b_')
         ->and($page->draft()[0]['attributes'])->not->toBe([]);
 });
@@ -178,12 +179,12 @@ it('offers every block on a page with no type', function () {
 
 it('reads an untranslated property once and a translated one per locale', function () {
     $service = service('Web design', 'web-design', [
-        'starting_price' => 2500,
+        'duration' => '2 hours',
         'en' => ['excerpt' => 'Sites that load fast.'],
         'ar' => ['excerpt' => 'مواقع سريعة.'],
     ]);
 
-    expect($service->data('starting_price'))->toBe(2500)
+    expect($service->data('duration'))->toBe('2 hours')
         ->and($service->data('excerpt', 'en'))->toBe('Sites that load fast.')
         ->and($service->data('excerpt', 'ar'))->toBe('مواقع سريعة.');
 });
@@ -215,7 +216,7 @@ it('saves the type fields from the settings screen in the shape data() reads', f
     ])
         ->fillForm([
             'data' => [
-                'starting_price' => '4000',
+                'duration' => '4 to 6 hours',
                 'en' => ['excerpt' => 'English excerpt'],
                 'ar' => ['excerpt' => 'ملخص عربي'],
             ],
@@ -227,8 +228,7 @@ it('saves the type fields from the settings screen in the shape data() reads', f
 
     $service->refresh();
 
-    // A numeric field dehydrates to a number, so that is what comes back.
-    expect($service->data('starting_price'))->toBe(4000)
+    expect($service->data('duration'))->toBe('4 to 6 hours')
         ->and($service->data('excerpt', 'ar'))->toBe('ملخص عربي');
 });
 

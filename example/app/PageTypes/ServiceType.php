@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\PageTypes;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Safi\Atelier\Models\Page;
 use Safi\Atelier\PageTypes\BasePageType;
 
 /**
- * What a page type looks like in a host app. Nothing here is part of the
- * package: the fields, the starter sections and the card are this site's,
- * and another site's Service would declare different ones.
+ * A cleaning service: deep clean, move-out, office contract.
+ *
+ * Nothing here is part of the package. The fields, the tiers, the starter
+ * sections and the card are this site's, and another site's Service would
+ * declare different ones.
  */
 class ServiceType extends BasePageType
 {
@@ -29,7 +33,7 @@ class ServiceType extends BasePageType
 
     public static function icon(): string
     {
-        return 'heroicon-o-wrench-screwdriver';
+        return 'heroicon-o-sparkles';
     }
 
     public static function fields(): array
@@ -49,14 +53,45 @@ class ServiceType extends BasePageType
                 ->directory(config('atelier.media.directory').'/services')
                 ->visibility('public'),
 
-            TextInput::make('starting_price')
-                ->label('Starting price')
-                ->numeric()
-                ->prefix('AED'),
+            TextInput::make('icon')
+                ->label('Card icon')
+                ->placeholder('heroicon-o-sparkles')
+                ->helperText('Any Heroicon name. Used when there is no image.'),
+
+            TextInput::make('duration')
+                ->label('Typical duration')
+                ->placeholder('2 to 3 hours'),
 
             Toggle::make('featured')
                 ->label('Featured')
-                ->helperText('Featured services are listed first on the services page.'),
+                ->helperText('Featured services are the ones the homepage lists.'),
+
+            // The pricing table on the service's own page, and the answer to
+            // "which one do you recommend". Three rows is the shape the site
+            // is designed around, but nothing enforces three.
+            Repeater::make('tiers')
+                ->label('Pricing')
+                ->schema([
+                    TextInput::make('name')->label('Tier')->required()->placeholder('Standard'),
+                    TextInput::make('price')->label('Price')->numeric()->required()->prefix('AED'),
+                    TextInput::make('unit')->label('Per')->placeholder('visit'),
+                    Textarea::make('features')
+                        ->label('What is included')
+                        ->rows(3)
+                        ->helperText('One per line.')
+                        ->columnSpanFull(),
+                    Toggle::make('recommended')
+                        ->label('Suggested')
+                        ->helperText('Highlighted on the page. Only one should carry it.')
+                        ->columnSpanFull(),
+                ])
+                ->columns(3)
+                ->collapsed()
+                ->reorderable()
+                ->defaultItems(0)
+                ->itemLabel(fn (array $state) => $state['name'] ?? 'Tier')
+                ->addActionLabel('Add a tier')
+                ->columnSpanFull(),
         ];
     }
 
@@ -71,14 +106,18 @@ class ServiceType extends BasePageType
         return [
             ['type' => 'hero'],
             ['type' => 'features'],
+            ['type' => 'pricing'],
+            ['type' => 'request-form'],
             ['type' => 'faq'],
-            ['type' => 'cta'],
         ];
     }
 
     public static function blocks(): ?array
     {
-        return ['hero', 'features', 'rich-text', 'image', 'gallery', 'testimonials', 'faq', 'cta'];
+        return [
+            'hero', 'features', 'rich-text', 'image', 'gallery',
+            'testimonials', 'faq', 'cta', 'pricing', 'request-form',
+        ];
     }
 
     public static function cardView(): string
@@ -104,5 +143,21 @@ class ServiceType extends BasePageType
     public static function navigationSort(): ?int
     {
         return 0;
+    }
+
+    /**
+     * The cheapest tier, for the "from" line on a card.
+     *
+     * A helper on the type rather than logic in a Blade view, because two
+     * views want the same number.
+     */
+    public static function fromPrice(Page $page): ?float
+    {
+        $prices = collect($page->data('tiers') ?? [])
+            ->pluck('price')
+            ->filter(fn (mixed $price) => is_numeric($price))
+            ->map(fn (mixed $price) => (float) $price);
+
+        return $prices->isEmpty() ? null : $prices->min();
     }
 }
