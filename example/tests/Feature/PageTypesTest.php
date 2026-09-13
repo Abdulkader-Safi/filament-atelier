@@ -158,8 +158,8 @@ it('offers only the blocks the type allows in the section picker', function () {
         ->pluck('type');
 
     expect($picker)->toContain('hero')
-        // ServiceType leaves these two out.
-        ->not->toContain('logo-wall')
+        // A service is what gets listed, so ServiceType leaves the listing
+        // block out of its picker.
         ->not->toContain('collection');
 });
 
@@ -172,7 +172,7 @@ it('offers every block on a page with no type', function () {
         ->flatten(1)
         ->pluck('type');
 
-    expect($picker)->toContain('logo-wall')->toContain('collection');
+    expect($picker)->toContain('collection')->toContain('cta');
 });
 
 // Custom properties ---------------------------------------------------------

@@ -2,8 +2,7 @@
 
 namespace App\Providers\Filament;
 
-use App\Blocks\PricingBlock;
-use App\Blocks\RequestFormBlock;
+use App\Blocks\SiteBlocks;
 use App\Filament\Widgets\RequestsOverview;
 use App\PageTypes\ProductType;
 use App\PageTypes\ServiceType;
@@ -24,7 +23,6 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Safi\Atelier\AtelierPlugin;
-use Safi\Atelier\Blocks\DefaultBlocks;
 use Safi\Atelier\Models\Page as AtelierPage;
 
 class AdminPanelProvider extends PanelProvider
@@ -63,14 +61,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 AtelierPlugin::make()
-                    // The shipped set, plus two of this site's own. A block
-                    // written in the host app is registered exactly like a
-                    // shipped one.
-                    ->blocks([
-                        ...DefaultBlocks::all(),
-                        PricingBlock::class,
-                        RequestFormBlock::class,
-                    ])
+                    // This app's own blocks, and only those. The package
+                    // ships an equivalent set through DefaultBlocks::all(),
+                    // and most projects would start there; this one defines
+                    // its own so every section on the site can be read in
+                    // app/Blocks without opening the package.
+                    ->blocks(SiteBlocks::all())
                     // Each one becomes its own sidebar entry, listing only
                     // its own pages. Pages itself keeps the untyped ones.
                     ->pageTypes([

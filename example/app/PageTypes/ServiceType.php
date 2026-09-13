@@ -114,10 +114,8 @@ class ServiceType extends BasePageType
 
     public static function blocks(): ?array
     {
-        return [
-            'hero', 'features', 'rich-text', 'image', 'gallery',
-            'testimonials', 'faq', 'cta', 'pricing', 'request-form',
-        ];
+        // No 'collection': a service lists nothing, it is what gets listed.
+        return ['hero', 'features', 'rich-text', 'testimonials', 'pricing', 'request-form', 'faq', 'cta'];
     }
 
     public static function cardView(): string

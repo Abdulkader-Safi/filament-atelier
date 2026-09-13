@@ -53,8 +53,11 @@ and the client works it by hand.
 | --- | --- |
 | `app/PageTypes/ServiceType.php` | The Service type: its fields, its tiers, its starter sections, its card |
 | `app/PageTypes/ProductType.php` | The Product type, thinner on purpose |
+| `app/Blocks/SiteBlocks.php` | The nine sections this site can be built from. The only list the panel reads |
+| `app/Blocks/HeroBlock.php` and friends | One class per section. Each has a matching view in `resources/views/blocks` |
 | `app/Blocks/PricingBlock.php` | A block with no pricing fields of its own. It reads the page's tiers |
 | `app/Blocks/RequestFormBlock.php` | One form block that adapts to the page it is on |
+| `app/Blocks/CollectionBlock.php` | The listing block. Queries services or products, renders each through its card |
 | `app/Http/Controllers/EnquiryController.php` | The only public write. Prices come from the page, never from the form |
 | `app/Filament/Resources/EnquiryResource.php` | Requests, with the tabs |
 | `app/Filament/Widgets/RequestsOverview.php` | The three dashboard stats |
@@ -66,6 +69,11 @@ and the client works it by hand.
 
 ## Things it is deliberately demonstrating
 
+- **Every block on this site is defined in this app.** `SiteBlocks::all()` is what the
+  panel registers, and the package's `DefaultBlocks::all()` is deliberately not used, so
+  nothing on the site sends you into the package to find out what a section does. A real
+  project would usually start from the shipped set and add to it; this one starts from
+  nothing to keep the example readable.
 - **A page type is one plain class.** Two of them here, and neither is a Filament resource.
 - **A block can read the page it is on.** Both app blocks do, which is what lets one form
   block serve services, products and a plain contact page.

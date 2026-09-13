@@ -96,6 +96,11 @@ class ProductType extends BasePageType
         ];
     }
 
+    public static function blocks(): ?array
+    {
+        return ['hero', 'rich-text', 'features', 'testimonials', 'request-form', 'faq', 'cta'];
+    }
+
     public static function cardView(): string
     {
         return 'products.card';
