@@ -97,6 +97,7 @@
             <button
                 type="button"
                 wire:click="closeInspector"
+                x-on:click="panel = 'sections'"
                 title="Sections"
                 @class([
                     'rounded-lg p-2 transition',
@@ -116,8 +117,22 @@
                 ])
                 title="{{ $selected ? 'Section settings' : 'Select a section first' }}"
                 @disabled(! $selected)
+                x-on:click="panel = 'sections'"
             >
                 <x-filament::icon icon="heroicon-o-adjustments-horizontal" class="h-5 w-5" />
+            </button>
+
+            {{-- Every other page, without leaving the builder. --}}
+            <button
+                type="button"
+                title="Pages"
+                x-on:click="panel = panel === 'pages' ? 'sections' : 'pages'"
+                :class="panel === 'pages'
+                    ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400'
+                    : 'text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5'"
+                class="rounded-lg p-2 transition"
+            >
+                <x-filament::icon icon="heroicon-o-document-duplicate" class="h-5 w-5" />
             </button>
         </nav>
 
@@ -128,6 +143,72 @@
             document with it, since nothing between here and <body> scrolls.
         --}}
         <aside class="flex min-h-0 w-72 shrink-0 flex-col overflow-hidden border-e border-gray-200 bg-white dark:border-white/10 dark:bg-gray-900">
+            {{-- ── Pages ───────────────────────────────────────────── --}}
+            <div x-show="panel === 'pages'" x-cloak class="flex min-h-0 flex-1 flex-col" x-data="{ q: '' }">
+                <div class="flex h-11 shrink-0 items-center justify-between border-b border-gray-200 px-3 dark:border-white/10">
+                    <span class="text-sm font-medium">Pages</span>
+                    <button
+                        type="button"
+                        x-on:click="panel = 'sections'"
+                        class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5"
+                        title="Back to sections"
+                    >
+                        <x-filament::icon icon="heroicon-m-x-mark" class="h-4 w-4" />
+                    </button>
+                </div>
+
+                <div class="shrink-0 border-b border-gray-200 p-2 dark:border-white/10">
+                    <input
+                        type="search"
+                        x-model="q"
+                        placeholder="Search pages"
+                        x-on:keydown.escape.stop="q = ''"
+                        class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-white/10 dark:bg-white/5"
+                    />
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-2">
+                    @foreach ($this->pages as $group => $pages)
+                        <div x-show="{{ Js::from(array_column($pages, 'title')) }}.some((t) => t.toLowerCase().includes(q.trim().toLowerCase()))">
+                            <p class="px-1 pb-1 pt-2 text-xs font-medium uppercase tracking-wide text-gray-400">{{ $group }}</p>
+
+                            @foreach ($pages as $item)
+                                <div x-show="{{ Js::from($item['title']) }}.toLowerCase().includes(q.trim().toLowerCase())">
+                                    @if ($item['current'])
+                                        {{-- Not a link: this is where you already are. --}}
+                                        <span class="flex items-center gap-2 rounded-lg bg-primary-50 px-2 py-2 text-sm font-medium text-primary-700 dark:bg-primary-500/10 dark:text-primary-400">
+                                            <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
+                                            <span class="shrink-0 text-xs">editing</span>
+                                        </span>
+                                    @else
+                                        <a
+                                            href="{{ $item['url'] }}"
+                                            wire:navigate
+                                            class="flex items-center gap-2 rounded-lg px-2 py-2 text-sm hover:bg-gray-50 dark:hover:bg-white/5"
+                                        >
+                                            <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
+
+                                            @if ($item['status'] === 'changed')
+                                                <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="Unpublished changes"></span>
+                                            @elseif ($item['status'] !== 'published')
+                                                <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 dark:bg-white/20" title="Draft"></span>
+                                            @endif
+                                        </a>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    @endforeach
+
+                    <p
+                        class="px-1 py-6 text-center text-sm text-gray-400"
+                        x-show="q.trim() && ! {{ Js::from(collect($this->pages)->flatten(1)->pluck('title')->all()) }}.some((t) => t.toLowerCase().includes(q.trim().toLowerCase()))"
+                    >No page matches "<span x-text="q"></span>".</p>
+                </div>
+            </div>
+
+            {{-- ── Sections, or one section's settings ─────────────── --}}
+            <div x-show="panel !== 'pages'" class="flex min-h-0 flex-1 flex-col">
             @if ($selected)
                 {{-- Inspector --}}
                 <div class="flex h-11 shrink-0 items-center gap-1 border-b border-gray-200 px-2 dark:border-white/10">
@@ -179,17 +260,24 @@
                     <span class="text-xs text-gray-400">{{ count($this->sections) }}</span>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-2">
+                <div class="flex-1 overflow-y-auto p-2" x-data="atelierSections()" x-ref="list">
                     @forelse ($this->sections as $section)
                         <div
                             wire:key="row-{{ $section['id'] }}"
+                            data-section-id="{{ $section['id'] }}"
                             @class([
                                 'group mb-1 flex items-center gap-2 rounded-lg border border-transparent px-2 py-2 text-sm transition',
                                 'hover:border-gray-200 hover:bg-gray-50 dark:hover:border-white/10 dark:hover:bg-white/5',
                                 'opacity-50' => $section['hidden'],
                             ])
                         >
-                            <x-filament::icon :icon="$section['icon']" class="h-4 w-4 shrink-0 text-gray-400" />
+                            {{-- The handle, so a drag is a drag and a click is
+                                 still a click on the label. The icon doubles as
+                                 it: hovering swaps in the grip. --}}
+                            <span data-sortable-handle class="group/handle -ms-1 shrink-0 cursor-grab px-0.5 text-gray-400 active:cursor-grabbing" title="Drag to reorder">
+                                <x-filament::icon :icon="$section['icon']" class="h-4 w-4 group-hover/handle:hidden" />
+                                <x-filament::icon icon="heroicon-m-bars-2" class="hidden h-4 w-4 group-hover/handle:block" />
+                            </span>
 
                             <button
                                 type="button"
@@ -280,6 +368,7 @@
                     </div>
                 </div>
             @endif
+            </div>
         </aside>
 
         {{-- ── Canvas ──────────────────────────────────────────────── --}}
@@ -300,15 +389,46 @@
 @script
 <script>
     Alpine.data('atelierEditor', () => ({
+        // Which panel the sidebar shows. The inspector is still driven by the
+        // server, since it depends on the selected block; this only decides
+        // whether the Pages list covers it.
+        panel: 'sections',
+
         init() {
             // Livewire says the draft changed. Fetch the preview and swap only
             // the canvas, so scroll position and the stylesheet survive.
             this.$wire.on('atelier-refresh', () => this.refresh());
 
-            // Clicking a section in the preview selects it in the sidebar.
-            window.addEventListener('message', (e) => {
-                if (e.data?.atelier === 'select') this.$wire.selectBlock(e.data.id);
+            // A link the editor cannot open. It leaves the builder alone and
+            // opens beside it, because a preview that navigates itself stops
+            // being a preview of the page you are editing.
+            this.$wire.on('atelier-open-tab', (event) => {
+                window.open(event.href ?? event[0]?.href, '_blank', 'noopener');
             });
+
+            window.addEventListener('message', (e) => this.fromPreview(e.data));
+        },
+
+        /** Messages from the injected preview script. */
+        fromPreview(data) {
+            if (data?.atelier !== true) return;
+
+            if (data.type === 'select') {
+                this.panel = 'sections';
+                this.$wire.selectBlock(data.id);
+            }
+
+            if (data.type === 'navigate') {
+                // A link the author marked as opening elsewhere is honoured
+                // as written, rather than pulled into the editor.
+                if (data.target === '_blank') {
+                    window.open(data.href, '_blank', 'noopener');
+
+                    return;
+                }
+
+                this.$wire.openPath(data.href);
+            }
         },
 
         async refresh() {
@@ -330,6 +450,37 @@
             const y = frame.contentWindow.scrollY;
             current.innerHTML = next.innerHTML;
             frame.contentWindow.scrollTo(0, y);
+        },
+    }));
+
+    // Drag to reorder, the same gesture and the same library as the menu
+    // manager: SortableJS is already in Filament's own bundle, so this borrows
+    // window.Sortable rather than shipping a second copy. One Alpine component
+    // on the list rather than a global observer, because a MutationObserver
+    // re-running setup mid-drag is what lost a menu item once.
+    Alpine.data('atelierSections', () => ({
+        init() {
+            this.$nextTick(() => {
+                if (this.$el._atelierSortable || typeof Sortable === 'undefined') return;
+
+                this.$el._atelierSortable = Sortable.create(this.$el, {
+                    draggable: '[data-section-id]',
+                    handle: '[data-sortable-handle]',
+                    animation: 150,
+                    // Without these the browser's own drag API runs the
+                    // gesture: a static ghost under the cursor instead of the
+                    // row following it, which reads as laggy when nothing is
+                    // slow. Same two flags, same reason, as the menu manager.
+                    forceFallback: true,
+                    fallbackOnBody: true,
+                    onEnd: () => {
+                        const ids = Array.from(this.$el.querySelectorAll('[data-section-id]'))
+                            .map((el) => el.dataset.sectionId);
+
+                        this.$wire.call('reorder', ids);
+                    },
+                });
+            });
         },
     }));
 </script>

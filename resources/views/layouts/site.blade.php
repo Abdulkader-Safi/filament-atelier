@@ -2,7 +2,6 @@
     $locales = config('atelier.locales', []);
     $dir = $locales[$locale]['dir'] ?? 'ltr';
     $page = $page ?? null;
-    $isPreview = $preview ?? false;
 @endphp
 <!DOCTYPE html>
 <html lang="{{ $locale }}" dir="{{ $dir }}">
@@ -24,16 +23,7 @@
         {!! $blocks !!}
     </main>
 
-    @if ($isPreview)
-        {{-- Editor plumbing only. Never reaches a public page. --}}
-        <script>
-            document.addEventListener('click', (e) => {
-                const section = e.target.closest('[data-atelier-block]')
-                if (!section) return
-                e.preventDefault()
-                parent.postMessage({ atelier: 'select', id: section.dataset.atelierBlock }, '*')
-            })
-        </script>
-    @endif
+    {{-- No editor script here on purpose. The preview controller injects it,
+         so a layout you write yourself gets the same behaviour for free. --}}
 </body>
 </html>

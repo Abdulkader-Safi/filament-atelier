@@ -363,9 +363,12 @@ it('narrows the picker in the editor to the chosen type', function () {
     // select through a relative path. Getting that path wrong is silent: the
     // options fall back to every typed page, labelled with its type. So the
     // absence of that label is the assertion.
+    // The type suffix is the tell: choices() only adds it when it could not
+    // resolve which type the block is listing. The editor's Pages panel names
+    // every page on the site, so the bare titles prove nothing on their own.
     expect($html)->toContain('Web design')
         ->not->toContain('Web design (Service)')
-        ->not->toContain('A product')
+        ->not->toContain('A product (Product)')
         // Hand-picked has its own order, so the order select is not offered.
         ->not->toContain('Title, A to Z');
 });

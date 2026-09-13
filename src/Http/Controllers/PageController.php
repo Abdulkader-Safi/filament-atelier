@@ -6,13 +6,16 @@ namespace Safi\Atelier\Http\Controllers;
 
 use Safi\Atelier\Models\Page;
 use Safi\Atelier\Models\PageRedirect;
-use Safi\Atelier\Models\PageSlug;
+use Safi\Atelier\PageResolver;
 use Safi\Atelier\Renderer;
 use Symfony\Component\HttpFoundation\Response;
 
 class PageController
 {
-    public function __construct(protected Renderer $renderer) {}
+    public function __construct(
+        protected Renderer $renderer,
+        protected PageResolver $resolver,
+    ) {}
 
     /**
      * The public page. Reads published_content and nothing else, so an
@@ -20,29 +23,22 @@ class PageController
      */
     public function __invoke(?string $locale = null, ?string $slug = null): Response
     {
-        $locales = config('atelier.locales', []);
-        $default = array_key_first($locales);
+        // /{slug} is the default locale, /{locale}/{slug} is everything else,
+        // and the first segment is a locale only when it names one. That rule
+        // lives in PageResolver because the editor needs the same answer, and
+        // a second copy of it is how /services/web-design once served the
+        // /services page with a 200.
+        $path = implode('/', array_filter([$locale, $slug], fn (?string $part) => filled($part)));
 
-        // /{slug} is the default locale. /{locale}/{slug} is everything else.
-        // The first segment is only a locale when it names one, so /services/web-design
-        // puts both segments back into the slug rather than dropping the second and
-        // serving /services with a 200, which is worse than a 404.
-        if ($locale !== null && ! array_key_exists($locale, $locales)) {
-            $slug = $slug === null ? $locale : "{$locale}/{$slug}";
-            $locale = $default;
-        }
+        ['locale' => $locale, 'slug' => $slug] = $this->resolver->split($path);
 
-        $locale ??= $default;
-        $slug = trim((string) ($slug ?: 'home'), '/');
+        $resolved = $this->resolver->forPath($path);
 
-        $record = PageSlug::where('locale', $locale)->where('slug', $slug)->first();
-
-        if ($record === null) {
+        if ($resolved === null) {
             return $this->redirectOr404($locale, $slug);
         }
 
-        /** @var Page $page */
-        $page = $record->page;
+        $page = $resolved['page'];
 
         abort_unless($page->isPublished(), 404);
 
