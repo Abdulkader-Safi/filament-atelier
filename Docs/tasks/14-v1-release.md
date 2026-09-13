@@ -55,9 +55,11 @@ Two client-visible decisions, and nothing else:
 
 Cheapest work here is subtraction. Every item is a decision first and code second.
 
-- [ ] **Criterion 3, drag to reorder.** Not met. Reordering is up and down buttons, and a
-      new section always lands at the end. Build it, or amend the criterion and move drag
-      to 1.1 with the limitation stated in the README, which already says it.
+- [x] **Criterion 3, drag to reorder.** Built 13 Sep 2026 in
+      [16](16-editor-navigation.md), with SortableJS from Filament's own bundle and the
+      same configuration the menu manager uses. The up and down buttons stay for the
+      keyboard. A new section still lands at the end, which is now a one-drag problem
+      rather than an eleven-click one.
 - [ ] **The v1 block set.** `prd.md` scopes thirteen: header, hero, features, logo wall,
       testimonials, CTA, FAQ, rich text, image, gallery, contact form, footer, raw HTML.
       Nine ship. Missing: header, footer, contact form, raw HTML.

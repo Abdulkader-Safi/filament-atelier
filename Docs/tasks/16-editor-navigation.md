@@ -1,5 +1,16 @@
 # 16. Moving around inside the editor
 
+> **Written and built 13 Sep 2026, against the code at 0.5.0.** Covered by 15 tests in
+> `example/`, and hand-checked in the panel, which is where both halves of it actually
+> live.
+>
+> **Found while building: `APP_URL` is not the address anybody is browsing.** The link
+> handler compared a clicked href's host against `config('app.url')`, so a local setup
+> with `APP_URL=http://localhost:8000` and a browser on `127.0.0.1:8124` treated every
+> link on the site as external and opened it in a tab. The resolver now counts the
+> request's own host as this site. It is the same mistake the signed preview URL made
+> before it went relative, which is twice now.
+>
 > **Written 13 Sep 2026, against the code at 0.5.0.** Neither half is a bug report. Both
 > are the editor asking for more clicks than the job needs. Drag to reorder also closes
 > PRD criterion 3, which [14](14-v1-release.md) lists as an unmet v1 gate.
@@ -80,53 +91,53 @@ navigation. The editor keeps the page it had and the target opens beside it.
 
 ### The resolver
 
-- [ ] `PageResolver::forPath(?string $path): ?array{page, locale, slug}`, holding the rule
+- [x] `PageResolver::forPath(?string $path): ?array{page, locale, slug}`, holding the rule
       that the first segment is a locale only when it names one, and returning the page
       only when it is published.
-- [ ] `PageController` uses it. Its redirect and 404 handling stay where they are.
+- [x] `PageController` uses it. Its redirect and 404 handling stay where they are.
 
 ### The Pages panel
 
-- [ ] `PageEditor::getPagesProperty()`: every page grouped by type, ordered by title, with
+- [x] `PageEditor::getPagesProperty()`: every page grouped by type, ordered by title, with
       the current one flagged. Types read from `PageTypeRegistry` so a site with none sees
       one flat list.
-- [ ] A third icon-rail button and its panel, with a client-side search over the list.
-- [ ] Links use `wire:navigate` and the current page renders as text rather than a link.
+- [x] A third icon-rail button and its panel, with a client-side search over the list.
+- [x] Links use `wire:navigate` and the current page renders as text rather than a link.
 
 ### Following links in the preview
 
-- [ ] The preview script moves from `atelier::layouts.site` into `PreviewController`,
+- [x] The preview script moves from `atelier::layouts.site` into `PreviewController`,
       injected before `</body>`. Removed from the two example layouts.
-- [ ] The script intercepts every `<a>` click in the preview and posts the href up.
-- [ ] `PageEditor::openPath(string $path)`: resolve, then redirect to that page's builder
+- [x] The script intercepts every `<a>` click in the preview and posts the href up.
+- [x] `PageEditor::openPath(string $path)`: resolve, then redirect to that page's builder
       with `navigate: true`, or tell the browser to open the URL in a new tab.
-- [ ] A page that is a draft resolves for the editor even though the public route would
+- [x] A page that is a draft resolves for the editor even though the public route would
       404 it, because editing an unpublished page is the normal case here.
 
 ### Drag to reorder
 
-- [ ] `PageEditor::reorder(array $ids)`, rejecting a list that is not a permutation of the
+- [x] `PageEditor::reorder(array $ids)`, rejecting a list that is not a permutation of the
       current tree, the same guard `reorderTree()` uses.
-- [ ] SortableJS on the section list, borrowed from Filament's bundle the way the menu
+- [x] SortableJS on the section list, borrowed from Filament's bundle the way the menu
       manager borrows it: one Alpine component per list, `forceFallback`,
       `fallbackOnBody`, and a handle so a click still selects.
-- [ ] The up and down buttons stay.
+- [x] The up and down buttons stay.
 
 ### Quality bar
 
-- [ ] `npm run build` in the same commit as the panel view changes, per `CLAUDE.md`.
-- [ ] PRD criterion 3 marked met, and 14's Gate A item struck through with the date.
-- [ ] `Docs/installation.md`: the layouts guide stops telling people to copy the preview
+- [x] `npm run build` in the same commit as the panel view changes, per `CLAUDE.md`.
+- [x] PRD criterion 3 marked met, and 14's Gate A item struck through with the date.
+- [x] `Docs/installation.md`: the layouts guide stops telling people to copy the preview
       script, since it is injected now.
 
 ## Done when
 
-- [ ] Clicking a page in the Pages panel opens it in the builder, with the address bar
+- [x] Clicking a page in the Pages panel opens it in the builder, with the address bar
       following, and the section list belonging to the page on screen.
-- [ ] Clicking a link inside the preview opens that page in the builder. A link Atelier
+- [x] Clicking a link inside the preview opens that page in the builder. A link Atelier
       does not own opens in a new tab and the builder does not move.
-- [ ] A section dragged from the bottom of a twelve-section page to the top lands there,
+- [x] A section dragged from the bottom of a twelve-section page to the top lands there,
       in one gesture, with the preview refreshed once.
-- [ ] A host layout with no preview script still selects sections on click and follows
+- [x] A host layout with no preview script still selects sections on click and follows
       links, which is criterion 2 (the preview matching the page) holding for a layout the
       package has never seen.

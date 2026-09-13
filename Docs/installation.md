@@ -89,16 +89,25 @@ partials, or you lose what they carry:
 </head>
 <body>
     <header>Your navigation</header>
-    <main>{!! $blocks !!}</main>
+
+    {{-- The marker the editor swaps on a preview refresh. --}}
+    <main data-atelier-canvas>{!! $blocks !!}</main>
+
     <footer>Your footer</footer>
 </body>
 </html>
 ```
 
-⚠️ **Both failures are silent.** Without `partials.meta` the page renders perfectly and has
-no title, description, canonical, hreflang or Open Graph tags, and previews stop being
-`noindex`. Without `partials.tokens` every `var(--atelier-*)` resolves to nothing, so the
-background and spacing controls do nothing and Arabic loses its font stack.
+That is the whole contract: two partials and one attribute. The editor's own script,
+which selects a section when you click it in the preview and follows a link to the page it
+points at, is injected into the preview response, so your layout carries nothing for it.
+
+⚠️ **All three failures are silent.** Without `partials.meta` the page renders perfectly
+and has no title, description, canonical, hreflang or Open Graph tags, and previews stop
+being `noindex`. Without `partials.tokens` every `var(--atelier-*)` resolves to nothing, so
+the background and spacing controls do nothing and Arabic loses its font stack. Without
+`data-atelier-canvas` the preview still updates, by reloading the whole iframe, which
+throws away the scroll position on every keystroke.
 
 ## 4. Decide what owns `/`
 

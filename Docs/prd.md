@@ -41,7 +41,7 @@ Clients, non-technical, add sections and fill in fields in either language, seei
 
 1. A non-technical user builds a multi-section page (hero, features, testimonials, CTA, FAQ, contact) and publishes it, without touching code.
 2. Editing a field updates the middle iframe within 1 second of the user pausing, without saving and without a full editor reload.
-3. Reordering sections by drag updates the preview and persists the new order.
+3. Reordering sections by drag updates the preview and persists the new order. **Met 13 Sep 2026** ([`tasks/16`](tasks/16-editor-navigation.md)); up and down buttons stay alongside for the keyboard.
 4. A developer registers a new block type (one PHP class + one Blade view) and it appears in the section picker with working controls, no core changes.
 5. The middle pane renders with the public site's own stylesheet, not panel styles, so what the client sees is what ships. A text change that pushes a heading onto a third line is visible in the preview before saving, and the client can switch the preview to a desktop, tablet or mobile width to check the same thing at each.
 6. Public pages are server-rendered: full content present in the initial response with JS disabled, in both locales.
