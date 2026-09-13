@@ -85,10 +85,29 @@ class PageResource extends Resource
         return app(PageTypeRegistry::class)->resolve(static::typeKey());
     }
 
-    /** Services never appear under Pages, and Pages never appears under Services. */
+    /**
+     * Services never appear under Pages, and Pages never appears under
+     * Services.
+     *
+     * Pages also picks up anything carrying a type nobody registered, which
+     * is what happens the day a developer deletes a type class. Those pages
+     * still serve publicly, and a page that is live but invisible in the
+     * panel is the worst of both. Same reasoning as `Page::layoutView()`
+     * falling back rather than throwing.
+     */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('type', static::typeKey());
+        $key = static::typeKey();
+
+        if ($key !== PageTypeRegistry::DEFAULT) {
+            return parent::getEloquentQuery()->where('type', $key);
+        }
+
+        $registered = array_keys(app(PageTypeRegistry::class)->all());
+
+        return parent::getEloquentQuery()->where(fn (Builder $query) => $query
+            ->where('type', PageTypeRegistry::DEFAULT)
+            ->orWhereNotIn('type', [...$registered, PageTypeRegistry::DEFAULT]));
     }
 
     public static function getLabel(): ?string

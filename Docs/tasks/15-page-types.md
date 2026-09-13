@@ -217,6 +217,9 @@ per-page choice.
 - [x] A type with nothing published listed its index in the sitemap. It does not now.
 - [x] `PageResource::form()` was one 250-line static method. Split into four, which is
       what let a subclass-free type section exist at all.
+- [x] A page whose type nobody registered fell out of the panel completely: not under its
+      type, which no longer exists, and not under Pages. It kept serving publicly.
+      Pages now picks up anything with an unregistered type.
 
 ## Done when
 

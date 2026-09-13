@@ -63,6 +63,14 @@ it('lists a type under its own sidebar entry and nowhere else', function () {
     get('/admin/pages')->assertOk()->assertSee('About us')->assertDontSee('Web design');
 });
 
+it('keeps a page whose type nobody registered visible under Pages', function () {
+    // What a client is left with the day a developer deletes a type class.
+    // The page still serves publicly, so it has to be editable somewhere.
+    Page::create(['title' => 'Orphaned', 'type' => 'case-study'])->setSlugs(['en' => 'orphaned']);
+
+    get('/admin/pages')->assertOk()->assertSee('Orphaned');
+});
+
 it('shows every registered type in the sidebar', function () {
     get('/admin/pages')
         ->assertOk()
