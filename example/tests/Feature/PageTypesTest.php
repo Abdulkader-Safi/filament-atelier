@@ -79,6 +79,28 @@ it('shows every registered type in the sidebar', function () {
         ->assertSee('Pages');
 });
 
+it('shows the type fields on the settings screen, and only that type', function () {
+    $service = service('Web design', 'web-design');
+
+    get("/admin/services/{$service->getKey()}/edit")
+        ->assertOk()
+        ->assertSee('Service details')
+        ->assertSee('Short description')
+        ->assertSee('Starting price')
+        // ProductType's fields belong to products.
+        ->assertDontSee('SKU');
+});
+
+it('shows no type section on an ordinary page', function () {
+    $page = Page::create(['title' => 'About']);
+    $page->setSlugs(['en' => 'about']);
+
+    get("/admin/pages/{$page->getKey()}/edit")
+        ->assertOk()
+        ->assertSee('Meta title')
+        ->assertDontSee('Service details');
+});
+
 it('creates a page carrying the type, its template and its prefixed slug', function () {
     asType('service');
 
