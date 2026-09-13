@@ -345,7 +345,6 @@ class SparkleCleanSeeder extends Seeder
                 'body' => ['en' => 'Tell us the size of the place and when suits. We come back within one working day.'],
                 'cta_label' => ['en' => 'Ask for a quote'],
                 'cta_url' => '/contact',
-                'background' => ['token' => 'color.primary'],
             ]],
         ]);
     }

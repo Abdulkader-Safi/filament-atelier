@@ -32,8 +32,13 @@
 
         @if ($label = $attributes['cta_label'] ?? null)
             <div @class(['mt-10 flex gap-4', 'justify-center' => $center])>
+                {{-- The primary token, not a hardcoded neutral: a site that
+                     sets one gets its own button colour everywhere without
+                     overriding a single view. Over an image the button stays
+                     white, because a brand colour on a photo is a coin toss. --}}
                 <a href="{{ $attributes['cta_url'] ?? '#' }}"
-                   @class(['rounded-md px-5 py-3 text-sm font-medium transition', 'bg-neutral-900 text-white hover:bg-neutral-700' => ! $image, 'bg-white text-neutral-900 hover:bg-neutral-100' => (bool) $image])>
+                   @class(['rounded-md px-5 py-3 text-sm font-medium transition hover:opacity-90', 'bg-white text-neutral-900 hover:bg-neutral-100' => (bool) $image])
+                   @style(['background:var(--atelier-color-primary);color:var(--atelier-color-on-primary)' => ! $image])>
                     {{ $label }}
                 </a>
             </div>

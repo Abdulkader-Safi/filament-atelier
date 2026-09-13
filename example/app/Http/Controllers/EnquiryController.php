@@ -57,7 +57,11 @@ class EnquiryController extends Controller
             'message' => $data['message'] ?? null,
         ]);
 
-        return back()->with('enquiry', 'Thanks. We will come back to you within one working day.');
+        // Back to the form rather than the top of the page, so the person
+        // sees the answer to what they just did.
+        return back()
+            ->withFragment('request')
+            ->with('enquiry', 'Thanks. We will come back to you within one working day.');
     }
 
     /**

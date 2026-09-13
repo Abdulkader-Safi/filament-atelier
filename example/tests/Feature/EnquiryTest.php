@@ -2,8 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Filament\Resources\EnquiryResource\Pages\ListEnquiries;
+use App\Filament\Widgets\RequestsOverview;
 use App\Models\Enquiry;
 use App\Models\User;
+use Illuminate\Support\Facades\URL;
+use Livewire\Livewire;
 use Safi\Atelier\Models\Page;
 
 use function Pest\Laravel\actingAs;
@@ -175,6 +179,67 @@ it('shows the request in the panel, under the right tab', function () {
         ->assertSee('Home deep clean')
         ->assertSee('Hannah')
         ->assertSee('Villa');
+});
+
+it('counts what sold on the dashboard', function () {
+    actingAs(User::factory()->create());
+
+    $service = servicePage();
+    $product = productPage();
+
+    post('/request', ['page_id' => $service->getKey(), 'option' => 'Villa', 'name' => 'A', 'email' => 'a@example.test']);
+    post('/request', ['page_id' => $product->getKey(), 'option' => 'Standard', 'quantity' => 2, 'name' => 'B', 'email' => 'b@example.test']);
+
+    Enquiry::query()->where('kind', 'product')->update(['status' => 'won']);
+
+    // The dashboard loads its widgets over Livewire, so the stats are
+    // asserted on the widget rather than on the shell that hosts it.
+    get('/admin')->assertOk();
+
+    Livewire::test(RequestsOverview::class)
+        ->assertSee('Service requests')
+        ->assertSee('Product orders')
+        // 420 x 2, the only won one.
+        ->assertSee('AED 840')
+        ->assertSee('1 still unanswered');
+});
+
+it('splits services and products into tabs', function () {
+    actingAs(User::factory()->create());
+
+    $service = servicePage();
+    $product = productPage();
+
+    post('/request', ['page_id' => $service->getKey(), 'option' => 'Villa', 'name' => 'A', 'email' => 'a@example.test']);
+    post('/request', ['page_id' => $product->getKey(), 'name' => 'B', 'email' => 'b@example.test']);
+
+    Livewire::test(ListEnquiries::class)
+        ->set('activeTab', 'services')
+        ->assertCanSeeTableRecords(Enquiry::query()->ofKind('service')->get())
+        ->assertCanNotSeeTableRecords(Enquiry::query()->ofKind('product')->get())
+        ->set('activeTab', 'products')
+        ->assertCanSeeTableRecords(Enquiry::query()->ofKind('product')->get())
+        ->assertCanNotSeeTableRecords(Enquiry::query()->ofKind('service')->get());
+});
+
+it('shows the pricing table in the editor preview, not just on the public page', function () {
+    actingAs(User::factory()->create());
+
+    $service = servicePage();
+
+    $service->update(['draft_content' => [[
+        'id' => 'b_pricing',
+        'type' => 'pricing',
+        'attributes' => ['heading' => ['en' => 'Pick a package']],
+        'children' => [],
+    ]]]);
+
+    // The same render path the public page uses, with the draft as its data.
+    get(URL::signedRoute('atelier.preview', ['page' => $service->getKey(), 'locale' => 'en'], absolute: false))
+        ->assertOk()
+        ->assertSee('Pick a package')
+        ->assertSee('Villa')
+        ->assertSee('Most booked');
 });
 
 it('renders the form on a service page with its tiers', function () {
