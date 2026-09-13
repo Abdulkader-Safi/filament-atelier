@@ -1,9 +1,26 @@
 # 15. Page types
 
-> **Written 13 Sep 2026, against the code at 0.3.6.** Designed in conversation the same
-> day and approved before any code. Ships in 1.0.0, so [14](14-v1-release.md)'s gates
-> cover it too: whatever this adds to the public API is named in Gate B alongside `Block`
-> and `AtelierPlugin`.
+> **Written and built 13 Sep 2026, against the code at 0.3.6.** Designed in conversation
+> the same day and approved before any code. Everything below is built and covered by 21
+> tests in `example/`. Ships in 1.0.0, so [14](14-v1-release.md)'s gates cover it too:
+> `PageType`, `PageTypeRegistry` and `AtelierPlugin::pageTypes()` are named in Gate B
+> alongside `Block` and `AtelierPlugin`.
+>
+> **Changed during the build, 13 Sep 2026: one plain class per type, not a resource
+> subclass.** The approved design had each type extending a `PageTypeResource`, because a
+> Filament resource is routed by class name and one class cannot serve two sidebar
+> entries. Filament v5 turns out to solve this itself: `ResourceConfiguration` registers
+> one resource class several times, each with its own key and slug, and a middleware sets
+> the current key per request and keeps it across Livewire calls. So `PageResource` is
+> registered once plainly and once per type, and a page type is a plain PHP class
+> implementing `PageType`. This is strictly better than what was approved: the same
+> `/admin/services` URLs, one file per type instead of two, and `cardView()` no longer
+> sits on a Filament resource.
+>
+> **Also changed: translated properties are stored at `data.{locale}.{key}`,** not
+> `data.{key}.{locale}`. It matches the `seo` column, which already stores per-locale maps
+> that way, and it means the form needs no field renaming: a locale tab is a `Group` with
+> a `statePath`.
 
 ## What it is
 
@@ -130,80 +147,89 @@ per-page choice.
 
 ### Data
 
-- [ ] Migration `add_type_to_atelier_pages_table`: `type` string default `page`, indexed,
+- [x] Migration `add_type_to_atelier_pages_table`: `type` string default `page`, indexed,
       and `data` json nullable. Existing rows become `page`, so nothing in a live install
       moves.
-- [ ] Register the migration in `AtelierServiceProvider::configurePackage()`.
-- [ ] `Page::data(string $key, ?string $locale = null, mixed $default = null)`, collapsing
+- [x] Register the migration in `AtelierServiceProvider::configurePackage()`.
+- [x] `Page::data(string $key, ?string $locale = null, mixed $default = null)`, collapsing
       a per-locale map the way `Renderer::localise()` does, with a fallback to the first
       configured locale.
-- [ ] `Page::scopeOfType()` and `Page::pageType()` returning the registered class or null.
-- [ ] `data` added to the model's array casts.
+- [x] `Page::scopeOfType()` and `Page::pageType()` returning the registered class or null.
+- [x] `data` added to the model's array casts.
 
 ### The type contract
 
-- [ ] `PageType` interface: `type`, `label`, `pluralLabel`, `icon`, `navigationSort`,
+- [x] `PageType` interface: `type`, `label`, `pluralLabel`, `icon`, `navigationSort`,
       `fields`, `translatable`, `template`, `blocks`, `cardView`, `prefix`, `schemaType`,
       `indexView`.
-- [ ] `PageTypeRegistry` singleton: `register()`, `has()`, `resolve()`, `all()`,
+- [x] `PageTypeRegistry` singleton: `register()`, `has()`, `resolve()`, `all()`,
       `options()`. Same shape as `BlockRegistry`.
-- [ ] `AtelierPlugin::pageTypes()` feeding both the registry and `$panel->resources()`.
-- [ ] Defaults on `PageTypeResource` for every method except `type()` and `label()`, so a
+- [x] `AtelierPlugin::pageTypes()` feeding both the registry and `$panel->resources()`.
+- [x] Defaults on `PageTypeResource` for every method except `type()` and `label()`, so a
       type with no custom fields is six lines.
 
 ### Panel
 
-- [ ] Split `PageResource::form()` into `titleSection()`, `localeSection()`,
+- [x] Split `PageResource::form()` into `titleSection()`, `localeSection()`,
       `typeSection()` and `structuredDataSection()`. A subclass cannot inject a section
       into the single 250-line method as it stands.
-- [ ] `PageTypeResource` extends `PageResource`: scope the query, set label, plural label,
+- [x] `PageTypeResource` extends `PageResource`: scope the query, set label, plural label,
       icon and navigation sort from the type, build `typeSection()` from `fields()`.
-- [ ] `PageResource` scopes itself to `type = 'page'` so typed pages leave the Pages list.
-- [ ] Create: write the type, seed `draft_content` from `template()`, prefill the slug
+- [x] `PageResource` scopes itself to `type = 'page'` so typed pages leave the Pages list.
+- [x] Create: write the type, seed `draft_content` from `template()`, prefill the slug
       with the type's prefix for each locale.
-- [ ] Translated custom fields get locale tabs, reusing `PageResource::localeTabs()`.
-- [ ] `schema.type` defaults to the type's `schemaType()` where it declares one.
-- [ ] Picker filtered by `blocks()` in `PageEditor::getPickerProperty()`. A block already
+- [x] Translated custom fields get locale tabs, reusing `PageResource::localeTabs()`.
+- [x] `schema.type` defaults to the type's `schemaType()` where it declares one.
+- [x] Picker filtered by `blocks()` in `PageEditor::getPickerProperty()`. A block already
       on a page whose type no longer allows it keeps rendering; removing it would delete a
       client's content because a developer edited an array.
 
 ### Collection block
 
-- [ ] `CollectionBlock` plus `blocks/collection.blade.php`, registered in `DefaultBlocks`.
-- [ ] Sources: all published of a type, hand-picked ids, or children of the current page
+- [x] `CollectionBlock` plus `blocks/collection.blade.php`, registered in `DefaultBlocks`.
+- [x] Sources: all published of a type, hand-picked ids, or children of the current page
       by slug path (`Page::children()` already does the query).
-- [ ] Order (title, newest, hand-picked order) and limit.
-- [ ] Renders each item through the type's `cardView()`, with `$page` and `$locale` in
+- [x] Order (title, newest, hand-picked order) and limit.
+- [x] Renders each item through the type's `cardView()`, with `$page` and `$locale` in
       scope. A shipped fallback card (title and link) for a type that declares none, so
       the block never renders blank.
-- [ ] `Renderer` passes `page` into every block view. Four call sites: `PageController`,
+- [x] `Renderer` passes `page` into every block view. Four call sites: `PageController`,
       `PreviewController`, `PageEditor`, `StructuredData`.
 
 ### Public routes
 
-- [ ] One index route per type per locale at its prefix, registered before the catch-all.
-- [ ] The index controller yields to a real page at that slug.
-- [ ] Index routes in the sitemap.
+- [x] One index route per type per locale at its prefix, registered before the catch-all.
+- [x] The index controller yields to a real page at that slug.
+- [x] Index routes in the sitemap.
 
 ### Quality bar
 
-- [ ] `npm run build` in the same commit as any panel Blade view change, per `CLAUDE.md`.
-- [ ] `Docs/features.md` and `Docs/installation.md` updated: registering a type, writing a
+- [~] `npm run build`: not needed. The picker filter is PHP, and no panel Blade view changed.
+- [x] `Docs/features.md` and `Docs/installation.md` updated: registering a type, writing a
       card view, the Collection block.
-- [ ] `prd.md` gains the page-type rule next to "block types are code-defined in v1".
+- [x] `prd.md` gains the page-type rule next to "block types are code-defined in v1".
+
+### Found while building
+
+- [x] An index route shadowed a redirect. `/services` sits ahead of the catch-all, so an
+      old URL that should 301 rendered the listing instead. The controller now hands off
+      to `PageController` for a redirect as well as for a published page.
+- [x] A type with nothing published listed its index in the sitemap. It does not now.
+- [x] `PageResource::form()` was one 250-line static method. Split into four, which is
+      what let a subclass-free type section exist at all.
 
 ## Done when
 
-- [ ] A type registered in a panel provider appears in the sidebar with its own icon and
+- [x] A type registered in a panel provider appears in the sidebar with its own icon and
       lists only its own pages, and Pages no longer lists them.
-- [ ] Creating one prefills the prefixed slug, seeds the starter sections, and opens a
+- [x] Creating one prefills the prefixed slug, seeds the starter sections, and opens a
       builder whose picker offers only the allowed blocks.
-- [ ] A translated custom property round-trips as a per-locale map; an untranslated one
+- [x] A translated custom property round-trips as a per-locale map; an untranslated one
       stores a single value.
-- [ ] A Collection block on a page renders one card per published page of the type, each
+- [x] A Collection block on a page renders one card per published page of the type, each
       linking to the right per-locale URL, in the editor preview and on the public page
       identically. Criterion 2 in `prd.md`, the preview matching the page, holds for it.
-- [ ] The index route serves at `/services` and `/ar/خدمات`, and yields to a real page at
+- [x] The index route serves at `/services` and `/ar/خدمات`, and yields to a real page at
       the same slug.
-- [ ] The existing suite still passes with no page carrying a type, which is every page in
+- [x] The existing suite still passes with no page carrying a type, which is every page in
       every install that upgrades.
