@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\URL;
 use Safi\Atelier\Models\Page;
 use Safi\Atelier\Models\SiteSettings;
 use Safi\Atelier\Schema\Graph;
+use Safi\Atelier\Schema\StructuredData;
 
 use function Pest\Laravel\get;
 
@@ -655,7 +656,7 @@ it('gives a page Atelier does not own the same organisation graph', function () 
 });
 
 it('escapes a host app node the same way it escapes its own', function () {
-    $graph = \Safi\Atelier\Schema\StructuredData::for([[
+    $graph = StructuredData::for([[
         '@type' => 'Article',
         '@id' => 'https://example.com/post#article',
         'headline' => '</script><img src=x>',
@@ -666,7 +667,7 @@ it('escapes a host app node the same way it escapes its own', function () {
 });
 
 it('drops the empties from a host app node too', function () {
-    $graph = \Safi\Atelier\Schema\StructuredData::for([[
+    $graph = StructuredData::for([[
         '@type' => 'Article',
         '@id' => 'https://example.com/post#article',
         'headline' => 'Real',

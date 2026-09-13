@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Models\User;
 use Livewire\Livewire;
+use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\ListPages;
 use Safi\Atelier\Models\Page;
 
@@ -37,7 +38,7 @@ it('edits slugs from the settings screen without duplicating rows', function () 
     $page = Page::create(['title' => 'Editable']);
     $page->setSlugs(['en' => 'first', 'ar' => 'first-ar']);
 
-    Livewire::test(Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings::class, ['record' => $page->getKey()])
+    Livewire::test(EditPageSettings::class, ['record' => $page->getKey()])
         ->assertSet('data.slugs.en', 'first')
         ->fillForm(['slugs' => ['en' => 'second', 'ar' => 'second-ar']])
         ->call('save')

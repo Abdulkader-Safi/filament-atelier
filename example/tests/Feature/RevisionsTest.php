@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Models\User;
+use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Models\Page;
 
 use function Pest\Laravel\actingAs;
@@ -78,7 +79,7 @@ it('unpublishes from the panel without losing content', function () {
     $page->publish();
 
     Livewire\Livewire::test(
-        Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings::class,
+        EditPageSettings::class,
         ['record' => $page->getKey()],
     )->callAction('unpublish');
 

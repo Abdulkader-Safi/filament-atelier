@@ -6,6 +6,7 @@ use App\Models\User;
 use App\PageTypes\ServiceType;
 use Filament\Facades\Filament;
 use Livewire\Livewire;
+use Safi\Atelier\Blocks\CollectionBlock;
 use Safi\Atelier\Filament\Pages\PageEditor;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\EditPageSettings;
 use Safi\Atelier\Filament\Resources\PageResource\Pages\ListPages;
@@ -274,6 +275,99 @@ it('lists the Arabic side with Arabic URLs', function () {
         ->assertOk()
         ->assertSee('مواقع سريعة.')
         ->assertSee('/ar/خدمات/web-design-ar');
+});
+
+it('lists only the hand-picked ones, in the order they were dragged', function () {
+    $design = service('Web design', 'web-design');
+    $branding = service('Brand identity', 'brand-identity');
+    service('Content strategy', 'content-strategy');
+
+    $home = Page::create(['title' => 'Home', 'draft_content' => [[
+        'id' => 'b_list',
+        'type' => 'collection',
+        'attributes' => [
+            'page_type' => 'service',
+            'source' => 'picked',
+            // Branding first, though it sorts second by title.
+            'pages' => [(string) $branding->getKey(), (string) $design->getKey()],
+        ],
+        'children' => [],
+    ]]]);
+    $home->setSlugs(['en' => 'home']);
+    $home->publish();
+
+    $html = get('/')->assertOk()->assertDontSee('Content strategy')->getContent();
+
+    expect(strpos($html, 'Brand identity'))->toBeLessThan(strpos($html, 'Web design'));
+});
+
+it('drops a pick that is unpublished, deleted or of another type', function () {
+    $design = service('Web design', 'web-design');
+    $draft = Page::create(['title' => 'Unfinished', 'type' => 'service']);
+    $product = Page::create(['title' => 'A product', 'type' => 'product', 'status' => 'published']);
+
+    $home = Page::create(['title' => 'Home', 'draft_content' => [[
+        'id' => 'b_list',
+        'type' => 'collection',
+        'attributes' => [
+            'page_type' => 'service',
+            'source' => 'picked',
+            'pages' => [$design->getKey(), $draft->getKey(), $product->getKey(), 9999],
+        ],
+        'children' => [],
+    ]]]);
+    $home->setSlugs(['en' => 'home']);
+    $home->publish();
+
+    get('/')
+        ->assertOk()
+        ->assertSee('Web design')
+        ->assertDontSee('Unfinished')
+        ->assertDontSee('A product');
+});
+
+it('offers published pages of the chosen type to pick from', function () {
+    service('Web design', 'web-design');
+    Page::create(['title' => 'Unfinished', 'type' => 'service']);
+    Page::create(['title' => 'A product', 'type' => 'product', 'status' => 'published']);
+
+    expect(CollectionBlock::choices('service'))
+        ->toBe([1 => 'Web design'])
+        // With no type resolved, everything typed, labelled by its type.
+        ->and(array_values(CollectionBlock::choices(null)))
+        ->toBe(['A product (Product)', 'Web design (Service)']);
+});
+
+it('narrows the picker in the editor to the chosen type', function () {
+    $design = service('Web design', 'web-design');
+    Page::create(['title' => 'A product', 'type' => 'product', 'status' => 'published'])
+        ->setSlugs(['en' => 'products/a']);
+
+    $home = Page::create(['title' => 'Home', 'draft_content' => [[
+        'id' => 'b_list',
+        'type' => 'collection',
+        'attributes' => [
+            'page_type' => 'service',
+            'source' => 'picked',
+            'pages' => [(string) $design->getKey()],
+        ],
+        'children' => [],
+    ]]]);
+    $home->setSlugs(['en' => 'home']);
+
+    $html = Livewire::test(PageEditor::class, ['record' => $home->getKey()])
+        ->call('selectBlock', 'b_list')
+        ->html();
+
+    // The picker sits inside a repeater item and reads the block's own type
+    // select through a relative path. Getting that path wrong is silent: the
+    // options fall back to every typed page, labelled with its type. So the
+    // absence of that label is the assertion.
+    expect($html)->toContain('Web design')
+        ->not->toContain('Web design (Service)')
+        ->not->toContain('A product')
+        // Hand-picked has its own order, so the order select is not offered.
+        ->not->toContain('Title, A to Z');
 });
 
 it('says so rather than rendering an empty grid', function () {

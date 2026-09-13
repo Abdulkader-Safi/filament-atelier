@@ -290,6 +290,15 @@ Reading the properties back in a view:
 </a>
 ```
 
+### Listing them on a page
+
+Build an ordinary page, add a **Collection** section, and pick the type. The block asks four things: which type, everything published or the ones you choose, how many, and how many columns. Choosing them by hand gives a drag-to-reorder list, and that order is the order they render in.
+
+The markup comes from two files, and both are yours:
+
+- **The card** is the type's `cardView()`, a partial in your app receiving `$page` and `$locale`. Change it and every listing of that type changes.
+- **The wrapper** (the heading and the grid) is `atelier::blocks.collection`. Override it the normal Laravel way, by writing `resources/views/vendor/atelier/blocks/collection.blade.php` in your app. Or ignore the shipped block and write your own, using `Page::query()->where('status', 'published')->ofType('service')->get()` and `$page->data(...)`, the same way any other block works.
+
 Four things worth knowing:
 
 - **`data()` unwraps a translated value and falls back to the first configured locale**, so a card with no Arabic excerpt shows the English one rather than a gap.

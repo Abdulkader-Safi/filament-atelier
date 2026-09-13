@@ -11,7 +11,7 @@ function publishedPage(string $title, string $slug, array $tree = []): Page
     $page = Page::create(['title' => $title, 'draft_content' => $tree ?: [[
         'id' => 'b_one',
         'type' => 'hero',
-        'attributes' => ['heading' => ['en' => "{$title} heading", 'ar' => "عنوان"]],
+        'attributes' => ['heading' => ['en' => "{$title} heading", 'ar' => 'عنوان']],
         'children' => [],
     ]]]);
 
