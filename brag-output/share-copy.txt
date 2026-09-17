@@ -1,0 +1,2 @@
+Filament Atelier: you define the sections in code, your client builds pages from them, and the preview beside the editor is the real Blade page. Retype a headline, check it at phone width, publish.
+composer require safi/filament-atelier

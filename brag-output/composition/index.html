@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>Filament Atelier brag</title>
+    <script src="assets/js/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "EB Garamond"; src: url(assets/fonts/EBGaramond-400.woff2) format("woff2"); font-weight: 400; }
+      @font-face { font-family: "EB Garamond"; src: url(assets/fonts/EBGaramond-700.woff2) format("woff2"); font-weight: 700; }
+      @font-face { font-family: "Inter"; src: url(assets/fonts/Inter-400.woff2) format("woff2"); font-weight: 400; }
+      @font-face { font-family: "Inter"; src: url(assets/fonts/Inter-700.woff2) format("woff2"); font-weight: 700; }
+      @font-face { font-family: "JetBrains Mono"; src: url(assets/fonts/JetBrainsMono-400.woff2) format("woff2"); font-weight: 400; }
+      @font-face { font-family: "JetBrains Mono"; src: url(assets/fonts/JetBrainsMono-700.woff2) format("woff2"); font-weight: 700; }
+
+      :root {
+        --paper: #f1eee6;
+        --ink: #151411;
+        --bronze: #a8742f;
+        --bronze-text: #82561c;
+        --muted: #625d54;
+        --rule: #d6cfbf;
+        --serif: "EB Garamond", Georgia, serif;
+        --mono: "JetBrains Mono", ui-monospace, monospace;
+        --sans: "Inter", system-ui, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); }
+      #root { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+
+      /* Shared background */
+      #bg { position: absolute; inset: 0; background: var(--paper); }
+      #grid {
+        position: absolute; inset: 0; opacity: 0.55;
+        background-image:
+          linear-gradient(to right, rgba(120, 104, 70, 0.07) 2px, transparent 2px),
+          linear-gradient(to bottom, rgba(120, 104, 70, 0.07) 2px, transparent 2px);
+        background-size: 48px 48px;
+      }
+      #warm {
+        position: absolute; width: 1400px; height: 1400px; left: 260px; top: -160px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(168, 116, 47, 0.16) 0%, rgba(168, 116, 47, 0) 62%);
+      }
+      #frame { position: absolute; left: 48px; top: 40px; width: 1824px; height: 1000px; border: 2px solid var(--rule); }
+
+      .scene { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+      .wrap { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .mono-label { font-family: var(--mono); font-size: 22px; letter-spacing: 0.32em; text-transform: uppercase; color: var(--muted); }
+
+      /* Scene 1 */
+      #s1-label { position: absolute; left: 140px; top: 120px; }
+      #s1-lines { position: absolute; left: 140px; top: 330px; width: 1640px; }
+      .hook { display: block; font-family: var(--serif); font-weight: 700; font-size: 132px; line-height: 1.08; letter-spacing: -0.015em; margin: 0; }
+      #s1-l2 { color: var(--bronze-text); margin-top: 18px; }
+      #s1-rule { position: absolute; left: 140px; top: 760px; width: 520px; height: 3px; background: var(--bronze); transform-origin: left center; }
+
+      /* Wordmark */
+      .wm { position: absolute; }
+      .wm-kicker { font-family: var(--mono); font-size: 34px; letter-spacing: 0.62em; color: var(--muted); margin: 0; }
+      .wm-name { font-family: var(--serif); font-weight: 700; font-size: 290px; line-height: 1.05; letter-spacing: -0.02em; margin: 30px 0 28px -10px; }
+      .wm-rule { width: 100%; height: 3px; background: var(--rule); transform-origin: left center; }
+      .wm-tag { text-transform: uppercase; font-family: var(--mono); font-size: 27px; line-height: 1.7; letter-spacing: 0.3em; color: var(--muted); margin-top: 34px; width: 900px; }
+
+      /* Wireframe */
+      .wf { position: absolute; }
+      .wf-label { font-family: var(--mono); font-size: 18px; letter-spacing: 0.3em; color: var(--muted); margin-bottom: 18px; }
+      .wf-row { width: 230px; height: 64px; border: 2px solid #c9c1b0; border-radius: 8px; margin-bottom: 14px; display: flex; align-items: center; gap: 16px; padding: 0 20px; background: rgba(255,255,255,0.25); }
+      .wf-row i { display: block; width: 18px; height: 18px; background: #aba59a; border-radius: 3px; }
+      .wf-row b { display: block; height: 10px; border-radius: 5px; background: #cbc5b9; }
+      .wf-row.on { border-color: var(--bronze); }
+      .wf-row.on i, .wf-row.on b { background: var(--bronze); }
+      .wf-page { position: absolute; border: 2px solid #9c968b; background: rgba(255,255,255,0.18); }
+      .wf-bar { position: absolute; height: 18px; border-radius: 9px; background: #bdb7ab; }
+      .wf-bar.lt { background: #d6d1c6; height: 12px; }
+      .wf-img { position: absolute; border: 2px solid #c3bdb1; background: #e7e3da; }
+      .sel { position: absolute; border: 3px solid var(--bronze); }
+      .sel::before, .sel::after { content: ""; position: absolute; width: 14px; height: 14px; background: var(--paper); border: 3px solid var(--bronze); }
+      .sel::before { left: -9px; top: -9px; }
+      .sel::after { right: -9px; bottom: -9px; }
+
+      /* Editor */
+      #win { position: absolute; left: 120px; top: 60px; width: 1680px; height: 820px; background: #ffffff; border: 2px solid #d9d3c5; border-radius: 18px; overflow: hidden; box-shadow: 0 40px 90px rgba(60, 48, 25, 0.18); }
+      #topbar { position: absolute; left: 0; top: 0; width: 1680px; height: 64px; border-bottom: 2px solid #e8e5de; }
+      #tb-title { position: absolute; left: 24px; top: 0; height: 64px; display: flex; align-items: center; gap: 14px; font-size: 22px; font-weight: 700; }
+      .arrow { color: #6b6b6b; font-size: 24px; font-weight: 400; }
+      .badge { position: absolute; top: 17px; height: 30px; padding: 0 12px; border-radius: 7px; font-size: 17px; font-weight: 700; display: flex; align-items: center; }
+      #badge-draft { left: 140px; background: #fef3c7; color: #92400e; }
+      #badge-pub { left: 140px; background: #dcfce7; color: #166534; }
+      #switch { position: absolute; left: 762px; top: 10px; width: 156px; height: 44px; background: #f1f0ed; border-radius: 10px; }
+      .sw { position: absolute; top: 4px; width: 48px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+      .sw span { display: block; border: 2.5px solid #6b6b6b; border-radius: 3px; }
+      #sw-d { left: 4px; } #sw-t { left: 54px; } #sw-m { left: 104px; }
+      #sw-d span { width: 24px; height: 17px; } #sw-t span { width: 17px; height: 22px; } #sw-m span { width: 12px; height: 22px; }
+      .sw-active { position: absolute; top: 4px; left: 4px; width: 48px; height: 36px; background: #ffffff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+      #locale { position: absolute; left: 1374px; top: 10px; width: 126px; height: 44px; background: #f1f0ed; border-radius: 10px; font-size: 17px; font-weight: 700; color: #555; }
+      #locale span { position: absolute; top: 4px; width: 57px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; }
+      #loc-en { left: 4px; background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,0.15); }
+      #loc-ar { left: 65px; }
+      #publish { position: absolute; left: 1524px; top: 10px; width: 132px; height: 44px; background: var(--ink); color: #fff; border-radius: 10px; font-size: 19px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+      #rail { position: absolute; left: 0; top: 64px; width: 72px; height: 756px; border-right: 2px solid #e8e5de; }
+      .rail-i { position: absolute; left: 16px; width: 40px; height: 40px; border-radius: 9px; }
+      .rail-i span { position: absolute; left: 10px; top: 10px; width: 20px; height: 20px; border: 2.5px solid #7a7a7a; border-radius: 4px; }
+      #rail-1 { top: 16px; background: #f4ecdf; } #rail-1 span { border-color: var(--bronze); }
+      #rail-2 { top: 66px; } #rail-3 { top: 116px; }
+
+      #aside { position: absolute; left: 72px; top: 64px; width: 420px; height: 756px; border-right: 2px solid #e8e5de; overflow: hidden; }
+      .panel { position: absolute; left: 0; top: 0; width: 420px; height: 756px; background: #fff; }
+      .p-head { position: absolute; left: 0; top: 0; width: 420px; height: 64px; border-bottom: 2px solid #e8e5de; display: flex; align-items: center; padding: 0 22px; font-size: 21px; font-weight: 700; gap: 12px; }
+      .row { position: absolute; left: 12px; width: 396px; height: 76px; border-radius: 10px; padding: 12px 16px; }
+      .row .t { font-size: 19px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 360px; }
+      .row .k { font-family: var(--mono); font-size: 14px; letter-spacing: 0.18em; color: #6b6b6b; margin-top: 6px; }
+      #row-hero-bg { position: absolute; left: 12px; top: 76px; width: 396px; height: 76px; border-radius: 10px; background: #f4ecdf; border: 2px solid var(--bronze); }
+      .field-l { position: absolute; left: 22px; font-size: 17px; font-weight: 700; color: #333; }
+      .field { position: absolute; left: 22px; width: 376px; border: 2px solid #dedbd3; border-radius: 10px; padding: 12px 14px; font-size: 19px; line-height: 1.4; color: var(--ink); }
+      #f-heading { top: 210px; height: 118px; }
+      #f-heading .layer { position: absolute; left: 14px; top: 12px; width: 344px; }
+      #h1-d { position: relative; }
+      #h1-d .layer { position: absolute; left: 0; top: 0; width: 860px; }
+      #f-heading-ring { position: absolute; left: 22px; top: 210px; width: 376px; height: 118px; border: 3px solid var(--bronze); border-radius: 10px; }
+      .caret { display: inline-block; width: 2px; height: 22px; background: var(--ink); vertical-align: -4px; margin-left: 1px; }
+
+      #canvas { position: absolute; left: 492px; top: 64px; width: 1188px; height: 756px; background: #ece9e1; overflow: hidden; }
+      .page { position: absolute; top: 28px; height: 700px; background: #ffffff; overflow: hidden; box-shadow: 0 6px 20px rgba(0,0,0,0.08); }
+      #page-d { left: 34px; width: 1120px; }
+      #page-m { left: 394px; width: 400px; border-radius: 22px; }
+      .site-nav { position: absolute; left: 0; top: 0; width: 100%; height: 64px; border-bottom: 1px solid #eee; display: flex; align-items: center; padding: 0 36px; font-weight: 700; font-size: 20px; }
+      .site-nav em { font-style: normal; margin-left: auto; font-weight: 400; font-size: 16px; color: #555; letter-spacing: 0.02em; }
+      .hero { position: absolute; left: 0; top: 64px; width: 100%; text-align: center; }
+      #hero-d { height: 400px; padding: 56px 120px 0; }
+      #hero-m { height: 560px; padding: 44px 28px 0; }
+      .eyebrow { font-size: 15px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #555; }
+      .h1 { font-weight: 700; color: #171717; letter-spacing: -0.02em; margin: 16px auto 0; }
+      #h1-d { font-size: 58px; line-height: 1.08; width: 860px; height: 126px; }
+      #h1-m { font-size: 40px; line-height: 1.1; width: 344px; }
+      .sub { color: #525252; margin: 22px auto 0; }
+      #sub-d { font-size: 21px; line-height: 1.5; width: 720px; }
+      #sub-m { font-size: 18px; line-height: 1.5; }
+      .btn { display: inline-block; margin-top: 28px; background: #171717; color: #fff; font-size: 17px; font-weight: 700; padding: 13px 22px; border-radius: 7px; }
+      .feat { position: absolute; top: 470px; left: 60px; width: 1000px; display: flex; gap: 40px; }
+      .feat div { flex: 1; }
+      .feat b { display: block; font-size: 20px; margin-bottom: 8px; }
+      .feat p { margin: 0; font-size: 16px; line-height: 1.5; color: #555; }
+      .feat-h { position: absolute; top: 500px; left: 60px; font-size: 26px; font-weight: 700; }
+      #sel-d { left: 8px; top: 72px; width: 1104px; height: 404px; }
+      #sel-m { left: 8px; top: 70px; width: 384px; height: 540px; }
+      .sel-tag { position: absolute; right: 10px; top: 10px; font-family: var(--mono); font-size: 15px; letter-spacing: 0.24em; color: #ffffff; background: var(--bronze-text); padding: 4px 10px; }
+
+      #cursor { position: absolute; left: 0; top: 0; width: 40px; height: 48px; }
+      #caption { position: absolute; left: 124px; top: 916px; width: 1400px; height: 90px; }
+      .cap { position: absolute; left: 0; top: 0; font-family: var(--serif); font-weight: 700; font-size: 60px; line-height: 1.1; white-space: nowrap; }
+      #cap-tag { position: absolute; right: 124px; top: 944px; }
+
+      /* Scene 4 */
+      #s4-label { position: absolute; left: 140px; top: 150px; }
+      .fact { position: absolute; left: 140px; width: 1640px; height: 190px; border-top: 3px solid var(--rule); display: flex; align-items: center; gap: 56px; }
+      .fact .n { font-family: var(--mono); font-size: 34px; color: var(--bronze-text); letter-spacing: 0.1em; width: 70px; }
+      .fact .s { font-family: var(--serif); font-weight: 700; font-size: 76px; letter-spacing: -0.01em; white-space: nowrap; }
+      #fact-1 { top: 250px; } #fact-2 { top: 460px; } #fact-3 { top: 670px; }
+
+      /* Scene 5 */
+      #cmd { margin-top: 44px; display: inline-block; white-space: nowrap; font-family: var(--mono); font-size: 27px; padding: 20px 30px; border: 2px solid #b9b1a0; border-radius: 10px; background: rgba(255,255,255,0.55); color: var(--ink); }
+      #cmd span { color: var(--bronze-text); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-width="1920" data-height="1080" data-duration="22">
+      <div id="bg">
+        <div id="warm"></div>
+        <div id="grid"></div>
+        <div id="frame"></div>
+      </div>
+
+      <!-- Scene 1: hook -->
+      <section id="s1" class="scene clip" data-start="0" data-duration="3.5" data-track-index="1">
+        <div id="s1-wrap" class="wrap">
+          <div id="s1-label" class="mono-label">Sections</div>
+          <div id="s1-lines">
+            <p id="s1-l1" class="hook">Clients want to edit the page.</p>
+            <p id="s1-l2" class="hook">You want to keep the code.</p>
+          </div>
+          <div id="s1-rule"></div>
+        </div>
+      </section>
+
+      <!-- Scene 2: reveal -->
+      <section id="s2" class="scene clip" data-start="3.5" data-duration="3" data-track-index="1">
+        <div id="s2-wrap" class="wrap">
+          <div class="wm" style="left: 170px; top: 250px; width: 1580px;">
+            <p id="s2-kicker" class="wm-kicker">FILAMENT</p>
+            <p id="s2-name" class="wm-name">Atelier</p>
+            <div id="s2-rule" class="wm-rule" style="width: 1100px;"></div>
+            <div id="s2-tag" class="wm-tag" style="width: 1400px;">A visual page builder for Laravel and Filament</div>
+          </div>
+          <div id="s2-sel" class="sel" style="left: 138px; top: 238px; width: 1170px; height: 386px;"></div>
+        </div>
+      </section>
+
+      <!-- Scene 3: the editor -->
+      <section id="s3" class="scene clip" data-start="6.5" data-duration="8.5" data-track-index="1">
+        <div id="s3-wrap" class="wrap">
+          <div id="win">
+            <div id="topbar">
+              <div id="tb-title"><span class="arrow">&larr;</span><span>Home</span></div>
+              <div id="badge-draft" class="badge">Draft</div>
+              <div id="badge-pub" class="badge">Published</div>
+              <div id="switch">
+                <div id="sw-active" class="sw-active"></div>
+                <div id="sw-d" class="sw"><span></span></div>
+                <div id="sw-t" class="sw"><span></span></div>
+                <div id="sw-m" class="sw"><span></span></div>
+              </div>
+              <div id="locale"><span id="loc-en">EN</span><span id="loc-ar">AR</span></div>
+              <div id="publish">Publish</div>
+            </div>
+            <div id="rail">
+              <div id="rail-1" class="rail-i"><span></span></div>
+              <div id="rail-2" class="rail-i"><span></span></div>
+              <div id="rail-3" class="rail-i"><span></span></div>
+            </div>
+            <div id="aside">
+              <div id="panel-list" class="panel">
+                <div class="p-head">Sections</div>
+                <div id="row-hero-bg"></div>
+                <div class="row" style="top: 76px;"><div class="t">A clean flat, without the Sunday spent on it</div><div class="k">HERO</div></div>
+                <div class="row" style="top: 160px;"><div class="t">Why people stay with us</div><div class="k">FEATURES</div></div>
+                <div class="row" style="top: 244px;"><div class="t">What we clean</div><div class="k">COLLECTION</div></div>
+                <div class="row" style="top: 328px;"><div class="t">What clients say</div><div class="k">TESTIMONIALS</div></div>
+                <div class="row" style="top: 412px;"><div class="t">The products we use, if you want them</div><div class="k">COLLECTION</div></div>
+                <div class="row" style="top: 496px;"><div class="t">Get a price today</div><div class="k">CALL TO ACTION</div></div>
+              </div>
+              <div id="panel-insp" class="panel">
+                <div class="p-head"><span class="arrow">&larr;</span>Hero</div>
+                <div class="field-l" style="top: 90px;">Eyebrow</div>
+                <div class="field" style="top: 120px; height: 54px; padding-top: 12px;">Dubai, since 2014</div>
+                <div class="field-l" style="top: 182px;">Heading</div>
+                <div id="f-heading" class="field"><div id="f-old" class="layer">A clean flat, without the Sunday spent on it</div><div id="f-new" class="layer"></div></div>
+                <div id="f-heading-ring"></div>
+                <div class="field-l" style="top: 352px;">Subheading</div>
+                <div class="field" style="top: 382px; height: 150px; color: #444;">Home and office cleaning by a vetted team that turns up when it says it will.</div>
+                <div class="field-l" style="top: 556px;">Button label</div>
+                <div class="field" style="top: 586px; height: 54px;">See our services</div>
+              </div>
+            </div>
+            <div id="canvas">
+              <div id="page-d" class="page">
+                <div class="site-nav">Sparkle Clean<em>Services &nbsp;&nbsp; Products &nbsp;&nbsp; About &nbsp;&nbsp; Contact</em></div>
+                <div id="hero-d" class="hero">
+                  <div class="eyebrow">Dubai, since 2014</div>
+                  <div id="h1-d" class="h1"><div id="d-old" class="layer">A clean flat, without the Sunday spent on it</div><div id="d-new" class="layer"></div></div>
+                  <div id="sub-d" class="sub">Home and office cleaning by a vetted team that turns up when it says it will. Fixed prices, no contracts on the home side.</div>
+                  <div class="btn">See our services</div>
+                </div>
+                <div class="feat-h">Why people stay with us</div>
+                <div class="feat" style="top: 556px;">
+                  <div><b>Fixed prices</b><p>The price on the page is the price on the invoice.</p></div>
+                  <div><b>Vetted and insured</b><p>Police-checked, trained, and covered to AED 1m.</p></div>
+                  <div><b>The same team</b><p>They learn your home. You stop giving instructions.</p></div>
+                </div>
+                <div id="sel-d" class="sel"><div class="sel-tag">HERO</div></div>
+              </div>
+              <div id="page-m" class="page">
+                <div class="site-nav" style="padding: 0 24px;">Sparkle Clean<em>&#9776;</em></div>
+                <div id="hero-m" class="hero">
+                  <div class="eyebrow">Dubai, since 2014</div>
+                  <div id="h1-m" class="h1">A clean flat, and your Sunday back</div>
+                  <div id="sub-m" class="sub">Home and office cleaning by a vetted team that turns up when it says it will. Fixed prices, no contracts on the home side.</div>
+                  <div class="btn">See our services</div>
+                </div>
+                <div id="sel-m" class="sel"><div class="sel-tag">HERO</div></div>
+              </div>
+            </div>
+          </div>
+          <div id="caption">
+            <div id="cap-1" class="cap">The preview is the real page.</div>
+            <div id="cap-2" class="cap">Same Blade. Same stylesheet. Any width.</div>
+          </div>
+          <div id="cap-tag" class="mono-label">Live preview</div>
+          <svg id="cursor" viewBox="0 0 40 48" width="40" height="48">
+            <path d="M3 2 L3 38 L12 30 L18 44 L25 41 L19 27 L31 27 Z" fill="#151411" stroke="#ffffff" stroke-width="3" stroke-linejoin="round" />
+          </svg>
+        </div>
+      </section>
+
+      <!-- Scene 4: under it -->
+      <section id="s4" class="scene clip" data-start="15" data-duration="3.5" data-track-index="1">
+        <div id="s4-wrap" class="wrap">
+          <div id="s4-label" class="mono-label">What ships</div>
+          <div id="fact-1" class="fact"><div class="n">01</div><div class="s">One PHP class and one Blade view per block.</div></div>
+          <div id="fact-2" class="fact"><div class="n">02</div><div class="s">Any language, RTL included, from one tree.</div></div>
+          <div id="fact-3" class="fact"><div class="n">03</div><div class="s">Server-rendered. Sitemap, hreflang, JSON-LD.</div></div>
+        </div>
+      </section>
+
+      <!-- Scene 5: outro -->
+      <section id="s5" class="scene clip" data-start="18.5" data-duration="3.5" data-track-index="1">
+        <div id="s5-wrap" class="wrap">
+          <div class="wf" id="s5-wf" style="left: 120px; top: 170px; width: 820px; height: 740px;">
+            <div class="wf-label">SECTIONS</div>
+            <div class="wf-row"><i></i><b style="width: 110px;"></b></div>
+            <div class="wf-row on" id="s5-on"><i></i><b style="width: 86px;"></b></div>
+            <div class="wf-row"><i></i><b style="width: 100px;"></b></div>
+            <div class="wf-row"><i></i><b style="width: 76px;"></b></div>
+            <div class="wf-row"><i></i><b style="width: 96px;"></b></div>
+            <div class="wf-page" style="left: 300px; top: 0; width: 520px; height: 700px;">
+              <div class="wf-bar" style="left: 30px; top: 30px; width: 22px; height: 22px; border-radius: 2px;"></div>
+              <div class="wf-bar lt" style="left: 370px; top: 36px; width: 120px;"></div>
+              <div class="wf-bar" style="left: 36px; top: 110px; width: 330px;"></div>
+              <div class="wf-bar lt" style="left: 36px; top: 150px; width: 420px;"></div>
+              <div class="wf-bar lt" style="left: 36px; top: 172px; width: 300px;"></div>
+              <div class="wf-bar" style="left: 36px; top: 212px; width: 130px; height: 34px; border-radius: 17px; background: #8a857c;"></div>
+              <div class="wf-img" style="left: 36px; top: 300px; width: 448px; height: 170px;"></div>
+              <div class="wf-img" style="left: 36px; top: 500px; width: 136px; height: 110px;"></div>
+              <div class="wf-img" style="left: 192px; top: 500px; width: 136px; height: 110px;"></div>
+              <div class="wf-img" style="left: 348px; top: 500px; width: 136px; height: 110px;"></div>
+              <div id="s5-sel" class="sel" style="left: 18px; top: 84px; width: 484px; height: 186px;"></div>
+            </div>
+          </div>
+          <div class="wm" style="left: 1010px; top: 300px; width: 800px;">
+            <p id="s5-kicker" class="wm-kicker" style="font-size: 30px;">FILAMENT</p>
+            <p id="s5-name" class="wm-name" style="font-size: 220px;">Atelier</p>
+            <div id="s5-rule" class="wm-rule"></div>
+            <div id="cmd">composer require <span>safi/filament-atelier</span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Audio -->
+      <audio id="bgm" src="assets/music/happy-beats-business-moves-vol-12-by-ende-dot-app.mp3" data-start="0" data-duration="22" data-track-index="10" data-volume="0.3"></audio>
+      <audio id="sfx-wm" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="3.9" data-duration="0.3" data-track-index="11" data-volume="0.7"></audio>
+      <audio id="sfx-c1" src="assets/sfx/interface/click_003.ogg" data-start="8.0" data-duration="0.2" data-track-index="12" data-volume="0.75"></audio>
+      <audio id="sfx-c2" src="assets/sfx/interface/click_003.ogg" data-start="9.1" data-duration="0.2" data-track-index="12" data-volume="0.75"></audio>
+      <audio id="sfx-k1" src="assets/sfx/keyboard/keypress-001.wav" data-start="9.3" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k2" src="assets/sfx/keyboard/keypress-004.wav" data-start="9.45" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k3" src="assets/sfx/keyboard/keypress-007.wav" data-start="9.6" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k4" src="assets/sfx/keyboard/keypress-001.wav" data-start="9.75" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k5" src="assets/sfx/keyboard/keypress-007.wav" data-start="9.9" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k6" src="assets/sfx/keyboard/keypress-004.wav" data-start="10.05" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k7" src="assets/sfx/keyboard/keypress-001.wav" data-start="10.2" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k8" src="assets/sfx/keyboard/keypress-007.wav" data-start="10.35" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k9" src="assets/sfx/keyboard/keypress-004.wav" data-start="10.5" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-k10" src="assets/sfx/keyboard/keypress-001.wav" data-start="10.65" data-duration="0.12" data-track-index="13" data-volume="0.45"></audio>
+      <audio id="sfx-c3" src="assets/sfx/interface/click_003.ogg" data-start="11.4" data-duration="0.2" data-track-index="12" data-volume="0.75"></audio>
+      <audio id="sfx-c4" src="assets/sfx/interface/click_003.ogg" data-start="13.05" data-duration="0.2" data-track-index="12" data-volume="0.75"></audio>
+      <audio id="sfx-pub" src="assets/sfx/interface/bong_001.ogg" data-start="13.15" data-duration="0.4" data-track-index="14" data-volume="0.6"></audio>
+      <audio id="sfx-f1" src="assets/sfx/interface/drop_001.ogg" data-start="15.25" data-duration="0.4" data-track-index="11" data-volume="0.55"></audio>
+      <audio id="sfx-out" src="assets/sfx/impact/impactSoft_medium_001.ogg" data-start="18.52" data-duration="0.3" data-track-index="14" data-volume="0.7"></audio>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      // Typed text: one span per character, revealed with zero-duration sets.
+      var NEW_TEXT = "A clean flat, and your Sunday back";
+      function fillChars(id) {
+        var el = document.getElementById(id);
+        for (var i = 0; i < NEW_TEXT.length; i++) {
+          var s = document.createElement("span");
+          s.textContent = NEW_TEXT[i];
+          s.className = id + "-ch";
+          s.style.opacity = "0";
+          el.appendChild(s);
+        }
+      }
+      fillChars("f-new");
+      fillChars("d-new");
+
+      // ---- Scene 1: hook (0 to 3.5)
+      tl.from("#s1-label", { opacity: 0, x: -30, duration: 0.5, ease: "power2.out" }, 0.1);
+      tl.from("#s1-l1", { opacity: 0, y: 60, duration: 0.6, ease: "power3.out" }, 0.3);
+      tl.from("#s1-l2", { opacity: 0, y: 60, duration: 0.6, ease: "power3.out" }, 1.5);
+      tl.from("#s1-rule", { scaleX: 0, duration: 0.7, ease: "expo.out" }, 1.8);
+      tl.to("#s1-wrap", { opacity: 0, y: -40, duration: 0.3, ease: "power2.in" }, 3.2);
+
+      // ---- Scene 2: reveal (3.5 to 6.5)
+      tl.from("#s2-kicker", { opacity: 0, x: -60, duration: 0.7, ease: "power3.out" }, 3.55);
+      tl.from("#s2-name", { opacity: 0, y: 80, duration: 0.6, ease: "power4.out" }, 3.9);
+      tl.from("#s2-rule", { scaleX: 0, duration: 0.6, ease: "expo.out" }, 4.3);
+      tl.from("#s2-tag", { opacity: 0, y: 24, duration: 0.5, ease: "power2.out" }, 4.5);
+      tl.from("#s2-sel", { opacity: 0, scale: 1.04, duration: 0.45, ease: "back.out(1.6)" }, 5.0);
+      tl.to("#s2-wrap", { opacity: 0, duration: 0.3, ease: "power1.in" }, 6.2);
+
+      // ---- Scene 3: editor (6.5 to 15)
+      tl.from("#win", { opacity: 0, y: 70, scale: 0.97, duration: 0.6, ease: "power3.out" }, 6.5);
+      tl.set("#badge-pub", { opacity: 0 }, 6.5);
+      tl.set("#panel-insp", { opacity: 0 }, 6.5);
+      tl.set("#row-hero-bg", { opacity: 0 }, 6.5);
+      tl.set("#sel-d", { opacity: 0 }, 6.5);
+      tl.set("#page-m", { opacity: 0 }, 6.5);
+      tl.set("#f-heading-ring", { opacity: 0 }, 6.5);
+      tl.set("#cap-1", { opacity: 0 }, 6.5);
+      tl.set("#cap-2", { opacity: 0 }, 6.5);
+      tl.from("#cap-tag", { opacity: 0, duration: 0.4 }, 7.0);
+
+      // Cursor path (tip is the element's top-left)
+      tl.set("#cursor", { x: 1500, y: 760, opacity: 0 }, 6.5);
+      tl.to("#cursor", { opacity: 1, duration: 0.2 }, 6.9);
+      tl.to("#cursor", { x: 370, y: 232, duration: 0.95, ease: "power2.inOut" }, 7.0);
+      tl.to("#cursor", { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1, transformOrigin: "0 0" }, 8.0);
+      tl.to("#row-hero-bg", { opacity: 1, duration: 0.15 }, 8.02);
+
+      // beat-locked: 8.74s, selection lands and the sidebar swaps to the inspector
+      tl.to("#sel-d", { opacity: 1, duration: 0.01 }, 8.74);
+      tl.from("#sel-d", { scale: 1.03, duration: 0.35, ease: "back.out(2)" }, 8.74);
+      tl.to("#panel-list", { opacity: 0, x: -40, duration: 0.25, ease: "power2.in" }, 8.4);
+      tl.fromTo("#panel-insp", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, 8.62);
+
+      tl.to("#cursor", { x: 430, y: 384, duration: 0.3, ease: "power2.inOut" }, 8.8);
+      tl.to("#cursor", { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1, transformOrigin: "0 0" }, 9.1);
+      tl.to("#f-heading-ring", { opacity: 1, duration: 0.12 }, 9.12);
+      tl.to("#cap-1", { opacity: 1, duration: 0.35 }, 9.4);
+      tl.from("#cap-1", { y: 30, duration: 0.45, ease: "power3.out" }, 9.4);
+
+      // Retype: old text goes, new text arrives in the field and in the preview together
+      tl.set(["#f-old", "#d-old"], { opacity: 0 }, 9.22);
+      var fChars = document.querySelectorAll(".f-new-ch");
+      var dChars = document.querySelectorAll(".d-new-ch");
+      var typeStart = 9.28, perChar = 0.044;
+      for (var i = 0; i < fChars.length; i++) {
+        tl.set([fChars[i], dChars[i]], { opacity: 1 }, typeStart + i * perChar);
+      }
+      tl.to("#cursor", { x: 560, y: 470, duration: 0.3, ease: "power1.out" }, 9.3);
+
+      // Mobile width
+      tl.to("#cursor", { x: 1004, y: 90, duration: 0.45, ease: "power2.inOut" }, 10.9);
+      tl.to("#cursor", { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1, transformOrigin: "0 0" }, 11.4);
+      tl.to("#sw-active", { x: 100, duration: 0.25, ease: "power2.out" }, 11.42);
+      tl.to("#page-d", { opacity: 0, scale: 0.96, duration: 0.35, ease: "power2.in" }, 11.45);
+      tl.fromTo("#page-m", { opacity: 0, scale: 1.06 }, { opacity: 1, scale: 1, duration: 0.45, ease: "power3.out" }, 11.7);
+      tl.to("#cap-1", { opacity: 0, y: -20, duration: 0.25 }, 11.6);
+      tl.to("#cap-2", { opacity: 1, duration: 0.3 }, 11.85);
+      tl.from("#cap-2", { y: 30, duration: 0.45, ease: "power3.out" }, 11.85);
+
+      // Publish, beat-locked: 13.11s
+      tl.to("#cursor", { x: 1700, y: 88, duration: 0.55, ease: "power2.inOut" }, 12.4);
+      tl.to("#cursor", { scale: 0.82, duration: 0.07, yoyo: true, repeat: 1, transformOrigin: "0 0" }, 13.05);
+      tl.to("#publish", { scale: 0.94, duration: 0.07, yoyo: true, repeat: 1 }, 13.05);
+      tl.to("#badge-draft", { opacity: 0, duration: 0.15 }, 13.11);
+      tl.to("#badge-pub", { opacity: 1, duration: 0.2 }, 13.11);
+      tl.from("#badge-pub", { scale: 1.25, duration: 0.4, ease: "back.out(2.5)" }, 13.11);
+      tl.to("#s3-wrap", { opacity: 0, y: -30, duration: 0.35, ease: "power2.in" }, 14.65);
+
+      // ---- Scene 4: facts. beat-grid: 15.29, 16.38, 17.47 (every other beat for reading time)
+      tl.from("#s4-label", { opacity: 0, x: -30, duration: 0.4 }, 15.05);
+      [["#fact-1", 15.29], ["#fact-2", 16.38], ["#fact-3", 17.47]].forEach(function (f) {
+        tl.from(f[0], { opacity: 0, y: 40, duration: 0.45, ease: "power3.out" }, f[1] - 0.1);
+      });
+      tl.to("#s4-wrap", { opacity: 0, duration: 0.3, ease: "power1.in" }, 18.2);
+
+      // ---- Scene 5: outro, beat-locked: 18.56s
+      tl.from("#s5-wf", { opacity: 0, x: -50, duration: 0.6, ease: "power3.out" }, 18.5);
+      tl.from("#s5-kicker", { opacity: 0, duration: 0.4 }, 18.5);
+      tl.from("#s5-name", { opacity: 0, y: 60, duration: 0.55, ease: "power4.out" }, 18.52);
+      tl.from("#s5-sel", { opacity: 0, scale: 1.06, duration: 0.4, ease: "back.out(2)" }, 18.9);
+      tl.from("#s5-rule", { scaleX: 0, duration: 0.6, ease: "expo.out" }, 19.0);
+      tl.from("#cmd", { opacity: 0, y: 24, duration: 0.5, ease: "power2.out" }, 19.3);
+      tl.fromTo("#bgm", { volume: 0.3 }, { volume: 0, duration: 1.5, ease: "power1.in" }, 20.5);
+
+      // ---- Ambient: slow drift on the warm light, and RMS-driven breathing
+      tl.fromTo("#warm", { x: -80 }, { x: 80, duration: 22, ease: "sine.inOut" }, 0);
+      var RMS = [0.41, 0.46, 0.44, 0.45, 0.4, 0.33, 0.31, 0.21, 0.29, 0.25, 0.2, 0.11, 0.33, 0.27, 0.14, 0.09, 0.45, 0.35, 0.3, 0.24, 0.18, 0.09, 0.04, 0.04, 0.21, 0.25, 0.15, 0.14, 0.25, 0.37, 0.28, 0.25, 0.21, 0.12, 0.07, 0.06, 0.06, 0.42, 0.3, 0.25, 0.22, 0.15, 0.09, 0.08, 0.09, 0.38, 0.32, 0.3, 0.32, 0.44, 0.36, 0.28, 0.29, 0.28, 0.26, 0.23, 0.06, 0.26, 0.32, 0.27, 0.24, 0.21, 0.16, 0.08, 0.12, 0.35, 0.28, 0.24, 0.22, 0.28, 0.34, 0.28, 0.24, 0.3, 0.3, 0.27, 0.16, 0.25, 0.31, 0.22, 0.17, 0.31, 0.43, 0.35, 0.28, 0.19, 0.09, 0.09, 0.07, 0.05, 0.45, 0.46, 0.4, 0.31, 0.37, 0.27, 0.25, 0.22, 0.15, 0.07, 0.04, 0.04, 0.29, 0.34, 0.3, 0.25, 0.2, 0.13, 0.09, 0.08, 0.31, 0.36, 0.3, 0.22, 0.4, 0.34, 0.29, 0.26, 0.26, 0.26, 0.28, 0.2, 0.07, 0.41, 0.31, 0.26, 0.21, 0.17, 0.16, 0.13, 0.12, 0.43, 0.48, 0.47, 0.41, 0.42, 0.34, 0.31, 0.2, 0.29, 0.25, 0.19, 0.1, 0.31, 0.23, 0.12, 0.09, 0.48, 0.37, 0.34, 0.35, 0.2, 0.09, 0.05, 0.03, 0.21, 0.24, 0.15, 0.13, 0.31, 0.35, 0.28, 0.25, 0.2, 0.12, 0.07, 0.06, 0.14, 0.4, 0.28, 0.23, 0.2, 0.13, 0.08, 0.07, 0.1, 0.39, 0.32, 0.3, 0.35, 0.42, 0.34, 0.28, 0.27, 0.26, 0.25, 0.22, 0.05, 0.29, 0.31, 0.27, 0.23, 0.21, 0.13, 0.07, 0.12, 0.36, 0.28, 0.22, 0.21, 0.31, 0.33, 0.28, 0.25, 0.32, 0.29, 0.26, 0.16, 0.27, 0.3, 0.22, 0.15, 0.31, 0.43, 0.35, 0.28, 0.18, 0.08, 0.08, 0.07, 0.06, 0.49, 0.43, 0.39, 0.33, 0.39, 0.27, 0.24, 0.22, 0.13, 0.06, 0.04, 0.05, 0.31, 0.32, 0.28, 0.25, 0.18, 0.13, 0.09, 0.08, 0.33, 0.38, 0.31, 0.24, 0.4, 0.34, 0.28, 0.27, 0.26, 0.27, 0.27, 0.19, 0.1, 0.41, 0.31, 0.25, 0.21, 0.18, 0.16, 0.12, 0.4, 0.89, 0.77, 0.53, 0.37, 0.43, 0.45, 0.45, 0.36, 0.37, 0.34, 0.3, 0.33, 0.41, 0.35, 0.33, 0.33, 0.8, 0.77, 0.56, 0.4, 0.31, 0.26, 0.27, 0.28, 0.35, 0.32, 0.27, 0.26, 0.39, 0.39, 0.36, 0.35, 0.63, 0.88, 0.63, 0.43, 0.31, 0.45, 0.47, 0.42, 0.35, 0.3, 0.3, 0.29, 0.3, 0.45, 0.38, 0.38, 0.49, 0.74, 0.74, 0.57, 0.35, 0.33, 0.33, 0.28, 0.23, 0.41, 0.45, 0.46, 0.47, 0.4, 0.4, 0.4, 0.38, 0.79, 0.83, 0.64, 0.37, 0.36, 0.44, 0.38, 0.38, 0.39, 0.36, 0.37, 0.31, 0.38, 0.36, 0.35, 0.31, 0.55, 0.79, 0.68, 0.51, 0.26, 0.24, 0.25, 0.24, 0.21, 0.55, 0.5, 0.47, 0.41, 0.46, 0.42, 0.39, 0.4, 0.81, 0.79, 0.58, 0.32, 0.41, 0.42, 0.4, 0.36, 0.33, 0.31, 0.33, 0.33, 0.39, 0.44, 0.34, 0.35, 0.68, 0.8, 0.66, 0.42, 0.35, 0.37, 0.36, 0.29, 0.33, 0.39, 0.39, 0.37, 0.34, 0.33, 0.33, 0.31, 0.51, 0.83, 0.75, 0.53, 0.39, 0.43, 0.43, 0.42, 0.37, 0.38, 0.31, 0.33, 0.32, 0.4, 0.35, 0.32, 0.34, 0.81, 0.79, 0.58, 0.37, 0.27, 0.27, 0.28, 0.27, 0.33, 0.31, 0.28, 0.28, 0.4, 0.4, 0.37, 0.34, 0.71, 0.83, 0.63, 0.41, 0.33, 0.37, 0.35, 0.32, 0.29, 0.28, 0.26, 0.26, 0.28, 0.43, 0.37, 0.39, 0.53, 0.75, 0.76, 0.55, 0.33, 0.34, 0.35, 0.34, 0.31, 0.4, 0.43, 0.46, 0.46, 0.4, 0.44, 0.53, 0.47, 0.81, 0.85, 0.56, 0.4, 0.41, 0.44, 0.44, 0.38, 0.43, 0.39, 0.37, 0.32, 0.38, 0.38, 0.33, 0.32, 0.63, 0.84, 0.65, 0.53, 0.29, 0.28, 0.29, 0.3, 0.31, 0.62, 0.6, 0.56, 0.5, 0.48, 0.44, 0.43, 0.44, 0.89, 0.74, 0.56, 0.28, 0.45, 0.46, 0.46, 0.47, 0.49, 0.36, 0.36, 0.31, 0.53, 0.5, 0.4, 0.27, 0.65, 0.62, 0.58, 0.56, 0.49, 0.35, 0.27, 0.31, 0.32, 0.37, 0.34, 0.32, 0.32, 0.3, 0.29, 0.27, 0.51, 0.94, 0.88, 0.69, 0.66, 0.69, 0.66, 0.46, 0.14, 0.21, 0.19, 0.18, 0.2, 0.36, 0.22, 0.17, 0.23, 0.94, 0.89, 0.57, 0.34, 0.28, 0.26, 0.17, 0.06, 0.22, 0.2, 0.17, 0.12, 0.39, 0.43, 0.38, 0.34, 0.75, 0.91, 0.63, 0.37, 0.26, 0.29, 0.3, 0.27, 0.34, 0.56, 0.51, 0.52, 0.52, 0.49, 0.51, 0.51, 0.65, 1.0, 0.75, 0.5, 0.26, 0.33, 0.38, 0.37, 0.42, 0.63, 0.61, 0.66, 0.58, 0.52, 0.59, 0.58, 0.56, 0.83, 0.86, 0.65, 0.44, 0.46, 0.52, 0.49, 0.53, 0.51, 0.35, 0.29, 0.25, 0.2, 0.23, 0.23, 0.2, 0.92, 0.96, 0.78, 0.46, 0.37, 0.35, 0.18, 0.06, 0.32, 0.63, 0.66, 0.52, 0.62, 0.6, 0.61, 0.61, 0.59, 0.92, 0.87, 0.5, 0.51, 0.49, 0.32, 0.24, 0.22, 0.69, 0.53, 0.62, 0.5, 0.59, 0.51, 0.56, 0.55, 0.84, 0.82, 0.59, 0.44, 0.43, 0.58, 0.49, 0.53, 0.52, 0.64, 0.58, 0.61, 0.53, 0.56, 0.58, 0.6, 0.69, 0.91, 0.77, 0.52, 0.5, 0.55];
+      var root = document.getElementById("root");
+      function breathe(v) {
+        var w = document.getElementById("warm");
+        w.style.opacity = String(0.7 + v * 0.3);
+        var glow = "0 0 " + Math.round(8 + v * 26) + "px rgba(168,116,47," + (0.18 + v * 0.35).toFixed(2) + ")";
+        ["sel-d", "sel-m", "s2-sel", "s5-sel"].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (el) el.style.boxShadow = glow;
+        });
+      }
+      for (var f = 0; f < RMS.length; f++) {
+        tl.call(breathe, [RMS[f]], f / 30);
+      }
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
