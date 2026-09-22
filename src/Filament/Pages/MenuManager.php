@@ -45,11 +45,21 @@ class MenuManager extends FilamentPage
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-bars-3';
 
-    protected static ?string $navigationLabel = 'Menus';
+    protected static ?string $navigationLabel = null;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Content';
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?int $navigationSort = 20;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament-atelier::atelier.pages.menu_manager.nav_label');
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return __('filament-atelier::atelier.navigation_groups.content');
+    }
 
     public string $location = '';
 
@@ -65,12 +75,12 @@ class MenuManager extends FilamentPage
 
     public function getTitle(): string
     {
-        return 'Menus';
+        return __('filament-atelier::atelier.pages.menu_manager.title');
     }
 
     public function getSubheading(): ?string
     {
-        return 'Navigation for the public site. Changes save as you make them.';
+        return __('filament-atelier::atelier.pages.menu_manager.subheading');
     }
 
     // Location switch --------------------------------------------------
@@ -285,28 +295,31 @@ class MenuManager extends FilamentPage
         $locales = config('atelier.locales', []);
 
         return Action::make('editItem')
-            ->label('Edit')
-            ->modalHeading('Edit item')
-            ->modalSubmitActionLabel('Save')
+            ->label(__('filament-atelier::atelier.pages.menu_manager.edit_item.trigger'))
+            ->modalHeading(__('filament-atelier::atelier.pages.menu_manager.edit_item.modal_heading'))
+            ->modalSubmitActionLabel(__('filament-atelier::atelier.pages.menu_manager.edit_item.submit'))
             ->fillForm(fn (array $arguments): array => $this->findItem($arguments['id'] ?? '') ?? [])
             ->form([
                 Tabs::make('Label')
                     ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
-                        TextInput::make("label.{$code}")->label('Label')->maxLength(255),
+                        TextInput::make("label.{$code}")->label(__('filament-atelier::atelier.pages.menu_manager.edit_item.label_field'))->maxLength(255),
                         // A URL is content, not configuration: English is
                         // /about, Arabic is /ar/about, exactly like a page's
                         // own per-locale slug. One shared URL would mean
                         // either language linking to the other's path.
                         TextInput::make("url.{$code}")
-                            ->label('URL')
-                            ->helperText('A path like /about, or a full https:// URL.')
+                            ->label(__('filament-atelier::atelier.pages.menu_manager.edit_item.url_field'))
+                            ->helperText(__('filament-atelier::atelier.pages.menu_manager.edit_item.url_help'))
                             ->maxLength(2048),
                     ]))->all())
                     ->columnSpanFull(),
 
                 Select::make('target')
-                    ->label('Opens in')
-                    ->options(['_self' => 'Same tab', '_blank' => 'New tab'])
+                    ->label(__('filament-atelier::atelier.pages.menu_manager.edit_item.target_field'))
+                    ->options([
+                        '_self' => __('filament-atelier::atelier.pages.menu_manager.edit_item.target_same_tab'),
+                        '_blank' => __('filament-atelier::atelier.pages.menu_manager.edit_item.target_new_tab'),
+                    ])
                     ->default('_self')
                     ->native(false),
             ])
@@ -318,10 +331,10 @@ class MenuManager extends FilamentPage
     public function deleteItemAction(): Action
     {
         return Action::make('deleteItem')
-            ->label('Delete')
+            ->label(__('filament-atelier::atelier.pages.menu_manager.delete_item.trigger'))
             ->color('danger')
             ->requiresConfirmation()
-            ->modalHeading('Delete this item?')
+            ->modalHeading(__('filament-atelier::atelier.pages.menu_manager.delete_item.modal_heading'))
             ->action(function (array $arguments): void {
                 $this->deleteItem($arguments['id']);
             });
@@ -369,7 +382,7 @@ class MenuManager extends FilamentPage
     {
         return collect($this->registry()->sourceClasses())
             ->map(fn (string $class) => Action::make('add-'.Str::slug($class))
-                ->label('Add '.$class::menuSourceLabel())
+                ->label(__('filament-atelier::atelier.pages.menu_manager.add_source_prefix').' '.$class::menuSourceLabel())
                 ->color('gray')
                 ->form([
                     Select::make('id')

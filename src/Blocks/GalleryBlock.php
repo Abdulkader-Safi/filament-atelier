@@ -21,6 +21,11 @@ class GalleryBlock extends BaseBlock
         return ['background', 'padding'];
     }
 
+    public static function label(): string
+    {
+        return __('filament-atelier::atelier.blocks.gallery.label');
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-squares-2x2';
@@ -28,7 +33,7 @@ class GalleryBlock extends BaseBlock
 
     public static function category(): string
     {
-        return 'Media';
+        return __('filament-atelier::atelier.block_categories.media');
     }
 
     public static function translatable(): array
@@ -44,21 +49,25 @@ class GalleryBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('heading')->label('Heading')->live(debounce: 400),
+            TextInput::make('heading')->label(__('filament-atelier::atelier.blocks.gallery.fields.heading'))->live(debounce: 400),
             Select::make('columns')
-                ->label('Columns')
-                ->options(['2' => 'Two', '3' => 'Three', '4' => 'Four'])
+                ->label(__('filament-atelier::atelier.blocks.gallery.fields.columns'))
+                ->options([
+                    '2' => __('filament-atelier::atelier.blocks.gallery.options.columns.two'),
+                    '3' => __('filament-atelier::atelier.blocks.gallery.options.columns.three'),
+                    '4' => __('filament-atelier::atelier.blocks.gallery.options.columns.four'),
+                ])
                 ->default('3')
                 ->live(),
             Repeater::make('images')
-                ->label('Images')
+                ->label(__('filament-atelier::atelier.blocks.gallery.fields.images'))
                 ->schema([
-                    Media::upload('image', 'Image'),
-                    TextInput::make('alt')->label('Alt text'),
+                    Media::upload('image', __('filament-atelier::atelier.blocks.gallery.fields.image')),
+                    TextInput::make('alt')->label(__('filament-atelier::atelier.blocks.gallery.fields.alt')),
                 ])
                 ->reorderable()
                 ->collapsed()
-                ->itemLabel(fn (array $state) => $state['alt'] ?? 'Image')
+                ->itemLabel(fn (array $state) => $state['alt'] ?? __('filament-atelier::atelier.blocks.gallery.fields.image'))
                 ->live(),
         ];
     }

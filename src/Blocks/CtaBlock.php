@@ -21,7 +21,7 @@ class CtaBlock extends BaseBlock
 
     public static function label(): string
     {
-        return 'Call to action';
+        return __('filament-atelier::atelier.blocks.cta.label');
     }
 
     public static function icon(): string
@@ -47,10 +47,10 @@ class CtaBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('heading')->label('Heading')->live(debounce: 400),
-            Textarea::make('body')->label('Text')->rows(2)->live(debounce: 400),
-            TextInput::make('cta_label')->label('Button label')->live(debounce: 400),
-            TextInput::make('cta_url')->label('Button link')->live(debounce: 400),
+            TextInput::make('heading')->label(__('filament-atelier::atelier.blocks.cta.fields.heading'))->live(debounce: 400),
+            Textarea::make('body')->label(__('filament-atelier::atelier.blocks.cta.fields.body'))->rows(2)->live(debounce: 400),
+            TextInput::make('cta_label')->label(__('filament-atelier::atelier.blocks.cta.fields.cta_label'))->live(debounce: 400),
+            TextInput::make('cta_url')->label(__('filament-atelier::atelier.blocks.cta.fields.cta_url'))->live(debounce: 400),
         ];
     }
 }

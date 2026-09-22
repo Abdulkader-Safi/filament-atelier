@@ -34,13 +34,23 @@ class SiteDetails extends FilamentPage
 
     protected static string|\BackedEnum|null $navigationIcon = 'heroicon-o-building-office-2';
 
-    protected static ?string $navigationLabel = 'Site details';
+    protected static ?string $navigationLabel = null;
 
-    protected static string|\UnitEnum|null $navigationGroup = 'Settings';
+    protected static string|\UnitEnum|null $navigationGroup = null;
 
     protected static ?int $navigationSort = 90;
 
     public ?array $data = [];
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament-atelier::atelier.pages.site_details.nav_label');
+    }
+
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return __('filament-atelier::atelier.navigation_groups.settings');
+    }
 
     public function mount(): void
     {
@@ -49,12 +59,12 @@ class SiteDetails extends FilamentPage
 
     public function getTitle(): string
     {
-        return 'Site details';
+        return __('filament-atelier::atelier.pages.site_details.title');
     }
 
     public function getSubheading(): ?string
     {
-        return 'The organisation behind the site. Used in the structured data on every page.';
+        return __('filament-atelier::atelier.pages.site_details.subheading');
     }
 
     public function form(Schema $schema): Schema
@@ -63,142 +73,142 @@ class SiteDetails extends FilamentPage
 
         return $schema
             ->components([
-                Section::make('Identity')
-                    ->description('Who the site belongs to. Leave the type as Organization unless the client has premises a customer can visit.')
+                Section::make(__('filament-atelier::atelier.pages.site_details.sections.identity.heading'))
+                    ->description(__('filament-atelier::atelier.pages.site_details.sections.identity.description'))
                     ->schema([
                         Tabs::make('Names')
                             ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
                                 TextInput::make("name.{$code}")
-                                    ->label('Name')
+                                    ->label(__('filament-atelier::atelier.pages.site_details.fields.name'))
                                     ->maxLength(255),
 
                                 Textarea::make("description.{$code}")
-                                    ->label('Description')
+                                    ->label(__('filament-atelier::atelier.pages.site_details.fields.description'))
                                     ->rows(2)
                                     ->maxLength(500),
                             ]))->all())
                             ->columnSpanFull(),
 
                         TextInput::make('legal_name')
-                            ->label('Legal name')
-                            ->helperText('Only if it differs from the trading name.')
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.legal_name'))
+                            ->helperText(__('filament-atelier::atelier.pages.site_details.fields.legal_name_help'))
                             ->maxLength(255),
 
                         Select::make('type')
-                            ->label('Type')
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.type'))
                             ->options(self::types())
                             ->default('Organization')
                             ->native(false)
                             ->live()
-                            ->helperText('A LocalBusiness type unlocks the contact details below, and is what puts a client on the map.'),
+                            ->helperText(__('filament-atelier::atelier.pages.site_details.fields.type_help')),
 
-                        Media::upload('logo', 'Logo')
-                            ->helperText('Square or wide, at least 112px tall. Used as the organisation logo in search results.'),
+                        Media::upload('logo', __('filament-atelier::atelier.pages.site_details.fields.logo'))
+                            ->helperText(__('filament-atelier::atelier.pages.site_details.fields.logo_help')),
                     ])->columns(2),
 
-                Section::make('Profiles')
-                    ->description('Social and directory URLs. They become sameAs, which is how a search engine ties this site to accounts it already knows.')
+                Section::make(__('filament-atelier::atelier.pages.site_details.sections.profiles.heading'))
+                    ->description(__('filament-atelier::atelier.pages.site_details.sections.profiles.description'))
                     ->schema([
                         Repeater::make('same_as')
-                            ->label('Profile URLs')
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.same_as'))
                             ->simple(
                                 TextInput::make('url')
                                     ->url()
                                     ->placeholder('https://www.linkedin.com/company/...')
                                     ->required(),
                             )
-                            ->addActionLabel('Add a profile')
+                            ->addActionLabel(__('filament-atelier::atelier.pages.site_details.fields.same_as_add'))
                             ->reorderable(false)
                             ->defaultItems(0),
                     ]),
 
-                Section::make('Contact')
-                    ->description('Shown to search engines, not on the site. Nothing here is rendered into a page.')
+                Section::make(__('filament-atelier::atelier.pages.site_details.sections.contact.heading'))
+                    ->description(__('filament-atelier::atelier.pages.site_details.sections.contact.description'))
                     ->schema([
-                        TextInput::make('telephone')->label('Telephone')->tel(),
-                        TextInput::make('email')->label('Email')->email(),
+                        TextInput::make('telephone')->label(__('filament-atelier::atelier.pages.site_details.fields.telephone'))->tel(),
+                        TextInput::make('email')->label(__('filament-atelier::atelier.pages.site_details.fields.email'))->email(),
 
-                        TextInput::make('address.street')->label('Street address'),
-                        TextInput::make('address.locality')->label('City'),
-                        TextInput::make('address.region')->label('Region or emirate'),
-                        TextInput::make('address.postal_code')->label('Postal code'),
+                        TextInput::make('address.street')->label(__('filament-atelier::atelier.pages.site_details.fields.address_street')),
+                        TextInput::make('address.locality')->label(__('filament-atelier::atelier.pages.site_details.fields.address_locality')),
+                        TextInput::make('address.region')->label(__('filament-atelier::atelier.pages.site_details.fields.address_region')),
+                        TextInput::make('address.postal_code')->label(__('filament-atelier::atelier.pages.site_details.fields.address_postal_code')),
                         TextInput::make('address.country')
-                            ->label('Country code')
-                            ->helperText('Two letters, e.g. AE, SA, LB.')
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.address_country'))
+                            ->helperText(__('filament-atelier::atelier.pages.site_details.fields.address_country_help'))
                             ->maxLength(2),
 
-                        TextInput::make('geo.latitude')->label('Latitude')->numeric(),
-                        TextInput::make('geo.longitude')->label('Longitude')->numeric(),
+                        TextInput::make('geo.latitude')->label(__('filament-atelier::atelier.pages.site_details.fields.latitude'))->numeric(),
+                        TextInput::make('geo.longitude')->label(__('filament-atelier::atelier.pages.site_details.fields.longitude'))->numeric(),
 
                         TextInput::make('price_range')
-                            ->label('Price range')
-                            ->helperText('Free text, e.g. $$ or 500 to 5000 AED.'),
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.price_range'))
+                            ->helperText(__('filament-atelier::atelier.pages.site_details.fields.price_range_help')),
 
                         TextInput::make('area_served')
-                            ->label('Areas served')
-                            ->helperText('Comma separated, e.g. Dubai, Abu Dhabi.'),
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.area_served'))
+                            ->helperText(__('filament-atelier::atelier.pages.site_details.fields.area_served_help')),
 
                         // The single most looked-at fact in a local search
                         // result, and the one most sites never mark up.
                         Repeater::make('opening_hours')
-                            ->label('Opening hours')
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.opening_hours'))
                             ->schema([
                                 CheckboxList::make('days')
-                                    ->label('Days')
+                                    ->label(__('filament-atelier::atelier.pages.site_details.fields.opening_hours_days'))
                                     ->options(self::days())
                                     ->columns(4)
                                     ->required()
                                     ->columnSpanFull(),
-                                TimePicker::make('opens')->label('Opens')->seconds(false)->required(),
-                                TimePicker::make('closes')->label('Closes')->seconds(false)->required(),
+                                TimePicker::make('opens')->label(__('filament-atelier::atelier.pages.site_details.fields.opens'))->seconds(false)->required(),
+                                TimePicker::make('closes')->label(__('filament-atelier::atelier.pages.site_details.fields.closes'))->seconds(false)->required(),
                             ])
                             ->columns(2)
                             ->defaultItems(0)
-                            ->addActionLabel('Add hours')
+                            ->addActionLabel(__('filament-atelier::atelier.pages.site_details.fields.opening_hours_add'))
                             ->itemLabel(fn (array $state) => self::hoursLabel($state))
-                            ->helperText('One row per set of hours. Group the days that share them, and add a second row for the days that differ.')
+                            ->helperText(__('filament-atelier::atelier.pages.site_details.fields.opening_hours_help'))
                             ->columnSpanFull(),
                     ])
                     ->columns(2)
                     ->visible(fn (callable $get) => $get('type') !== 'Organization'),
 
-                Section::make('Contact points')
-                    ->description('Who answers, and in which language. A bare telephone number says none of that.')
+                Section::make(__('filament-atelier::atelier.pages.site_details.sections.contact_points.heading'))
+                    ->description(__('filament-atelier::atelier.pages.site_details.sections.contact_points.description'))
                     ->schema([
                         Repeater::make('contact_points')
-                            ->label('Contact points')
+                            ->label(__('filament-atelier::atelier.pages.site_details.fields.contact_points'))
                             ->schema([
                                 Select::make('type')
-                                    ->label('For')
+                                    ->label(__('filament-atelier::atelier.pages.site_details.fields.contact_point_for'))
                                     ->options([
-                                        'customer support' => 'Customer support',
-                                        'sales' => 'Sales',
-                                        'billing support' => 'Billing',
-                                        'technical support' => 'Technical support',
-                                        'reservations' => 'Reservations',
+                                        'customer support' => __('filament-atelier::atelier.pages.site_details.options.contact_point_for.customer_support'),
+                                        'sales' => __('filament-atelier::atelier.pages.site_details.options.contact_point_for.sales'),
+                                        'billing support' => __('filament-atelier::atelier.pages.site_details.options.contact_point_for.billing_support'),
+                                        'technical support' => __('filament-atelier::atelier.pages.site_details.options.contact_point_for.technical_support'),
+                                        'reservations' => __('filament-atelier::atelier.pages.site_details.options.contact_point_for.reservations'),
                                     ])
                                     ->native(false)
                                     ->required(),
-                                TextInput::make('telephone')->label('Telephone')->tel(),
-                                TextInput::make('email')->label('Email')->email(),
+                                TextInput::make('telephone')->label(__('filament-atelier::atelier.pages.site_details.fields.telephone'))->tel(),
+                                TextInput::make('email')->label(__('filament-atelier::atelier.pages.site_details.fields.email'))->email(),
                                 TextInput::make('languages')
-                                    ->label('Languages')
-                                    ->helperText('Comma separated, e.g. Arabic, English.'),
+                                    ->label(__('filament-atelier::atelier.pages.site_details.fields.contact_point_languages'))
+                                    ->helperText(__('filament-atelier::atelier.pages.site_details.fields.contact_point_languages_help')),
                             ])
                             ->columns(2)
                             ->defaultItems(0)
-                            ->addActionLabel('Add a contact point')
-                            ->itemLabel(fn (array $state) => $state['type'] ?? 'Contact point')
+                            ->addActionLabel(__('filament-atelier::atelier.pages.site_details.fields.contact_points_add'))
+                            ->itemLabel(fn (array $state) => $state['type'] ?? __('filament-atelier::atelier.pages.site_details.fields.contact_point_fallback'))
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Legal')
-                    ->description('Optional, and a trust signal for a business search.')
+                Section::make(__('filament-atelier::atelier.pages.site_details.sections.legal.heading'))
+                    ->description(__('filament-atelier::atelier.pages.site_details.sections.legal.description'))
                     ->schema([
-                        DatePicker::make('founding_date')->label('Founded'),
-                        TextInput::make('employees')->label('Employees')->numeric(),
-                        TextInput::make('vat_id')->label('VAT number'),
-                        TextInput::make('tax_id')->label('Tax number'),
+                        DatePicker::make('founding_date')->label(__('filament-atelier::atelier.pages.site_details.fields.founding_date')),
+                        TextInput::make('employees')->label(__('filament-atelier::atelier.pages.site_details.fields.employees'))->numeric(),
+                        TextInput::make('vat_id')->label(__('filament-atelier::atelier.pages.site_details.fields.vat_id')),
+                        TextInput::make('tax_id')->label(__('filament-atelier::atelier.pages.site_details.fields.tax_id')),
                     ])
                     ->columns(2)
                     ->collapsed(),
@@ -210,7 +220,7 @@ class SiteDetails extends FilamentPage
     {
         return [
             Action::make('save')
-                ->label('Save changes')
+                ->label(__('filament-atelier::atelier.pages.site_details.save_action'))
                 ->action('save'),
         ];
     }
@@ -219,20 +229,20 @@ class SiteDetails extends FilamentPage
     {
         SiteSettings::current()->update(['data' => $this->form->getState()]);
 
-        Notification::make()->title('Saved')->success()->send();
+        Notification::make()->title(__('filament-atelier::atelier.pages.site_details.saved_notification'))->success()->send();
     }
 
     /** @return array<string, string> */
     public static function days(): array
     {
         return [
-            'Monday' => 'Mon',
-            'Tuesday' => 'Tue',
-            'Wednesday' => 'Wed',
-            'Thursday' => 'Thu',
-            'Friday' => 'Fri',
-            'Saturday' => 'Sat',
-            'Sunday' => 'Sun',
+            'Monday' => __('filament-atelier::atelier.pages.site_details.days.monday'),
+            'Tuesday' => __('filament-atelier::atelier.pages.site_details.days.tuesday'),
+            'Wednesday' => __('filament-atelier::atelier.pages.site_details.days.wednesday'),
+            'Thursday' => __('filament-atelier::atelier.pages.site_details.days.thursday'),
+            'Friday' => __('filament-atelier::atelier.pages.site_details.days.friday'),
+            'Saturday' => __('filament-atelier::atelier.pages.site_details.days.saturday'),
+            'Sunday' => __('filament-atelier::atelier.pages.site_details.days.sunday'),
         ];
     }
 
@@ -245,7 +255,7 @@ class SiteDetails extends FilamentPage
 
         $hours = trim(($state['opens'] ?? '').' to '.($state['closes'] ?? ''), ' to');
 
-        return trim($days.' '.$hours) ?: 'Hours';
+        return trim($days.' '.$hours) ?: __('filament-atelier::atelier.pages.site_details.fields.opening_hours_fallback');
     }
 
     /**
@@ -260,16 +270,16 @@ class SiteDetails extends FilamentPage
     public static function types(): array
     {
         return [
-            'Organization' => 'Organization (no physical premises)',
-            'LocalBusiness' => 'Local business',
-            'ProfessionalService' => 'Professional service',
-            'Store' => 'Shop',
-            'Restaurant' => 'Restaurant or cafe',
-            'MedicalBusiness' => 'Clinic or medical practice',
-            'RealEstateAgent' => 'Real estate agency',
-            'AutoRepair' => 'Garage or auto repair',
-            'HomeAndConstructionBusiness' => 'Construction or trades',
-            'EducationalOrganization' => 'School or training provider',
+            'Organization' => __('filament-atelier::atelier.pages.site_details.types.organization'),
+            'LocalBusiness' => __('filament-atelier::atelier.pages.site_details.types.local_business'),
+            'ProfessionalService' => __('filament-atelier::atelier.pages.site_details.types.professional_service'),
+            'Store' => __('filament-atelier::atelier.pages.site_details.types.store'),
+            'Restaurant' => __('filament-atelier::atelier.pages.site_details.types.restaurant'),
+            'MedicalBusiness' => __('filament-atelier::atelier.pages.site_details.types.medical_business'),
+            'RealEstateAgent' => __('filament-atelier::atelier.pages.site_details.types.real_estate_agent'),
+            'AutoRepair' => __('filament-atelier::atelier.pages.site_details.types.auto_repair'),
+            'HomeAndConstructionBusiness' => __('filament-atelier::atelier.pages.site_details.types.home_and_construction_business'),
+            'EducationalOrganization' => __('filament-atelier::atelier.pages.site_details.types.educational_organization'),
         ];
     }
 }

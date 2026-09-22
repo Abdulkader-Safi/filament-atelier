@@ -21,7 +21,7 @@ class RichTextBlock extends BaseBlock
 
     public static function label(): string
     {
-        return 'Rich text';
+        return __('filament-atelier::atelier.blocks.rich_text.label');
     }
 
     public static function icon(): string
@@ -46,11 +46,11 @@ class RichTextBlock extends BaseBlock
     {
         return [
             TextInput::make('heading')
-                ->label('Heading')
+                ->label(__('filament-atelier::atelier.blocks.rich_text.fields.heading'))
                 ->live(debounce: 400),
 
             RichEditor::make('body')
-                ->label('Body')
+                ->label(__('filament-atelier::atelier.blocks.rich_text.fields.body'))
                 ->live(debounce: 600),
         ];
     }

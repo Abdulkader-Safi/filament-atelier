@@ -67,7 +67,7 @@ class PageEditor extends FilamentPage
     {
         // Shield builds its permission labels by newing up every page class
         // without mounting it, so the record is not set yet.
-        return isset($this->page) ? $this->page->title : 'Page editor';
+        return isset($this->page) ? $this->page->title : __('filament-atelier::atelier.pages.page_editor.fallback_title');
     }
 
     /** The editor's own toolbar is the header. Filament's would just eat space. */
@@ -340,10 +340,12 @@ class PageEditor extends FilamentPage
 
         $groups = [];
 
+        $pagesLabel = __('filament-atelier::atelier.pages.page_editor.pages');
+
         foreach (Page::query()->orderBy('title')->get() as $page) {
             $type = $types[$page->type] ?? null;
 
-            $groups[$type ? $type::pluralLabel() : 'Pages'][] = [
+            $groups[$type ? $type::pluralLabel() : $pagesLabel][] = [
                 'id' => $page->getKey(),
                 'title' => $page->title,
                 'url' => static::getUrl(['record' => $page->getKey()]),
@@ -355,7 +357,7 @@ class PageEditor extends FilamentPage
         // Pages first, then the types in the order they were registered, so
         // the panel matches the sidebar a client already knows.
         return array_filter([
-            'Pages' => $groups['Pages'] ?? [],
+            $pagesLabel => $groups[$pagesLabel] ?? [],
             ...collect($types)->mapWithKeys(fn (string $type) => [
                 $type::pluralLabel() => $groups[$type::pluralLabel()] ?? [],
             ])->all(),
@@ -468,7 +470,7 @@ class PageEditor extends FilamentPage
 
         return $heading !== ''
             ? Str::limit($heading, 40)
-            : ($block?->label() ?? 'Section');
+            : ($block?->label() ?? __('filament-atelier::atelier.pages.page_editor.section_fallback'));
     }
 
     protected function persist(): void
