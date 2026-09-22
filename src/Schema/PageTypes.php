@@ -35,16 +35,16 @@ class PageTypes
     public static function options(): array
     {
         return [
-            'WebPage' => 'Standard page',
-            'AboutPage' => 'About page',
-            'ContactPage' => 'Contact page',
-            'CollectionPage' => 'Listing page',
-            'Article' => 'Article or blog post',
-            'Service' => 'Service',
-            'Product' => 'Product',
-            'Event' => 'Event',
-            'Person' => 'Person or profile',
-            'JobPosting' => 'Job vacancy',
+            'WebPage' => __('filament-atelier::atelier.schema.page_types.options.web_page'),
+            'AboutPage' => __('filament-atelier::atelier.schema.page_types.options.about_page'),
+            'ContactPage' => __('filament-atelier::atelier.schema.page_types.options.contact_page'),
+            'CollectionPage' => __('filament-atelier::atelier.schema.page_types.options.collection_page'),
+            'Article' => __('filament-atelier::atelier.schema.page_types.options.article'),
+            'Service' => __('filament-atelier::atelier.schema.page_types.options.service'),
+            'Product' => __('filament-atelier::atelier.schema.page_types.options.product'),
+            'Event' => __('filament-atelier::atelier.schema.page_types.options.event'),
+            'Person' => __('filament-atelier::atelier.schema.page_types.options.person'),
+            'JobPosting' => __('filament-atelier::atelier.schema.page_types.options.job_posting'),
         ];
     }
 
@@ -68,84 +68,84 @@ class PageTypes
         return match ($type) {
             'Article' => [
                 TextInput::make('schema.data.author')
-                    ->label('Author')
-                    ->helperText('A person. Leave empty and the organisation is credited instead.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.article.author'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.article.author_help')),
                 DateTimePicker::make('schema.data.published_at')
-                    ->label('Published')
-                    ->helperText('Only if it differs from when the page was published.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.article.published_at'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.article.published_at_help')),
             ],
 
             'Service' => [
                 TextInput::make('schema.data.service_type')
-                    ->label('Service type')
-                    ->helperText('What it is, plainly: Web design, Tax advice.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.service.service_type'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.service.service_type_help')),
                 TextInput::make('schema.data.area_served')
-                    ->label('Areas served')
-                    ->helperText('Comma separated. Leave empty to use the site details.'),
-                TextInput::make('schema.data.price')->label('Price')->numeric(),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.service.area_served'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.service.area_served_help')),
+                TextInput::make('schema.data.price')->label(__('filament-atelier::atelier.schema.page_types.fields.service.price'))->numeric(),
                 TextInput::make('schema.data.currency')
-                    ->label('Currency')
-                    ->helperText('Three letters, e.g. AED.')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.service.currency'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.service.currency_help'))
                     ->maxLength(3),
             ],
 
             'Product' => [
-                TextInput::make('schema.data.sku')->label('SKU'),
-                TextInput::make('schema.data.brand')->label('Brand'),
-                TextInput::make('schema.data.price')->label('Price')->numeric(),
+                TextInput::make('schema.data.sku')->label(__('filament-atelier::atelier.schema.page_types.fields.product.sku')),
+                TextInput::make('schema.data.brand')->label(__('filament-atelier::atelier.schema.page_types.fields.product.brand')),
+                TextInput::make('schema.data.price')->label(__('filament-atelier::atelier.schema.page_types.fields.product.price'))->numeric(),
                 TextInput::make('schema.data.currency')
-                    ->label('Currency')
-                    ->helperText('Three letters, e.g. AED.')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.product.currency'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.product.currency_help'))
                     ->maxLength(3),
                 Select::make('schema.data.availability')
-                    ->label('Availability')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.product.availability'))
                     ->options([
-                        'InStock' => 'In stock',
-                        'OutOfStock' => 'Out of stock',
-                        'PreOrder' => 'Pre-order',
+                        'InStock' => __('filament-atelier::atelier.schema.page_types.options.availability.in_stock'),
+                        'OutOfStock' => __('filament-atelier::atelier.schema.page_types.options.availability.out_of_stock'),
+                        'PreOrder' => __('filament-atelier::atelier.schema.page_types.options.availability.pre_order'),
                     ])
                     ->native(false),
                 Select::make('schema.data.condition')
-                    ->label('Condition')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.product.condition'))
                     ->options([
-                        'NewCondition' => 'New',
-                        'UsedCondition' => 'Used',
-                        'RefurbishedCondition' => 'Refurbished',
-                        'DamagedCondition' => 'Damaged',
+                        'NewCondition' => __('filament-atelier::atelier.schema.page_types.options.condition.new'),
+                        'UsedCondition' => __('filament-atelier::atelier.schema.page_types.options.condition.used'),
+                        'RefurbishedCondition' => __('filament-atelier::atelier.schema.page_types.options.condition.refurbished'),
+                        'DamagedCondition' => __('filament-atelier::atelier.schema.page_types.options.condition.damaged'),
                     ])
                     ->native(false),
                 DatePicker::make('schema.data.price_valid_until')
-                    ->label('Price valid until')
-                    ->helperText('A price with no end date is treated as stale.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.product.price_valid_until'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.product.price_valid_until_help')),
             ],
 
             'Event' => [
-                DateTimePicker::make('schema.data.start')->label('Starts')->required(),
-                DateTimePicker::make('schema.data.end')->label('Ends'),
+                DateTimePicker::make('schema.data.start')->label(__('filament-atelier::atelier.schema.page_types.fields.event.start'))->required(),
+                DateTimePicker::make('schema.data.end')->label(__('filament-atelier::atelier.schema.page_types.fields.event.end')),
                 TextInput::make('schema.data.location')
-                    ->label('Location')
-                    ->helperText('Venue name, or Online.'),
-                TextInput::make('schema.data.location_address')->label('Address'),
-                TextInput::make('schema.data.price')->label('Ticket price')->numeric(),
-                TextInput::make('schema.data.currency')->label('Currency')->maxLength(3),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.event.location'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.event.location_help')),
+                TextInput::make('schema.data.location_address')->label(__('filament-atelier::atelier.schema.page_types.fields.event.location_address')),
+                TextInput::make('schema.data.price')->label(__('filament-atelier::atelier.schema.page_types.fields.event.price'))->numeric(),
+                TextInput::make('schema.data.currency')->label(__('filament-atelier::atelier.schema.page_types.fields.event.currency'))->maxLength(3),
                 Select::make('schema.data.status')
-                    ->label('Status')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.event.status'))
                     ->options([
-                        'EventScheduled' => 'Going ahead',
-                        'EventRescheduled' => 'Rescheduled',
-                        'EventPostponed' => 'Postponed',
-                        'EventCancelled' => 'Cancelled',
-                        'EventMovedOnline' => 'Moved online',
+                        'EventScheduled' => __('filament-atelier::atelier.schema.page_types.options.event_status.scheduled'),
+                        'EventRescheduled' => __('filament-atelier::atelier.schema.page_types.options.event_status.rescheduled'),
+                        'EventPostponed' => __('filament-atelier::atelier.schema.page_types.options.event_status.postponed'),
+                        'EventCancelled' => __('filament-atelier::atelier.schema.page_types.options.event_status.cancelled'),
+                        'EventMovedOnline' => __('filament-atelier::atelier.schema.page_types.options.event_status.moved_online'),
                     ])
                     ->default('EventScheduled')
                     ->native(false)
-                    ->helperText('Cancelling here is what stops it being advertised.'),
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.event.status_help')),
                 Select::make('schema.data.attendance')
-                    ->label('Attendance')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.event.attendance'))
                     ->options([
-                        'OfflineEventAttendanceMode' => 'In person',
-                        'OnlineEventAttendanceMode' => 'Online',
-                        'MixedEventAttendanceMode' => 'Both',
+                        'OfflineEventAttendanceMode' => __('filament-atelier::atelier.schema.page_types.options.attendance.offline'),
+                        'OnlineEventAttendanceMode' => __('filament-atelier::atelier.schema.page_types.options.attendance.online'),
+                        'MixedEventAttendanceMode' => __('filament-atelier::atelier.schema.page_types.options.attendance.mixed'),
                     ])
                     ->default('OfflineEventAttendanceMode')
                     ->native(false),
@@ -153,40 +153,40 @@ class PageTypes
 
             'JobPosting' => [
                 DatePicker::make('schema.data.posted_at')
-                    ->label('Posted')
-                    ->helperText('Only if it differs from when the page was published.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.posted_at'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.job_posting.posted_at_help')),
                 DatePicker::make('schema.data.valid_through')
-                    ->label('Closes')
-                    ->helperText('A vacancy with no closing date stays listed forever.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.valid_through'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.job_posting.valid_through_help')),
                 Select::make('schema.data.employment_type')
-                    ->label('Type')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.employment_type'))
                     ->options([
-                        'FULL_TIME' => 'Full time',
-                        'PART_TIME' => 'Part time',
-                        'CONTRACTOR' => 'Contract',
-                        'TEMPORARY' => 'Temporary',
-                        'INTERN' => 'Internship',
+                        'FULL_TIME' => __('filament-atelier::atelier.schema.page_types.options.employment_type.full_time'),
+                        'PART_TIME' => __('filament-atelier::atelier.schema.page_types.options.employment_type.part_time'),
+                        'CONTRACTOR' => __('filament-atelier::atelier.schema.page_types.options.employment_type.contractor'),
+                        'TEMPORARY' => __('filament-atelier::atelier.schema.page_types.options.employment_type.temporary'),
+                        'INTERN' => __('filament-atelier::atelier.schema.page_types.options.employment_type.intern'),
                     ])
                     ->native(false),
                 Toggle::make('schema.data.remote')
-                    ->label('Remote')
-                    ->helperText('Without this a remote role is filtered out of remote searches.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.remote'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.job_posting.remote_help')),
                 TextInput::make('schema.data.location')
-                    ->label('City')
-                    ->helperText('Leave empty to use the site details.'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.location'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.job_posting.location_help')),
                 TextInput::make('schema.data.country')
-                    ->label('Country code')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.country'))
                     ->maxLength(2),
-                TextInput::make('schema.data.salary')->label('Salary')->numeric(),
-                TextInput::make('schema.data.currency')->label('Currency')->maxLength(3),
+                TextInput::make('schema.data.salary')->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.salary'))->numeric(),
+                TextInput::make('schema.data.currency')->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.currency'))->maxLength(3),
                 Select::make('schema.data.salary_unit')
-                    ->label('Per')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.job_posting.salary_unit'))
                     ->options([
-                        'HOUR' => 'Hour',
-                        'DAY' => 'Day',
-                        'WEEK' => 'Week',
-                        'MONTH' => 'Month',
-                        'YEAR' => 'Year',
+                        'HOUR' => __('filament-atelier::atelier.schema.page_types.options.salary_unit.hour'),
+                        'DAY' => __('filament-atelier::atelier.schema.page_types.options.salary_unit.day'),
+                        'WEEK' => __('filament-atelier::atelier.schema.page_types.options.salary_unit.week'),
+                        'MONTH' => __('filament-atelier::atelier.schema.page_types.options.salary_unit.month'),
+                        'YEAR' => __('filament-atelier::atelier.schema.page_types.options.salary_unit.year'),
                     ])
                     ->default('MONTH')
                     ->native(false),
@@ -194,13 +194,13 @@ class PageTypes
 
             'Person' => [
                 TextInput::make('schema.data.name')
-                    ->label('Full name')
-                    ->helperText('Leave empty to use the meta title.'),
-                TextInput::make('schema.data.job_title')->label('Job title'),
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.person.name'))
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.person.name_help')),
+                TextInput::make('schema.data.job_title')->label(__('filament-atelier::atelier.schema.page_types.fields.person.job_title')),
                 TextInput::make('schema.data.same_as')
-                    ->label('Profile URL')
+                    ->label(__('filament-atelier::atelier.schema.page_types.fields.person.same_as'))
                     ->url()
-                    ->helperText('LinkedIn, or wherever this person is already known.'),
+                    ->helperText(__('filament-atelier::atelier.schema.page_types.fields.person.same_as_help')),
             ],
 
             default => [],

@@ -34,13 +34,13 @@ class EditPageSettings extends EditRecord
 
         return [
             Action::make('build')
-                ->label('Edit page content')
+                ->label(__('filament-atelier::atelier.resources.page.actions.build'))
                 ->icon('heroicon-m-paint-brush')
                 ->url(fn () => PageEditor::getUrl(['record' => $record->getKey()]))
                 ->openUrlInNewTab(),
 
             Action::make('view')
-                ->label('View live')
+                ->label(__('filament-atelier::atelier.resources.page.actions.view'))
                 ->icon('heroicon-m-arrow-top-right-on-square')
                 ->color('gray')
                 ->url(fn () => $record->url(array_key_first(config('atelier.locales'))))
@@ -48,18 +48,18 @@ class EditPageSettings extends EditRecord
                 ->visible(fn () => $record->isPublished()),
 
             Action::make('publish')
-                ->label('Publish')
+                ->label(__('filament-atelier::atelier.resources.page.actions.publish'))
                 ->icon('heroicon-m-rocket-launch')
                 ->color('gray')
                 ->action(fn () => $record->publish())
                 ->visible(fn () => ! $record->isPublished() || $record->hasUnpublishedChanges()),
 
             Action::make('unpublish')
-                ->label('Unpublish')
+                ->label(__('filament-atelier::atelier.resources.page.actions.unpublish'))
                 ->icon('heroicon-m-eye-slash')
                 ->color('gray')
                 ->requiresConfirmation()
-                ->modalDescription('The page will 404 on the public site. Its content is kept.')
+                ->modalDescription(__('filament-atelier::atelier.resources.page.actions.unpublish_modal_description'))
                 ->action(fn () => $record->unpublish())
                 ->visible(fn () => $record->isPublished()),
 

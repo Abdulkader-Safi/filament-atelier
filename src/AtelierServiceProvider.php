@@ -17,6 +17,7 @@ class AtelierServiceProvider extends PackageServiceProvider
             ->name('filament-atelier')
             ->hasConfigFile('atelier')
             ->hasViews('atelier')
+            ->hasTranslations()
             ->hasMigrations([
                 'create_atelier_tables',
                 'create_atelier_page_revisions_table',

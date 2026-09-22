@@ -13,7 +13,7 @@
         <a
             href="{{ $this->backUrl }}"
             class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
-            title="Back to pages"
+            title="{{ __('filament-atelier::atelier.pages.page_editor.back_to_pages') }}"
         >
             <x-filament::icon icon="heroicon-m-arrow-left" class="h-4 w-4" />
         </a>
@@ -22,15 +22,15 @@
 
         @if ($this->page->hasUnpublishedChanges())
             <span class="rounded-md bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-400/10 dark:text-amber-400">
-                Unpublished changes
+                {{ __('filament-atelier::atelier.pages.page_editor.status.unpublished') }}
             </span>
         @elseif ($this->page->status === 'published')
             <span class="rounded-md bg-green-50 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-400/10 dark:text-green-400">
-                Published
+                {{ __('filament-atelier::atelier.pages.page_editor.status.published') }}
             </span>
         @else
             <span class="rounded-md bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-white/10 dark:text-gray-400">
-                Draft
+                {{ __('filament-atelier::atelier.pages.page_editor.status.draft') }}
             </span>
         @endif
 
@@ -44,7 +44,7 @@
                 <button
                     type="button"
                     wire:click="setWidth('{{ $key }}')"
-                    title="{{ ucfirst($key) }}"
+                    title="{{ __('filament-atelier::atelier.pages.page_editor.widths.'.$key) }}"
                     @class([
                         'rounded-md p-1.5 transition',
                         'bg-white text-gray-950 shadow-sm dark:bg-white/10 dark:text-white' => $this->width === $key,
@@ -80,13 +80,13 @@
                 href="{{ $this->shareUrl }}"
                 target="_blank"
                 class="rounded-lg p-1.5 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-white/5 dark:hover:text-white"
-                title="Open preview in a new tab"
+                title="{{ __('filament-atelier::atelier.pages.page_editor.open_preview') }}"
             >
                 <x-filament::icon icon="heroicon-m-arrow-top-right-on-square" class="h-4 w-4" />
             </a>
 
             <x-filament::button size="xs" wire:click="publish" wire:loading.attr="disabled">
-                Publish
+                {{ __('filament-atelier::atelier.pages.page_editor.publish') }}
             </x-filament::button>
         </div>
     </header>
@@ -98,7 +98,7 @@
                 type="button"
                 wire:click="closeInspector"
                 x-on:click="panel = 'sections'"
-                title="Sections"
+                title="{{ __('filament-atelier::atelier.pages.page_editor.sections') }}"
                 @class([
                     'rounded-lg p-2 transition',
                     'bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => ! $selected,
@@ -115,7 +115,7 @@
                     'bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400' => (bool) $selected,
                     'text-gray-400' => ! $selected,
                 ])
-                title="{{ $selected ? 'Section settings' : 'Select a section first' }}"
+                title="{{ $selected ? __('filament-atelier::atelier.pages.page_editor.section_settings') : __('filament-atelier::atelier.pages.page_editor.select_section_first') }}"
                 @disabled(! $selected)
                 x-on:click="panel = 'sections'"
             >
@@ -125,7 +125,7 @@
             {{-- Every other page, without leaving the builder. --}}
             <button
                 type="button"
-                title="Pages"
+                title="{{ __('filament-atelier::atelier.pages.page_editor.pages') }}"
                 x-on:click="panel = panel === 'pages' ? 'sections' : 'pages'"
                 :class="panel === 'pages'
                     ? 'bg-primary-50 text-primary-600 dark:bg-primary-500/10 dark:text-primary-400'
@@ -146,12 +146,12 @@
             {{-- ── Pages ───────────────────────────────────────────── --}}
             <div x-show="panel === 'pages'" x-cloak class="flex min-h-0 flex-1 flex-col" x-data="{ q: '' }">
                 <div class="flex h-11 shrink-0 items-center justify-between border-b border-gray-200 px-3 dark:border-white/10">
-                    <span class="text-sm font-medium">Pages</span>
+                    <span class="text-sm font-medium">{{ __('filament-atelier::atelier.pages.page_editor.pages') }}</span>
                     <button
                         type="button"
                         x-on:click="panel = 'sections'"
                         class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5"
-                        title="Back to sections"
+                        title="{{ __('filament-atelier::atelier.pages.page_editor.back_to_sections') }}"
                     >
                         <x-filament::icon icon="heroicon-m-x-mark" class="h-4 w-4" />
                     </button>
@@ -161,7 +161,7 @@
                     <input
                         type="search"
                         x-model="q"
-                        placeholder="Search pages"
+                        placeholder="{{ __('filament-atelier::atelier.pages.page_editor.search_pages') }}"
                         x-on:keydown.escape.stop="q = ''"
                         class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-white/10 dark:bg-white/5"
                     />
@@ -186,7 +186,7 @@
                                             {{-- Not a link: this is where you already are. --}}
                                             <span class="flex items-center gap-2 rounded-lg bg-gray-100 px-2 py-1.5 text-sm font-semibold text-gray-900 dark:bg-white/10 dark:text-white">
                                                 <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
-                                                <span class="shrink-0 text-xs font-normal text-gray-500 dark:text-gray-400">editing</span>
+                                                <span class="shrink-0 text-xs font-normal text-gray-500 dark:text-gray-400">{{ __('filament-atelier::atelier.pages.page_editor.editing_badge') }}</span>
                                             </span>
                                         @else
                                             <a
@@ -197,9 +197,9 @@
                                                 <span class="min-w-0 flex-1 truncate">{{ $item['title'] }}</span>
 
                                                 @if ($item['status'] === 'changed')
-                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="Unpublished changes"></span>
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" title="{{ __('filament-atelier::atelier.pages.page_editor.status.unpublished') }}"></span>
                                                 @elseif ($item['status'] !== 'published')
-                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 dark:bg-white/20" title="Draft"></span>
+                                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full bg-gray-300 dark:bg-white/20" title="{{ __('filament-atelier::atelier.pages.page_editor.status.draft') }}"></span>
                                                 @endif
                                             </a>
                                         @endif
@@ -212,7 +212,7 @@
                     <p
                         class="px-1 py-6 text-center text-sm text-gray-400"
                         x-show="q.trim() && ! {{ Js::from(collect($this->pages)->flatten(1)->pluck('title')->all()) }}.some((t) => t.toLowerCase().includes(q.trim().toLowerCase()))"
-                    >No page matches "<span x-text="q"></span>".</p>
+                    >{!! __('filament-atelier::atelier.pages.page_editor.page_search_no_match_prefix') !!}<span x-text="q"></span>{!! __('filament-atelier::atelier.pages.page_editor.page_search_no_match_suffix') !!}</p>
                 </div>
             </div>
 
@@ -225,7 +225,7 @@
                         type="button"
                         wire:click="closeInspector"
                         class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5"
-                        title="Back to sections"
+                        title="{{ __('filament-atelier::atelier.pages.page_editor.back_to_sections') }}"
                     >
                         <x-filament::icon icon="heroicon-m-chevron-left" class="h-4 w-4" />
                     </button>
@@ -234,25 +234,25 @@
                     <span class="min-w-0 flex-1 truncate text-sm font-medium">{{ $selected['type'] }}</span>
 
                     <div class="flex shrink-0 items-center">
-                        <button type="button" wire:click="move('{{ $selected['id'] }}', -1)" title="Move up"
+                        <button type="button" wire:click="move('{{ $selected['id'] }}', -1)" title="{{ __('filament-atelier::atelier.pages.page_editor.move_up') }}"
                                 class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5">
                             <x-filament::icon icon="heroicon-m-arrow-up" class="h-3.5 w-3.5" />
                         </button>
-                        <button type="button" wire:click="move('{{ $selected['id'] }}', 1)" title="Move down"
+                        <button type="button" wire:click="move('{{ $selected['id'] }}', 1)" title="{{ __('filament-atelier::atelier.pages.page_editor.move_down') }}"
                                 class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5">
                             <x-filament::icon icon="heroicon-m-arrow-down" class="h-3.5 w-3.5" />
                         </button>
-                        <button type="button" wire:click="duplicateBlock('{{ $selected['id'] }}')" title="Duplicate"
+                        <button type="button" wire:click="duplicateBlock('{{ $selected['id'] }}')" title="{{ __('filament-atelier::atelier.pages.page_editor.duplicate') }}"
                                 class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5">
                             <x-filament::icon icon="heroicon-m-document-duplicate" class="h-3.5 w-3.5" />
                         </button>
                         <button type="button" wire:click="toggleHidden('{{ $selected['id'] }}')"
-                                title="{{ $selected['hidden'] ? 'Show' : 'Hide' }}"
+                                title="{{ $selected['hidden'] ? __('filament-atelier::atelier.pages.page_editor.show') : __('filament-atelier::atelier.pages.page_editor.hide') }}"
                                 class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5">
                             <x-filament::icon :icon="$selected['hidden'] ? 'heroicon-m-eye-slash' : 'heroicon-m-eye'" class="h-3.5 w-3.5" />
                         </button>
                         <button type="button" wire:click="deleteBlock('{{ $selected['id'] }}')"
-                                wire:confirm="Delete this section?" title="Delete"
+                                wire:confirm="{{ __('filament-atelier::atelier.pages.page_editor.delete_confirm') }}" title="{{ __('filament-atelier::atelier.pages.page_editor.delete') }}"
                                 class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-red-600 dark:hover:bg-white/5">
                             <x-filament::icon icon="heroicon-m-trash" class="h-3.5 w-3.5" />
                         </button>
@@ -265,7 +265,7 @@
             @else
                 {{-- Section list --}}
                 <div class="flex h-11 shrink-0 items-center justify-between border-b border-gray-200 px-3 dark:border-white/10">
-                    <span class="text-sm font-medium">Sections</span>
+                    <span class="text-sm font-medium">{{ __('filament-atelier::atelier.pages.page_editor.sections') }}</span>
                     <span class="text-xs text-gray-400">{{ count($this->sections) }}</span>
                 </div>
 
@@ -283,7 +283,7 @@
                             {{-- The handle, so a drag is a drag and a click is
                                  still a click on the label. The icon doubles as
                                  it: hovering swaps in the grip. --}}
-                            <span data-sortable-handle class="group/handle -ms-1 shrink-0 cursor-grab px-0.5 text-gray-400 active:cursor-grabbing" title="Drag to reorder">
+                            <span data-sortable-handle class="group/handle -ms-1 shrink-0 cursor-grab px-0.5 text-gray-400 active:cursor-grabbing" title="{{ __('filament-atelier::atelier.pages.page_editor.drag_to_reorder') }}">
                                 <x-filament::icon :icon="$section['icon']" class="h-4 w-4 group-hover/handle:hidden" />
                                 <x-filament::icon icon="heroicon-m-bars-2" class="hidden h-4 w-4 group-hover/handle:block" />
                             </span>
@@ -295,15 +295,15 @@
                             >{{ $section['label'] }}</button>
 
                             <div class="flex shrink-0 items-center opacity-0 transition group-hover:opacity-100">
-                                <button type="button" wire:click="move('{{ $section['id'] }}', -1)" title="Move up"
+                                <button type="button" wire:click="move('{{ $section['id'] }}', -1)" title="{{ __('filament-atelier::atelier.pages.page_editor.move_up') }}"
                                         class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
                                     <x-filament::icon icon="heroicon-m-arrow-up" class="h-3.5 w-3.5" />
                                 </button>
-                                <button type="button" wire:click="move('{{ $section['id'] }}', 1)" title="Move down"
+                                <button type="button" wire:click="move('{{ $section['id'] }}', 1)" title="{{ __('filament-atelier::atelier.pages.page_editor.move_down') }}"
                                         class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
                                     <x-filament::icon icon="heroicon-m-arrow-down" class="h-3.5 w-3.5" />
                                 </button>
-                                <button type="button" wire:click="selectBlock('{{ $section['id'] }}')" title="Settings"
+                                <button type="button" wire:click="selectBlock('{{ $section['id'] }}')" title="{{ __('filament-atelier::atelier.pages.page_editor.settings') }}"
                                         class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
                                     <x-filament::icon icon="heroicon-m-pencil-square" class="h-3.5 w-3.5" />
                                 </button>
@@ -311,7 +311,7 @@
                         </div>
                     @empty
                         <p class="px-3 py-8 text-center text-sm text-gray-400">
-                            Nothing here yet. Add your first section below.
+                            {{ __('filament-atelier::atelier.pages.page_editor.empty_state') }}
                         </p>
                     @endforelse
                 </div>
@@ -323,7 +323,7 @@
                         class="w-full"
                         x-on:click="open = ! open; q = ''; if (open) $nextTick(() => $refs.search.focus())"
                     >
-                        Add section
+                        {{ __('filament-atelier::atelier.pages.page_editor.add_section') }}
                     </x-filament::button>
 
                     <div x-show="open" x-cloak x-on:click.outside="open = false" class="mt-2">
@@ -331,7 +331,7 @@
                             type="search"
                             x-ref="search"
                             x-model="q"
-                            placeholder="Search sections"
+                            placeholder="{{ __('filament-atelier::atelier.pages.page_editor.search_sections') }}"
                             x-on:keydown.escape.stop="q ? q = '' : open = false"
                             class="w-full rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm placeholder:text-gray-400 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-white/10 dark:bg-white/5"
                         />
@@ -372,7 +372,7 @@
                             <p
                                 class="px-1 py-6 text-center text-sm text-gray-400"
                                 x-show="q.trim() && ! {{ Js::from(collect($this->picker)->flatten(1)->pluck('label')->all()) }}.some((l) => l.toLowerCase().includes(q.trim().toLowerCase()))"
-                            >No section matches "<span x-text="q"></span>".</p>
+                            >{!! __('filament-atelier::atelier.pages.page_editor.section_search_no_match_prefix') !!}<span x-text="q"></span>{!! __('filament-atelier::atelier.pages.page_editor.section_search_no_match_suffix') !!}</p>
                         </div>
                     </div>
                 </div>
@@ -389,7 +389,7 @@
                 @if ($widths[$this->width] ?? null)
                     style="max-width: {{ $widths[$this->width] }}px"
                 @endif
-                title="Page preview"
+                title="{{ __('filament-atelier::atelier.pages.page_editor.preview_title') }}"
             ></iframe>
         </div>
     </div>

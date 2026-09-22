@@ -24,7 +24,7 @@ class FaqBlock extends BaseBlock
 
     public static function label(): string
     {
-        return 'FAQ';
+        return __('filament-atelier::atelier.blocks.faq.label');
     }
 
     public static function icon(): string
@@ -88,16 +88,16 @@ class FaqBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('heading')->label('Heading')->live(debounce: 400),
+            TextInput::make('heading')->label(__('filament-atelier::atelier.blocks.faq.fields.heading'))->live(debounce: 400),
             Repeater::make('items')
-                ->label('Questions')
+                ->label(__('filament-atelier::atelier.blocks.faq.fields.items'))
                 ->schema([
-                    TextInput::make('question')->label('Question')->required(),
-                    Textarea::make('answer')->label('Answer')->rows(3)->required(),
+                    TextInput::make('question')->label(__('filament-atelier::atelier.blocks.faq.fields.question'))->required(),
+                    Textarea::make('answer')->label(__('filament-atelier::atelier.blocks.faq.fields.answer'))->rows(3)->required(),
                 ])
                 ->reorderable()
                 ->collapsed()
-                ->itemLabel(fn (array $state) => $state['question'] ?? 'Question')
+                ->itemLabel(fn (array $state) => $state['question'] ?? __('filament-atelier::atelier.blocks.faq.fields.question'))
                 ->live(),
         ];
     }
