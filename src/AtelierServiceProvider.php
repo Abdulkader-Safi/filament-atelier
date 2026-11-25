@@ -36,6 +36,9 @@ class AtelierServiceProvider extends PackageServiceProvider
         $this->app->singleton(LayoutRegistry::class);
         $this->app->singleton(PageTypeRegistry::class);
 
+        // Panel strings fall back to English, not to the app's fallback_locale.
+        $this->app->extend('translation.loader', fn ($loader) => new EnglishFallbackLoader($loader));
+
         // Seeded from config('atelier.menus'), the same source `locales`
         // reads from. AtelierPlugin::menuLocations() still works after
         // this: it calls ->locations() again on the same singleton, adding
