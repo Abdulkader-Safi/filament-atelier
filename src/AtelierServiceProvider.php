@@ -17,6 +17,7 @@ class AtelierServiceProvider extends PackageServiceProvider
             ->name('filament-atelier')
             ->hasConfigFile('atelier')
             ->hasViews('atelier')
+            ->hasTranslations()
             ->hasMigrations([
                 'create_atelier_tables',
                 'create_atelier_page_revisions_table',
@@ -35,6 +36,9 @@ class AtelierServiceProvider extends PackageServiceProvider
         $this->app->singleton(SitemapRegistry::class);
         $this->app->singleton(LayoutRegistry::class);
         $this->app->singleton(PageTypeRegistry::class);
+
+        // Panel strings fall back to English, not to the app's fallback_locale.
+        $this->app->extend('translation.loader', fn ($loader) => new EnglishFallbackLoader($loader));
 
         // Seeded from config('atelier.menus'), the same source `locales`
         // reads from. AtelierPlugin::menuLocations() still works after

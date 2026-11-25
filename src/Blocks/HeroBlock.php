@@ -21,6 +21,11 @@ class HeroBlock extends BaseBlock
         return ['background', 'padding'];
     }
 
+    public static function label(): string
+    {
+        return __('filament-atelier::atelier.blocks.hero.label');
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-rectangle-group';
@@ -28,7 +33,7 @@ class HeroBlock extends BaseBlock
 
     public static function category(): string
     {
-        return 'Layout';
+        return __('filament-atelier::atelier.block_categories.layout');
     }
 
     public static function translatable(): array
@@ -50,15 +55,18 @@ class HeroBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('eyebrow')->label('Eyebrow')->live(debounce: 400),
-            TextInput::make('heading')->label('Heading')->live(debounce: 400),
-            Textarea::make('subheading')->label('Subheading')->rows(3)->live(debounce: 400),
-            TextInput::make('cta_label')->label('Button label')->live(debounce: 400),
-            TextInput::make('cta_url')->label('Button link')->live(debounce: 400),
-            Media::upload('image', 'Background image')->live(),
+            TextInput::make('eyebrow')->label(__('filament-atelier::atelier.blocks.hero.fields.eyebrow'))->live(debounce: 400),
+            TextInput::make('heading')->label(__('filament-atelier::atelier.blocks.hero.fields.heading'))->live(debounce: 400),
+            Textarea::make('subheading')->label(__('filament-atelier::atelier.blocks.hero.fields.subheading'))->rows(3)->live(debounce: 400),
+            TextInput::make('cta_label')->label(__('filament-atelier::atelier.blocks.hero.fields.cta_label'))->live(debounce: 400),
+            TextInput::make('cta_url')->label(__('filament-atelier::atelier.blocks.hero.fields.cta_url'))->live(debounce: 400),
+            Media::upload('image', __('filament-atelier::atelier.blocks.hero.fields.image'))->live(),
             Select::make('align')
-                ->label('Alignment')
-                ->options(['left' => 'Left', 'center' => 'Centre'])
+                ->label(__('filament-atelier::atelier.blocks.hero.fields.align'))
+                ->options([
+                    'left' => __('filament-atelier::atelier.blocks.hero.options.align.left'),
+                    'center' => __('filament-atelier::atelier.blocks.hero.options.align.center'),
+                ])
                 ->default('left')
                 ->live(),
         ];

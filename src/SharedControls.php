@@ -42,9 +42,9 @@ class SharedControls
 
         if (in_array('background', $supports, true)) {
             $fields[] = Select::make('background')
-                ->label('Background')
+                ->label(__('filament-atelier::atelier.shared_controls.background'))
                 ->options(Tokens::options('color'))
-                ->placeholder('Default')
+                ->placeholder(__('filament-atelier::atelier.shared_controls.background_placeholder'))
                 // Stored as a reference, not a literal, so changing the token
                 // changes every page that picked it.
                 ->formatStateUsing(fn (mixed $state) => is_array($state) ? ($state['token'] ?? null) : $state)
@@ -54,19 +54,19 @@ class SharedControls
 
         if (in_array('padding', $supports, true)) {
             $fields[] = Select::make('padding')
-                ->label('Vertical space')
+                ->label(__('filament-atelier::atelier.shared_controls.padding'))
                 ->options([
-                    'none' => 'None',
-                    'tight' => 'Tight',
-                    'normal' => 'Normal',
-                    'loose' => 'Loose',
+                    'none' => __('filament-atelier::atelier.shared_controls.padding_options.none'),
+                    'tight' => __('filament-atelier::atelier.shared_controls.padding_options.tight'),
+                    'normal' => __('filament-atelier::atelier.shared_controls.padding_options.normal'),
+                    'loose' => __('filament-atelier::atelier.shared_controls.padding_options.loose'),
                 ])
-                ->placeholder("The block's own")
+                ->placeholder(__('filament-atelier::atelier.shared_controls.padding_placeholder'))
                 ->live();
         }
 
         return $fields === [] ? [] : [
-            Section::make('Section style')
+            Section::make(__('filament-atelier::atelier.shared_controls.section_heading'))
                 ->schema($fields)
                 ->collapsed(),
         ];

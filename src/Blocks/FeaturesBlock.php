@@ -21,6 +21,11 @@ class FeaturesBlock extends BaseBlock
         return ['background', 'padding'];
     }
 
+    public static function label(): string
+    {
+        return __('filament-atelier::atelier.blocks.features.label');
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-squares-plus';
@@ -47,26 +52,30 @@ class FeaturesBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('heading')->label('Heading')->live(debounce: 400),
-            Textarea::make('subheading')->label('Subheading')->rows(2)->live(debounce: 400),
+            TextInput::make('heading')->label(__('filament-atelier::atelier.blocks.features.fields.heading'))->live(debounce: 400),
+            Textarea::make('subheading')->label(__('filament-atelier::atelier.blocks.features.fields.subheading'))->rows(2)->live(debounce: 400),
             Select::make('columns')
-                ->label('Columns')
-                ->options(['2' => 'Two', '3' => 'Three', '4' => 'Four'])
+                ->label(__('filament-atelier::atelier.blocks.features.fields.columns'))
+                ->options([
+                    '2' => __('filament-atelier::atelier.blocks.features.options.columns.two'),
+                    '3' => __('filament-atelier::atelier.blocks.features.options.columns.three'),
+                    '4' => __('filament-atelier::atelier.blocks.features.options.columns.four'),
+                ])
                 ->default('3')
                 ->live(),
             Repeater::make('items')
-                ->label('Features')
+                ->label(__('filament-atelier::atelier.blocks.features.fields.items'))
                 ->schema([
                     TextInput::make('icon')
-                        ->label('Icon')
+                        ->label(__('filament-atelier::atelier.blocks.features.fields.icon'))
                         ->placeholder('heroicon-o-bolt')
-                        ->helperText('Any Heroicon name.'),
-                    TextInput::make('title')->label('Title')->required(),
-                    Textarea::make('body')->label('Text')->rows(2),
+                        ->helperText(__('filament-atelier::atelier.blocks.features.fields.icon_help')),
+                    TextInput::make('title')->label(__('filament-atelier::atelier.blocks.features.fields.title'))->required(),
+                    Textarea::make('body')->label(__('filament-atelier::atelier.blocks.features.fields.body'))->rows(2),
                 ])
                 ->reorderable()
                 ->collapsed()
-                ->itemLabel(fn (array $state) => $state['title'] ?? 'Feature')
+                ->itemLabel(fn (array $state) => $state['title'] ?? __('filament-atelier::atelier.blocks.features.fields.item_fallback'))
                 ->live(),
         ];
     }

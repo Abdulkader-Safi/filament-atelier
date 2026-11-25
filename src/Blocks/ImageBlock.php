@@ -20,6 +20,11 @@ class ImageBlock extends BaseBlock
         return ['background', 'padding'];
     }
 
+    public static function label(): string
+    {
+        return __('filament-atelier::atelier.blocks.image.label');
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-photo';
@@ -27,7 +32,7 @@ class ImageBlock extends BaseBlock
 
     public static function category(): string
     {
-        return 'Media';
+        return __('filament-atelier::atelier.block_categories.media');
     }
 
     public static function translatable(): array
@@ -43,15 +48,19 @@ class ImageBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            Media::upload('image', 'Image')->live(),
+            Media::upload('image', __('filament-atelier::atelier.blocks.image.fields.image'))->live(),
             TextInput::make('alt')
-                ->label('Alt text')
-                ->helperText('What the image shows. Leave empty only if it is decorative.')
+                ->label(__('filament-atelier::atelier.blocks.image.fields.alt'))
+                ->helperText(__('filament-atelier::atelier.blocks.image.fields.alt_help'))
                 ->live(debounce: 400),
-            TextInput::make('caption')->label('Caption')->live(debounce: 400),
+            TextInput::make('caption')->label(__('filament-atelier::atelier.blocks.image.fields.caption'))->live(debounce: 400),
             Select::make('width')
-                ->label('Width')
-                ->options(['container' => 'Container', 'wide' => 'Wide', 'full' => 'Full bleed'])
+                ->label(__('filament-atelier::atelier.blocks.image.fields.width'))
+                ->options([
+                    'container' => __('filament-atelier::atelier.blocks.image.options.width.container'),
+                    'wide' => __('filament-atelier::atelier.blocks.image.options.width.wide'),
+                    'full' => __('filament-atelier::atelier.blocks.image.options.width.full'),
+                ])
                 ->default('container')
                 ->live(),
         ];

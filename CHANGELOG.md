@@ -8,6 +8,22 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+### Added
+
+- The panel in French and Arabic, as well as English. Every label, help text, block name and
+  button in the panel, the builder included, reads from
+  `resources/lang/{locale}/atelier.php` and follows the app locale. French and the
+  translation setup are from @Flibouche (#4).
+- Panel strings fall back to English when the current language lacks one, whatever the app's
+  `fallback_locale` says. Before, a host with `fallback_locale` set to a language Atelier does
+  not ship saw raw keys like `filament-atelier::atelier.pages.page_editor.publish`.
+
+### Changed
+
+- The editor takes its direction from the panel instead of always rendering `dir="ltr"`, so an
+  Arabic panel gets an RTL builder. The back arrows flip with it.
+- Run `php artisan filament:assets` after updating: the panel stylesheet changed.
+
 ## [1.1.0] - 2026-11-25
 
 The sitemap and the page schema now agree on when a page changed. Needs a migration:

@@ -154,15 +154,15 @@ class PageResource extends Resource
                 TextInput::make('title')
                     ->required()
                     ->maxLength(255)
-                    ->helperText('Internal name, and the fallback for the meta title.'),
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.title_help')),
 
                 // Hidden entirely when the app registered no layouts, since
                 // a select with one option is a question with one answer.
                 Select::make('layout')
-                    ->label('Layout')
+                    ->label(__('filament-atelier::atelier.resources.page.fields.layout'))
                     ->options(fn () => app(LayoutRegistry::class)->options())
-                    ->placeholder('Default')
-                    ->helperText('The shell wrapped around this page. Leave as Default to use the site-wide one.')
+                    ->placeholder(__('filament-atelier::atelier.resources.page.fields.layout_placeholder'))
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.layout_help'))
                     ->native(false)
                     ->visible(fn () => app(LayoutRegistry::class)->options() !== []),
             ])
@@ -178,24 +178,24 @@ class PageResource extends Resource
         return Tabs::make('Locales')
             ->tabs(collect($locales)->map(fn (array $locale, string $code) => Tab::make($locale['label'])->schema([
                 TextInput::make("slugs.{$code}")
-                    ->label('Slug')
+                    ->label(__('filament-atelier::atelier.resources.page.fields.slug'))
                     ->prefix($code === $default ? '/' : "/{$code}/")
-                    ->helperText('Leave empty to generate one from the title.')
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.slug_help'))
                     ->maxLength(255),
 
                 TextInput::make("seo.{$code}.meta_title")
-                    ->label('Meta title')
+                    ->label(__('filament-atelier::atelier.resources.page.fields.meta_title'))
                     ->maxLength(70)
-                    ->helperText('Around 60 characters. Falls back to the page title.'),
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.meta_title_help')),
 
                 Textarea::make("seo.{$code}.meta_description")
-                    ->label('Meta description')
+                    ->label(__('filament-atelier::atelier.resources.page.fields.meta_description'))
                     ->rows(3)
                     ->maxLength(180)
-                    ->helperText('Around 155 characters.'),
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.meta_description_help')),
 
                 FileUpload::make("seo.{$code}.og_image")
-                    ->label('Social share image')
+                    ->label(__('filament-atelier::atelier.resources.page.fields.og_image'))
                     ->image()
                     ->disk(config('atelier.media.disk'))
                     ->directory(config('atelier.media.directory').'/og')
@@ -203,20 +203,20 @@ class PageResource extends Resource
                     // image. Without this it works on a local disk and
                     // 403s on S3, which is the worst way for it to break.
                     ->visibility('public')
-                    ->helperText('1200 by 630 is the safe size.'),
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.og_image_help')),
 
                 Toggle::make("seo.{$code}.noindex")
-                    ->label('Hide from search engines')
-                    ->helperText('Adds a noindex tag and drops the page from the sitemap. The page stays public.'),
+                    ->label(__('filament-atelier::atelier.resources.page.fields.noindex'))
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.noindex_help')),
 
                 Toggle::make("seo.{$code}.nofollow")
-                    ->label('Tell search engines not to follow its links')
-                    ->helperText('Independent of the above. A page can be indexed and still not pass link credit.'),
+                    ->label(__('filament-atelier::atelier.resources.page.fields.nofollow'))
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.nofollow_help')),
 
                 TextInput::make("seo.{$code}.canonical")
-                    ->label('Canonical URL')
+                    ->label(__('filament-atelier::atelier.resources.page.fields.canonical'))
                     ->url()
-                    ->helperText("Leave empty to use this page's own URL."),
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.canonical_help')),
             ]))->all())
             ->columnSpanFull();
     }
@@ -266,7 +266,7 @@ class PageResource extends Resource
             return null;
         }
 
-        return Section::make($type::label().' details')
+        return Section::make(__('filament-atelier::atelier.resources.page.type_section_heading', ['type' => $type::label()]))
             ->schema($components)
             ->columns(2)
             ->columnSpanFull();
@@ -284,19 +284,19 @@ class PageResource extends Resource
         // it and the answer is Standard page for most pages. Page-level, not
         // per locale: a page that is a Service in English is a Service in
         // Arabic. A page type that names one picks the answer already.
-        return Section::make('Structured data')
-            ->description('What this page is, for search engines. It becomes the JSON-LD in the head.')
+        return Section::make(__('filament-atelier::atelier.resources.page.sections.structured_data.heading'))
+            ->description(__('filament-atelier::atelier.resources.page.sections.structured_data.description'))
             ->schema([
                 Select::make('schema.type')
                     // Not "page type": that phrase belongs to the sidebar
                     // now, and two different questions under one name is how
                     // a client picks the wrong one.
-                    ->label('Type for search engines')
+                    ->label(__('filament-atelier::atelier.resources.page.fields.schema_type'))
                     ->options(PageTypes::options())
                     ->default(fn () => ($type = static::pageType()) ? ($type::schemaType() ?? 'WebPage') : 'WebPage')
                     ->native(false)
                     ->live()
-                    ->helperText('Standard page is right for most.')
+                    ->helperText(__('filament-atelier::atelier.resources.page.fields.schema_type_help'))
                     ->columnSpanFull(),
 
                 // Only the chosen type's fields, and nothing at all for the
@@ -316,50 +316,51 @@ class PageResource extends Resource
                 // into the head.
                 Tabs::make('Schema')
                     ->tabs([
-                        Tab::make('FAQ')
+                        Tab::make(__('filament-atelier::atelier.resources.page.tabs.faq'))
                             ->badge(fn (callable $get) => self::countFaq($get('schema.faq')) ?: null)
                             ->schema([self::localeTabs(fn (string $code) => [
                                 Repeater::make("schema.faq.{$code}")
-                                    ->label('Questions')
+                                    ->label(__('filament-atelier::atelier.resources.page.fields.faq_questions'))
                                     ->schema([
-                                        TextInput::make('question')->required(),
-                                        Textarea::make('answer')->rows(2)->required(),
+                                        TextInput::make('question')->label(__('filament-atelier::atelier.resources.page.fields.faq_question'))->required(),
+                                        Textarea::make('answer')->label(__('filament-atelier::atelier.resources.page.fields.faq_answer'))->rows(2)->required(),
                                     ])
-                                    ->itemLabel(fn (array $state) => $state['question'] ?? 'Question')
+                                    ->itemLabel(fn (array $state) => $state['question'] ?? __('filament-atelier::atelier.resources.page.fields.faq_question'))
                                     ->collapsed()
                                     ->defaultItems(0)
-                                    ->addActionLabel('Add a question')
-                                    ->helperText('Type them here when nothing on the page generates them. The answers should still be somewhere a visitor can read, in prose or anywhere else; a question that appears nowhere on the page is against the search engines\' own rules.')
+                                    ->addActionLabel(__('filament-atelier::atelier.resources.page.fields.faq_add'))
+                                    ->helperText(__('filament-atelier::atelier.resources.page.fields.faq_help'))
                                     ->columnSpanFull(),
                             ])])
                             ->columns(1),
 
-                        Tab::make('Breadcrumbs')
+                        Tab::make(__('filament-atelier::atelier.resources.page.tabs.breadcrumbs'))
                             ->schema([
                                 Select::make('schema.breadcrumbs.mode')
-                                    ->label('Trail')
+                                    ->label(__('filament-atelier::atelier.resources.page.fields.breadcrumbs_mode'))
                                     ->options([
-                                        'auto' => 'From the slug path',
-                                        'custom' => 'Typed here',
-                                        'none' => 'None',
+                                        'auto' => __('filament-atelier::atelier.resources.page.options.breadcrumbs_mode.auto'),
+                                        'custom' => __('filament-atelier::atelier.resources.page.options.breadcrumbs_mode.custom'),
+                                        'none' => __('filament-atelier::atelier.resources.page.options.breadcrumbs_mode.none'),
                                     ])
                                     ->default('auto')
                                     ->native(false)
                                     ->live()
-                                    ->helperText('From the slug path builds Home › Services › This page for a page at services/this-page.')
+                                    ->helperText(__('filament-atelier::atelier.resources.page.fields.breadcrumbs_mode_help'))
                                     ->columnSpanFull(),
 
                                 Group::make([self::localeTabs(fn (string $code) => [
                                     Repeater::make("schema.breadcrumbs.items.{$code}")
-                                        ->label('Trail')
+                                        ->label(__('filament-atelier::atelier.resources.page.fields.breadcrumbs_trail'))
                                         ->schema([
-                                            TextInput::make('name')->required(),
+                                            TextInput::make('name')->label(__('filament-atelier::atelier.resources.page.fields.breadcrumb_name'))->required(),
                                             TextInput::make('url')
-                                                ->helperText('Leave the last one empty to use this page.'),
+                                                ->label(__('filament-atelier::atelier.resources.page.fields.breadcrumb_url'))
+                                                ->helperText(__('filament-atelier::atelier.resources.page.fields.breadcrumb_url_help')),
                                         ])
-                                        ->itemLabel(fn (array $state) => $state['name'] ?? 'Step')
+                                        ->itemLabel(fn (array $state) => $state['name'] ?? __('filament-atelier::atelier.resources.page.fields.breadcrumb_step_fallback'))
                                         ->defaultItems(0)
-                                        ->addActionLabel('Add a step')
+                                        ->addActionLabel(__('filament-atelier::atelier.resources.page.fields.breadcrumbs_add'))
                                         ->columnSpanFull(),
                                 ])])
                                     ->visible(fn (callable $get) => $get('schema.breadcrumbs.mode') === 'custom')
@@ -415,7 +416,7 @@ class PageResource extends Resource
                 TextColumn::make('status')
                     ->badge()
                     ->formatStateUsing(fn (Page $record) => $record->hasUnpublishedChanges()
-                        ? 'Unpublished changes'
+                        ? __('filament-atelier::atelier.resources.page.table.status_unpublished_changes')
                         : ucfirst($record->status))
                     ->color(fn (Page $record) => match (true) {
                         $record->hasUnpublishedChanges() => 'warning',
@@ -424,22 +425,22 @@ class PageResource extends Resource
                     }),
 
                 TextColumn::make('updated_at')
-                    ->label('Last edited')
+                    ->label(__('filament-atelier::atelier.resources.page.table.last_edited'))
                     ->since()
                     ->sortable(),
             ])
             ->defaultSort('updated_at', 'desc')
             ->recordActions([
                 Action::make('build')
-                    ->label('Open builder')
+                    ->label(__('filament-atelier::atelier.resources.page.table.open_builder'))
                     ->icon('heroicon-m-paint-brush')
                     ->url(fn (Page $record) => PageEditor::getUrl(['record' => $record->getKey()]))
                     ->openUrlInNewTab(),
 
                 DeleteAction::make(),
             ])
-            ->emptyStateHeading('No pages yet')
-            ->emptyStateDescription('Create one, fill in its settings, then build it from sections.');
+            ->emptyStateHeading(__('filament-atelier::atelier.resources.page.table.empty_heading'))
+            ->emptyStateDescription(__('filament-atelier::atelier.resources.page.table.empty_description'));
     }
 
     public static function getPages(): array

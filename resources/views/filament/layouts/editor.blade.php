@@ -9,7 +9,8 @@
 <!DOCTYPE html>
 <html
     lang="{{ str_replace('_', '-', app()->getLocale()) }}"
-    dir="ltr"
+    {{-- Same source as Filament's own layout, so an Arabic panel gets an RTL builder. --}}
+    dir="{{ __('filament-panels::layout.direction') ?? 'ltr' }}"
     @class(['fi', 'dark' => filament()->hasDarkMode() && filament()->hasDarkModeForced()])
 >
 <head>

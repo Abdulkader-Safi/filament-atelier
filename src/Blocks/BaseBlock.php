@@ -25,7 +25,7 @@ abstract class BaseBlock implements Block
 
     public static function category(): string
     {
-        return 'Content';
+        return __('filament-atelier::atelier.block_categories.content');
     }
 
     public static function supports(): array

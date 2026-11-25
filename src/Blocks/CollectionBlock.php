@@ -32,7 +32,7 @@ class CollectionBlock extends BaseBlock
 
     public static function label(): string
     {
-        return 'Collection';
+        return __('filament-atelier::atelier.blocks.collection.label');
     }
 
     public static function icon(): string
@@ -42,7 +42,7 @@ class CollectionBlock extends BaseBlock
 
     public static function category(): string
     {
-        return 'Content';
+        return __('filament-atelier::atelier.block_categories.content');
     }
 
     public static function supports(): array
@@ -70,7 +70,7 @@ class CollectionBlock extends BaseBlock
 
         return [
             Select::make('page_type')
-                ->label('What to list')
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.page_type'))
                 ->options($types)
                 ->default(array_key_first($types))
                 ->required()
@@ -81,26 +81,26 @@ class CollectionBlock extends BaseBlock
                 ->live(),
 
             TextInput::make('heading')
-                ->label('Heading')
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.heading'))
                 ->live(debounce: 400),
 
             Select::make('source')
-                ->label('Which ones')
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.source'))
                 ->options([
-                    'all' => 'Everything published',
-                    'picked' => 'The ones I choose',
-                    'children' => 'Only the ones under this page',
+                    'all' => __('filament-atelier::atelier.blocks.collection.options.source.all'),
+                    'picked' => __('filament-atelier::atelier.blocks.collection.options.source.picked'),
+                    'children' => __('filament-atelier::atelier.blocks.collection.options.source.children'),
                 ])
                 ->default('all')
                 ->native(false)
-                ->helperText('Under this page means by slug path: a page at services shows services/web-design.')
+                ->helperText(__('filament-atelier::atelier.blocks.collection.fields.source_help'))
                 ->live(),
 
             // Hand-picked, in the order they are dragged into. Stored as a
             // flat list of ids, so a page that is later unpublished or
             // deleted simply stops appearing rather than breaking the block.
             Repeater::make('pages')
-                ->label('Chosen')
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.pages'))
                 ->simple(
                     Select::make('page')
                         // The relative path reaches the block's own type
@@ -111,19 +111,19 @@ class CollectionBlock extends BaseBlock
                         ->searchable()
                         ->required(),
                 )
-                ->addActionLabel('Add one')
+                ->addActionLabel(__('filament-atelier::atelier.blocks.collection.fields.pages_add'))
                 ->reorderable()
                 ->defaultItems(1)
                 ->visible(fn (callable $get) => $get('source') === 'picked')
-                ->helperText('Drag to set the order they appear in.')
+                ->helperText(__('filament-atelier::atelier.blocks.collection.fields.pages_help'))
                 ->live(),
 
             Select::make('order')
-                ->label('Order')
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.order'))
                 ->options([
-                    'title' => 'Title, A to Z',
-                    'newest' => 'Newest first',
-                    'oldest' => 'Oldest first',
+                    'title' => __('filament-atelier::atelier.blocks.collection.options.order.title'),
+                    'newest' => __('filament-atelier::atelier.blocks.collection.options.order.newest'),
+                    'oldest' => __('filament-atelier::atelier.blocks.collection.options.order.oldest'),
                 ])
                 ->default('title')
                 ->native(false)
@@ -132,22 +132,27 @@ class CollectionBlock extends BaseBlock
                 ->live(),
 
             TextInput::make('limit')
-                ->label('How many')
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.limit'))
                 ->numeric()
                 ->minValue(1)
-                ->placeholder('All of them')
+                ->placeholder(__('filament-atelier::atelier.blocks.collection.fields.limit_placeholder'))
                 ->live(debounce: 400),
 
             Select::make('columns')
-                ->label('Columns')
-                ->options(['1' => 'One', '2' => 'Two', '3' => 'Three', '4' => 'Four'])
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.columns'))
+                ->options([
+                    '1' => __('filament-atelier::atelier.blocks.collection.options.columns.one'),
+                    '2' => __('filament-atelier::atelier.blocks.collection.options.columns.two'),
+                    '3' => __('filament-atelier::atelier.blocks.collection.options.columns.three'),
+                    '4' => __('filament-atelier::atelier.blocks.collection.options.columns.four'),
+                ])
                 ->default('3')
                 ->native(false)
                 ->live(),
 
             TextInput::make('empty')
-                ->label('Text when there is nothing to list')
-                ->placeholder('Nothing to show yet.')
+                ->label(__('filament-atelier::atelier.blocks.collection.fields.empty'))
+                ->placeholder(__('filament-atelier::atelier.blocks.collection.fields.empty_placeholder'))
                 ->live(debounce: 400),
         ];
     }

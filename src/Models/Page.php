@@ -395,7 +395,7 @@ class Page extends Model implements MenuSource
 
     public static function menuSourceLabel(): string
     {
-        return 'Page';
+        return __('filament-atelier::atelier.pages.menu_manager.sources.page');
     }
 
     /** @return array<int, string> */

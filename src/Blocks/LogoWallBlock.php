@@ -22,7 +22,7 @@ class LogoWallBlock extends BaseBlock
 
     public static function label(): string
     {
-        return 'Logo wall';
+        return __('filament-atelier::atelier.blocks.logo_wall.label');
     }
 
     public static function icon(): string
@@ -43,17 +43,17 @@ class LogoWallBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('heading')->label('Heading')->live(debounce: 400),
+            TextInput::make('heading')->label(__('filament-atelier::atelier.blocks.logo_wall.fields.heading'))->live(debounce: 400),
             Repeater::make('logos')
-                ->label('Logos')
+                ->label(__('filament-atelier::atelier.blocks.logo_wall.fields.logos'))
                 ->schema([
-                    Media::upload('image', 'Logo'),
-                    TextInput::make('name')->label('Company'),
-                    TextInput::make('url')->label('Link')->url(),
+                    Media::upload('image', __('filament-atelier::atelier.blocks.logo_wall.fields.logo')),
+                    TextInput::make('name')->label(__('filament-atelier::atelier.blocks.logo_wall.fields.name')),
+                    TextInput::make('url')->label(__('filament-atelier::atelier.blocks.logo_wall.fields.url'))->url(),
                 ])
                 ->reorderable()
                 ->collapsed()
-                ->itemLabel(fn (array $state) => $state['name'] ?? 'Logo')
+                ->itemLabel(fn (array $state) => $state['name'] ?? __('filament-atelier::atelier.blocks.logo_wall.fields.logo'))
                 ->live(),
         ];
     }

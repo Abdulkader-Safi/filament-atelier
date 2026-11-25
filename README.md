@@ -54,6 +54,7 @@ php artisan migrate
 - **[Multiple layouts](https://github.com/Abdulkader-Safi/filament-atelier/wiki/Layouts), picked per page.** Register a navbar-and-footer shell, a docs sidebar and anything else; the client chooses one from a dropdown in page settings.
 - **Design tokens.** Colour, font, spacing and width as CSS custom properties, read by the editor preview and the public page from the same layout, so the two cannot drift.
 - **Any number of languages on every page,** LTR or RTL, declared in config. One locale is fine. Each carries `lang`, `dir`, hreflang, its own slug and its own SEO, and the RTL font stack follows `dir` rather than a locale code.
+- **The panel in Arabic and French as well as English.** It follows the app locale, and in Arabic the editor runs right to left. Any string missing from a language falls back to English, whatever the app's `fallback_locale` is. Add another language with `php artisan vendor:publish --tag=filament-atelier-translations` and a copy of the English file under `lang/vendor/filament-atelier/{locale}/`.
 - **Draft and published as separate columns,** so editing never touches the live page. Every publish leaves a revision snapshot behind, and preview links are signed and expiring.
 - **Per-locale SEO fields:** meta title, description, social share image and canonical, rendered into the head with Open Graph and Twitter tags.
 - **A sitemap, `robots.txt`, per-page noindex, and 301s when a slug changes,** so renaming a page doesn't 404 its inbound links.

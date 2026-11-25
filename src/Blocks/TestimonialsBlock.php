@@ -21,6 +21,11 @@ class TestimonialsBlock extends BaseBlock
         return ['background', 'padding'];
     }
 
+    public static function label(): string
+    {
+        return __('filament-atelier::atelier.blocks.testimonials.label');
+    }
+
     public static function icon(): string
     {
         return 'heroicon-o-chat-bubble-bottom-center-text';
@@ -44,18 +49,18 @@ class TestimonialsBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('heading')->label('Heading')->live(debounce: 400),
+            TextInput::make('heading')->label(__('filament-atelier::atelier.blocks.testimonials.fields.heading'))->live(debounce: 400),
             Repeater::make('items')
-                ->label('Testimonials')
+                ->label(__('filament-atelier::atelier.blocks.testimonials.fields.items'))
                 ->schema([
-                    Textarea::make('quote')->label('Quote')->rows(3)->required(),
-                    TextInput::make('name')->label('Name')->required(),
-                    TextInput::make('role')->label('Role'),
-                    Media::upload('avatar', 'Photo'),
+                    Textarea::make('quote')->label(__('filament-atelier::atelier.blocks.testimonials.fields.quote'))->rows(3)->required(),
+                    TextInput::make('name')->label(__('filament-atelier::atelier.blocks.testimonials.fields.name'))->required(),
+                    TextInput::make('role')->label(__('filament-atelier::atelier.blocks.testimonials.fields.role')),
+                    Media::upload('avatar', __('filament-atelier::atelier.blocks.testimonials.fields.avatar')),
                 ])
                 ->reorderable()
                 ->collapsed()
-                ->itemLabel(fn (array $state) => $state['name'] ?? 'Testimonial')
+                ->itemLabel(fn (array $state) => $state['name'] ?? __('filament-atelier::atelier.blocks.testimonials.fields.item_fallback'))
                 ->live(),
         ];
     }
