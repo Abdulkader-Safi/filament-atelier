@@ -109,7 +109,7 @@ class Sitemap
 
             return $indexable->map(fn (string $locale) => [
                 'loc' => $page->url($locale),
-                'lastmod' => $page->published_at?->toAtomString(),
+                'lastmod' => $page->last_published_at?->toAtomString(),
                 'alternates' => $indexable
                     ->mapWithKeys(fn (string $code) => [$code => $page->url($code)])
                     ->all(),

@@ -26,6 +26,7 @@ class AtelierServiceProvider extends PackageServiceProvider
                 'add_schema_to_atelier_pages_table',
                 'create_atelier_menus_table',
                 'add_type_to_atelier_pages_table',
+                'add_last_published_at_to_atelier_pages_table',
             ]);
     }
 

@@ -8,6 +8,27 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-25
+
+The sitemap and the page schema now agree on when a page changed. Needs a migration:
+
+```bash
+composer update safi/filament-atelier
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate
+```
+
+### Fixed
+
+- The sitemap's `lastmod` and the page schema's `dateModified` now read the same date, so they
+  agree. Before, `lastmod` read `published_at` and `dateModified` read `updated_at`, and on a
+  live site they drifted weeks apart (#7). Both read a new `last_published_at` column, set on
+  every publish. Saving a draft moves neither, because visitors can't see a draft.
+- `datePublished` keeps the first publish date. `publish()` used to overwrite `published_at`
+  every time, so a republished page looked new. It now sets `published_at` only when it is
+  empty, and `unpublish()` no longer clears it. The migration fills `last_published_at` from
+  `published_at`. A first publish date that was already overwritten can't be recovered.
+
 ## [1.0.0] - 2026-09-13
 
 The version number, and the two editor changes that were worth waiting for.
@@ -800,7 +821,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.6...v0.5.0
 [0.3.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.5...v0.3.6
