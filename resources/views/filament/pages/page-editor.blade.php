@@ -259,7 +259,11 @@
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto p-3">
+                {{-- The fields hold content in the locale being edited, not the
+                     panel's language: English typed into an Arabic panel stays
+                     left to right. Labels keep the panel's direction. --}}
+                <div class="flex-1 overflow-y-auto p-3"
+                    data-atelier-content-dir="{{ config("atelier.locales.{$this->locale}.dir", 'ltr') }}">
                     {{ $this->form }}
                 </div>
             @else

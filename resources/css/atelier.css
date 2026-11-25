@@ -14,3 +14,12 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @source './../views/filament/**/*.blade.php';
+
+/* Editor fields follow the content locale, not the panel. See page-editor.blade.php. */
+[data-atelier-content-dir='ltr'] :is(input, textarea, [contenteditable]) {
+    direction: ltr;
+}
+
+[data-atelier-content-dir='rtl'] :is(input, textarea, [contenteditable]) {
+    direction: rtl;
+}
