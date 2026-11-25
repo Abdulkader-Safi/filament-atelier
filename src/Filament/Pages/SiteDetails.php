@@ -253,7 +253,12 @@ class SiteDetails extends FilamentPage
             ->map(fn (string $day) => self::days()[$day] ?? $day)
             ->implode(', ');
 
-        $hours = trim(($state['opens'] ?? '').' to '.($state['closes'] ?? ''), ' to');
+        $opens = $state['opens'] ?? '';
+        $closes = $state['closes'] ?? '';
+
+        $hours = $opens && $closes
+            ? __('filament-atelier::atelier.pages.site_details.fields.opening_hours_range', ['opens' => $opens, 'closes' => $closes])
+            : ($opens ?: $closes);
 
         return trim($days.' '.$hours) ?: __('filament-atelier::atelier.pages.site_details.fields.opening_hours_fallback');
     }

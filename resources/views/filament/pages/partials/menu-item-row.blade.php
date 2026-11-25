@@ -27,21 +27,21 @@
         />
 
         <span class="min-w-0 flex-1 truncate px-2 text-sm font-medium text-gray-950 dark:text-white">
-            {{ \Safi\Atelier\Models\Menu::label($item, app()->getLocale()) ?: 'Untitled' }}
+            {{ \Safi\Atelier\Models\Menu::label($item, app()->getLocale()) ?: __('filament-atelier::atelier.pages.menu_manager.untitled') }}
         </span>
 
         <div class="flex shrink-0 items-center gap-3 pe-1 text-xs font-medium opacity-0 transition group-hover:opacity-100">
             <div class="flex items-center">
-                <button type="button" wire:click="move('{{ $item['id'] }}', -1)" title="Move up"
+                <button type="button" wire:click="move('{{ $item['id'] }}', -1)" title="{{ __('filament-atelier::atelier.pages.page_editor.move_up') }}"
                     class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
                     <x-filament::icon icon="heroicon-m-chevron-up" class="h-3.5 w-3.5" />
                 </button>
-                <button type="button" wire:click="move('{{ $item['id'] }}', 1)" title="Move down"
+                <button type="button" wire:click="move('{{ $item['id'] }}', 1)" title="{{ __('filament-atelier::atelier.pages.page_editor.move_down') }}"
                     class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
                     <x-filament::icon icon="heroicon-m-chevron-down" class="h-3.5 w-3.5" />
                 </button>
                 <button type="button" wire:click="toggleHidden('{{ $item['id'] }}')"
-                    title="{{ ($item['hidden'] ?? false) ? 'Show on the public site' : 'Hide from the public site' }}"
+                    title="{{ ($item['hidden'] ?? false) ? __('filament-atelier::atelier.pages.menu_manager.show_item') : __('filament-atelier::atelier.pages.menu_manager.hide_item') }}"
                     class="rounded p-0.5 text-gray-400 hover:text-gray-800 dark:hover:text-white">
                     <x-filament::icon
                         :icon="($item['hidden'] ?? false) ? 'heroicon-m-eye-slash' : 'heroicon-m-eye'"
@@ -51,11 +51,11 @@
             </div>
             <button type="button" wire:click="mountAction('editItem', { id: '{{ $item['id'] }}' })"
                 class="text-gray-500 hover:text-gray-900 hover:underline dark:text-gray-400 dark:hover:text-white">
-                Edit
+                {{ __('filament-atelier::atelier.pages.menu_manager.edit_item.trigger') }}
             </button>
             <button type="button" wire:click="mountAction('deleteItem', { id: '{{ $item['id'] }}' })"
                 class="text-gray-500 hover:text-red-600 hover:underline dark:text-gray-400 dark:hover:text-red-400">
-                Delete
+                {{ __('filament-atelier::atelier.pages.menu_manager.delete_item.trigger') }}
             </button>
         </div>
     </div>

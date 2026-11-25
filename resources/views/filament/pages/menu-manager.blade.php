@@ -1,8 +1,10 @@
 <x-filament-panels::page>
     @if (empty($this->locationOptions))
         <x-filament::section>
-            No menu locations are registered. Add one to <code>config('atelier.menus')</code>,
-            the same place <code>locales</code> lives.
+            {!! __('filament-atelier::atelier.pages.menu_manager.no_locations', [
+                'config' => '<code>config(\'atelier.menus\')</code>',
+                'locales' => '<code>locales</code>',
+            ]) !!}
         </x-filament::section>
     @else
         <div class="max-w-xs">
@@ -17,7 +19,7 @@
 
         <div class="fi-section rounded-xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-gray-900">
             @if (empty($tree))
-                <p class="p-6 text-center text-sm text-gray-400">Nothing here yet. Add one below.</p>
+                <p class="p-6 text-center text-sm text-gray-400">{{ __('filament-atelier::atelier.pages.menu_manager.empty') }}</p>
             @else
                 <ul id="atelier-menu-root" data-sortable-list data-parent-id="" x-data="atelierMenuSortable()">
                     @foreach ($tree as $item)
@@ -29,7 +31,7 @@
 
         <div>
             <x-filament::button size="sm" icon="heroicon-m-plus" color="gray" wire:click="addItem">
-                Add a custom link
+                {{ __('filament-atelier::atelier.pages.menu_manager.add_custom_link') }}
             </x-filament::button>
         </div>
     @endif

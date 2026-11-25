@@ -382,7 +382,7 @@ class MenuManager extends FilamentPage
     {
         return collect($this->registry()->sourceClasses())
             ->map(fn (string $class) => Action::make('add-'.Str::slug($class))
-                ->label(__('filament-atelier::atelier.pages.menu_manager.add_source_prefix').' '.$class::menuSourceLabel())
+                ->label(__('filament-atelier::atelier.pages.menu_manager.add_source', ['source' => $class::menuSourceLabel()]))
                 ->color('gray')
                 ->form([
                     Select::make('id')

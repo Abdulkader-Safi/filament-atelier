@@ -30,7 +30,7 @@ class ListPages extends ListRecords
 
         return [
             CreateAction::make()
-                ->label(__('filament-atelier::atelier.resources.page.actions.new_prefix').' '.Str::lower($resource::getLabel() ?? __('filament-atelier::atelier.resources.page.fallback_label')))
+                ->label(__('filament-atelier::atelier.resources.page.actions.new', ['label' => Str::lower($resource::getLabel() ?? __('filament-atelier::atelier.resources.page.fallback_label'))]))
                 ->mutateDataUsing(function (array $data) use ($resource) {
                     $data = $this->pullSlugs($data);
 

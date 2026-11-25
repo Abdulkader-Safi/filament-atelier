@@ -15,7 +15,7 @@
             class="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-white/5"
             title="{{ __('filament-atelier::atelier.pages.page_editor.back_to_pages') }}"
         >
-            <x-filament::icon icon="heroicon-m-arrow-left" class="h-4 w-4" />
+            <x-filament::icon icon="heroicon-m-arrow-left" class="h-4 w-4 rtl:rotate-180" />
         </a>
 
         <span class="max-w-48 truncate text-sm font-medium">{{ $this->page->title }}</span>
@@ -212,7 +212,7 @@
                     <p
                         class="px-1 py-6 text-center text-sm text-gray-400"
                         x-show="q.trim() && ! {{ Js::from(collect($this->pages)->flatten(1)->pluck('title')->all()) }}.some((t) => t.toLowerCase().includes(q.trim().toLowerCase()))"
-                    >{!! __('filament-atelier::atelier.pages.page_editor.page_search_no_match_prefix') !!}<span x-text="q"></span>{!! __('filament-atelier::atelier.pages.page_editor.page_search_no_match_suffix') !!}</p>
+                    >{{ __('filament-atelier::atelier.pages.page_editor.page_search_no_match_prefix') }}<span x-text="q"></span>{{ __('filament-atelier::atelier.pages.page_editor.page_search_no_match_suffix') }}</p>
                 </div>
             </div>
 
@@ -227,7 +227,7 @@
                         class="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700 dark:hover:bg-white/5"
                         title="{{ __('filament-atelier::atelier.pages.page_editor.back_to_sections') }}"
                     >
-                        <x-filament::icon icon="heroicon-m-chevron-left" class="h-4 w-4" />
+                        <x-filament::icon icon="heroicon-m-chevron-left" class="h-4 w-4 rtl:rotate-180" />
                     </button>
 
                     <x-filament::icon :icon="$selected['icon']" class="h-4 w-4 shrink-0 text-gray-400" />
@@ -372,7 +372,7 @@
                             <p
                                 class="px-1 py-6 text-center text-sm text-gray-400"
                                 x-show="q.trim() && ! {{ Js::from(collect($this->picker)->flatten(1)->pluck('label')->all()) }}.some((l) => l.toLowerCase().includes(q.trim().toLowerCase()))"
-                            >{!! __('filament-atelier::atelier.pages.page_editor.section_search_no_match_prefix') !!}<span x-text="q"></span>{!! __('filament-atelier::atelier.pages.page_editor.section_search_no_match_suffix') !!}</p>
+                            >{{ __('filament-atelier::atelier.pages.page_editor.section_search_no_match_prefix') }}<span x-text="q"></span>{{ __('filament-atelier::atelier.pages.page_editor.section_search_no_match_suffix') }}</p>
                         </div>
                     </div>
                 </div>

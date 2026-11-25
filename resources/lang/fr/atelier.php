@@ -211,7 +211,16 @@ return [
             'nav_label' => 'Menus',
             'title' => 'Menus',
             'subheading' => 'Navigation du site public. Les modifications sont enregistrées au fur et à mesure.',
-            'add_source_prefix' => 'Ajouter',
+            'add_source' => 'Ajouter :source',
+            'sources' => [
+                'page' => 'Page',
+            ],
+            'no_locations' => "Aucun emplacement de menu n'est enregistré. Ajoutez-en un dans :config, au même endroit que :locales.",
+            'empty' => 'Rien pour le moment. Ajoutez-en un ci-dessous.',
+            'add_custom_link' => 'Ajouter un lien personnalisé',
+            'untitled' => 'Sans titre',
+            'show_item' => 'Afficher sur le site public',
+            'hide_item' => 'Masquer du site public',
             'edit_item' => [
                 'trigger' => 'Modifier',
                 'modal_heading' => "Modifier l'élément",
@@ -331,6 +340,7 @@ return [
                 'opening_hours_add' => 'Ajouter des horaires',
                 'opening_hours_help' => 'Une ligne par plage horaire. Regrouper les jours qui la partagent, et ajouter une seconde ligne pour les jours différents.',
                 'opening_hours_fallback' => 'Horaires',
+                'opening_hours_range' => 'de :opens à :closes',
                 'contact_points' => 'Points de contact',
                 'contact_point_for' => 'Pour',
                 'contact_point_languages' => 'Langues',
@@ -385,7 +395,7 @@ return [
             // choisi pour le cas par défaut ("page", féminin).
             'type_section_heading' => 'Détails :type',
             'actions' => [
-                'new_prefix' => 'Nouvelle',
+                'new' => 'Nouvelle :label',
                 'build' => 'Modifier le contenu de la page',
                 'view' => 'Voir en ligne',
                 'publish' => 'Publier',

@@ -46,3 +46,35 @@ it('leaves the host app strings alone', function () {
     // Not Atelier's namespace, so no English fallback: Laravel's usual behaviour.
     expect(__('validation.required', ['attribute' => 'x']))->toBe('validation.required');
 });
+
+it('ships every panel string in every language', function () {
+    $flatten = function (array $lines, string $prefix = '') use (&$flatten): array {
+        $keys = [];
+
+        foreach ($lines as $key => $value) {
+            $keys = [...$keys, ...(is_array($value) ? $flatten($value, "{$prefix}{$key}.") : ["{$prefix}{$key}"])];
+        }
+
+        return $keys;
+    };
+
+    $dir = base_path('vendor/safi/filament-atelier/resources/lang');
+    $english = $flatten(require "{$dir}/en/atelier.php");
+
+    foreach (glob("{$dir}/*/atelier.php") as $file) {
+        $keys = $flatten(require $file);
+
+        // A missing key would fall back to English; an extra one is dead.
+        expect(array_values(array_diff($english, $keys)))->toBe([], "missing from {$file}")
+            ->and(array_values(array_diff($keys, $english)))->toBe([], "not in English: {$file}");
+    }
+
+    expect(glob("{$dir}/*/atelier.php"))->toHaveCount(3);
+});
+
+it('puts the placeholder where each language wants it', function () {
+    App::setLocale('ar');
+
+    expect(__('filament-atelier::atelier.resources.page.actions.new', ['label' => 'صفحة']))->toBe('صفحة جديدة')
+        ->and(__('filament-atelier::atelier.pages.menu_manager.add_source', ['source' => 'صفحة']))->toBe('إضافة صفحة');
+});
