@@ -26,7 +26,7 @@ class HeroBlock extends BaseBlock
 
     public static function label(): string
     {
-        return 'Hero';
+        return __('Hero');
     }
 
     public static function icon(): string
@@ -37,7 +37,7 @@ class HeroBlock extends BaseBlock
     /** Groups it in the section picker. */
     public static function category(): string
     {
-        return 'Sections';
+        return __('Sections');
     }
 
     /** Shared controls this block opts into, built by the package. */
@@ -79,15 +79,15 @@ class HeroBlock extends BaseBlock
     public function schema(): array
     {
         return [
-            TextInput::make('eyebrow')->label('Small line above')->live(debounce: 400),
-            TextInput::make('heading')->label('Headline')->live(debounce: 400),
-            Textarea::make('subheading')->label('Sentence below')->rows(3)->live(debounce: 400),
-            TextInput::make('cta_label')->label('Button label')->live(debounce: 400),
-            TextInput::make('cta_url')->label('Button link')->live(debounce: 400),
-            Media::upload('image', 'Background image')->live(),
+            TextInput::make('eyebrow')->label(__('Small line above'))->live(debounce: 400),
+            TextInput::make('heading')->label(__('Headline'))->live(debounce: 400),
+            Textarea::make('subheading')->label(__('Sentence below'))->rows(3)->live(debounce: 400),
+            TextInput::make('cta_label')->label(__('Button label'))->live(debounce: 400),
+            TextInput::make('cta_url')->label(__('Button link'))->live(debounce: 400),
+            Media::upload('image', __('Background image'))->live(),
             Select::make('align')
-                ->label('Alignment')
-                ->options(['left' => 'Left', 'center' => 'Centre'])
+                ->label(__('Alignment'))
+                ->options(['left' => __('Left'), 'center' => __('Centre')])
                 ->default('left')
                 ->native(false)
                 ->live(),
