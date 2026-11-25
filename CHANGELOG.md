@@ -8,9 +8,12 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
-Needs a migration:
+## [1.1.0] - 2026-11-25
+
+The sitemap and the page schema now agree on when a page changed. Needs a migration:
 
 ```bash
+composer update safi/filament-atelier
 php artisan vendor:publish --tag=filament-atelier-migrations
 php artisan migrate
 ```
@@ -818,7 +821,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.0.0...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.6...v0.5.0
 [0.3.6]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.5...v0.3.6
