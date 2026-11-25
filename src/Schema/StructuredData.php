@@ -387,7 +387,7 @@ class StructuredData
             'isPartOf' => ['@id' => static::siteId('website')],
             'about' => ['@id' => static::siteId('organization')],
             'datePublished' => $page->published_at?->toAtomString(),
-            'dateModified' => ($page->updated_at ?? $page->published_at)?->toAtomString(),
+            'dateModified' => $page->last_published_at?->toAtomString(),
             'primaryImageOfPage' => $image ? ['@id' => static::id($url, 'primaryimage')] : null,
         ]);
 
@@ -518,7 +518,7 @@ class StructuredData
                 'publisher' => ['@id' => static::siteId('organization')],
                 'datePublished' => $page->schemaValue('published_at')
                     ?? $page->published_at?->toAtomString(),
-                'dateModified' => $page->updated_at?->toAtomString(),
+                'dateModified' => $page->last_published_at?->toAtomString(),
             ],
 
             'Service' => [

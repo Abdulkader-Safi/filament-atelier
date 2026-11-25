@@ -41,6 +41,7 @@ class Page extends Model implements MenuSource
         'schema' => 'array',
         'data' => 'array',
         'published_at' => 'datetime',
+        'last_published_at' => 'datetime',
     ];
 
     public function slugs(): HasMany
@@ -68,18 +69,24 @@ class Page extends Model implements MenuSource
 
     public function publish(): void
     {
+        // published_at is the first publish and never moves, so a republish
+        // does not make an old page look new. last_published_at is when the
+        // live version last changed: the one date behind both the sitemap's
+        // lastmod and dateModified. A draft save touches neither.
         $this->forceFill([
             'published_content' => $this->draft(),
             'status' => 'published',
-            'published_at' => now(),
+            'published_at' => $this->published_at ?? now(),
+            'last_published_at' => now(),
         ])->save();
 
         $this->snapshot();
     }
 
+    /** Keeps published_at, so publishing again later keeps the original date. */
     public function unpublish(): void
     {
-        $this->forceFill(['status' => 'draft', 'published_at' => null])->save();
+        $this->forceFill(['status' => 'draft'])->save();
     }
 
     public function isPublished(): bool

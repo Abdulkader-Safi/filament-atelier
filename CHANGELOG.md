@@ -8,6 +8,24 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+Needs a migration:
+
+```bash
+php artisan vendor:publish --tag=filament-atelier-migrations
+php artisan migrate
+```
+
+### Fixed
+
+- The sitemap's `lastmod` and the page schema's `dateModified` now read the same date, so they
+  agree. Before, `lastmod` read `published_at` and `dateModified` read `updated_at`, and on a
+  live site they drifted weeks apart (#7). Both read a new `last_published_at` column, set on
+  every publish. Saving a draft moves neither, because visitors can't see a draft.
+- `datePublished` keeps the first publish date. `publish()` used to overwrite `published_at`
+  every time, so a republished page looked new. It now sets `published_at` only when it is
+  empty, and `unpublish()` no longer clears it. The migration fills `last_published_at` from
+  `published_at`. A first publish date that was already overwritten can't be recovered.
+
 ## [1.0.0] - 2026-09-13
 
 The version number, and the two editor changes that were worth waiting for.
