@@ -8,7 +8,7 @@ A developer defines the sections in code. The client builds pages from them in a
 
 ## Status
 
-**1.1.0.** In use on client sites, and the public API is named below: it will not move inside 1.x. Read "Not built yet" before you promise anything to a client.
+**1.2.0.** In use on client sites, and the public API is named below: it will not move inside 1.x. Read "Not built yet" before you promise anything to a client.
 
 The package is the repository root. `example/` is a Laravel 13 app that installs it for testing, and `Docs/` holds the spec. Both are export-ignored, so `composer require` pulls the package and nothing else.
 

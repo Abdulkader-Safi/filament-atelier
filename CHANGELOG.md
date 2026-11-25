@@ -8,6 +8,17 @@ breaks is called out under **Breaking** with what to do about it.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-25
+
+The panel in French and Arabic, with a builder that runs right to left.
+
+```bash
+composer update safi/filament-atelier
+php artisan filament:assets     # re-publishes the panel stylesheet
+```
+
+No migration, no config change.
+
 ### Added
 
 - The panel in French and Arabic, as well as English. Every label, help text, block name and
@@ -22,7 +33,11 @@ breaks is called out under **Breaking** with what to do about it.
 
 - The editor takes its direction from the panel instead of always rendering `dir="ltr"`, so an
   Arabic panel gets an RTL builder. The back arrows flip with it.
-- Run `php artisan filament:assets` after updating: the panel stylesheet changed.
+- The builder's settings fields take the direction of the language being edited, and labels
+  keep the panel's. English typed into an Arabic panel stays left to right, so `/contact` no
+  longer shows as `contact/`.
+- "New" + label and "Add" + source are single strings with a placeholder, so a language can
+  put the words in its own order.
 
 ## [1.1.0] - 2026-11-25
 
@@ -837,7 +852,8 @@ the reason the plugin exists.
   Packagist read `composer.json` from the root, and nothing could install it from a
   subdirectory.
 
-[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.1.0...HEAD
+[unreleased]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.5.0...v1.0.0
 [0.5.0]: https://github.com/Abdulkader-Safi/filament-atelier/compare/v0.3.6...v0.5.0
